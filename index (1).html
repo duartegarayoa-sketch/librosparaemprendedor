@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es-PY">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Libros para Emprendedor | Paraguay</title>
+<meta name="description" content="Catálogo de libros para emprendedores en Paraguay. Desarrollo personal, finanzas, liderazgo y más. Compra directa por WhatsApp.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     CONFIGURACIÓN VISUAL — tokens de marca
+     ============================================================ */
+  :root{
+    --bg: #14120f;
+    --bg-elevated: #1c1a16;
+    --card: #201d18;
+    --line: #33302a;
+    --gold: #f0a93c;
+    --gold-dim: #b9812c;
+    --paper: #f4ede1;
+    --paper-dim: #b7ada0;
+    --whatsapp: #3fbf5f;
+    --red-tag: #c0392b;
+    --radius: 10px;
+    --maxw: 1180px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--paper);
+    font-family:'Inter',system-ui,sans-serif;
+    line-height:1.5;
+  }
+  h1,h2,h3,.brand,.btn,.pill{font-family:'Space Grotesk',system-ui,sans-serif;}
+  a{color:inherit;}
+  img{max-width:100%;display:block;}
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 24px;}
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky; top:0; z-index:40;
+    background:rgba(20,18,15,0.92);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .header-row{display:flex; align-items:center; gap:20px; padding:16px 0;}
+  .brand{display:flex; align-items:center; gap:10px; font-weight:700; font-size:1.15rem; white-space:nowrap; text-decoration:none;}
+  .brand-mark{width:34px; height:34px; flex-shrink:0;}
+  .brand span{color:var(--gold);}
+  .search{
+    flex:1; display:flex; align-items:center; gap:10px;
+    background:var(--bg-elevated); border:1px solid var(--line); border-radius:999px;
+    padding:10px 16px; min-width:0;
+  }
+  .search input{
+    background:none; border:none; outline:none; color:var(--paper); width:100%;
+    font-family:'Inter',sans-serif; font-size:0.95rem;
+  }
+  .search input::placeholder{color:var(--paper-dim);}
+  .search svg{flex-shrink:0; opacity:0.6;}
+  .cart-btn{
+    display:flex; align-items:center; gap:8px;
+    background:var(--whatsapp); color:#0c1f10; text-decoration:none;
+    padding:10px 18px; border-radius:999px; font-weight:700; font-size:0.9rem;
+    white-space:nowrap; transition:filter .15s;
+  }
+  .cart-btn:hover{filter:brightness(1.08);}
+
+  .filters{display:flex; gap:10px; padding:14px 0; overflow-x:auto; scrollbar-width:none;}
+  .filters::-webkit-scrollbar{display:none;}
+  .pill{
+    flex-shrink:0; border:1px solid var(--line); background:var(--bg-elevated);
+    color:var(--paper-dim); padding:8px 16px; border-radius:999px; font-size:0.85rem;
+    font-weight:600; cursor:pointer; transition:all .15s;
+  }
+  .pill.active, .pill:hover{background:var(--gold); color:#1c1204; border-color:var(--gold);}
+
+  /* ---------- hero ---------- */
+  .hero{padding:64px 0 40px; border-bottom:1px solid var(--line);}
+  .hero h1{
+    font-size:clamp(2.1rem, 5vw, 3.4rem); line-height:1.08; margin:0 0 18px; max-width:14ch;
+  }
+  .hero h1 em{font-style:normal; color:var(--gold);}
+  .hero p{color:var(--paper-dim); max-width:52ch; font-size:1.05rem; margin:0 0 26px;}
+  .hero-stats{display:flex; gap:32px; flex-wrap:wrap;}
+  .stat b{display:block; font-size:1.6rem; font-family:'Space Grotesk',sans-serif; color:var(--gold);}
+  .stat span{font-size:0.82rem; color:var(--paper-dim);}
+
+  /* ---------- catálogo ---------- */
+  .catalog{padding:44px 0 80px;}
+  .catalog-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:22px; gap:12px; flex-wrap:wrap;}
+  .catalog-head h2{font-size:1.5rem; margin:0;}
+  .catalog-head .count{color:var(--paper-dim); font-size:0.9rem;}
+
+  .grid{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:22px;
+  }
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    overflow:hidden; display:flex; flex-direction:column; position:relative;
+    transition:border-color .15s, transform .15s;
+  }
+  .card:hover{border-color:var(--gold-dim); transform:translateY(-2px);}
+  .card .cover{
+    aspect-ratio:3/4; width:100%; object-fit:cover; background:linear-gradient(155deg,#2a251c,#191712);
+    display:flex; align-items:center; justify-content:center; color:var(--paper-dim); font-size:0.8rem; text-align:center; padding:12px;
+  }
+  .card .cover img{width:100%; height:100%; object-fit:cover;}
+  .badge{
+    position:absolute; top:10px; left:10px; background:var(--red-tag); color:#fff;
+    font-size:0.68rem; font-weight:700; letter-spacing:.02em; padding:4px 9px; border-radius:5px;
+  }
+  .badge.agotado{background:#54504a;}
+  .card-body{padding:14px 14px 16px; display:flex; flex-direction:column; gap:6px; flex:1;}
+  .card-cat{font-size:0.7rem; color:var(--gold); font-weight:600; text-transform:uppercase; letter-spacing:.04em;}
+  .card-title{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:0.98rem; line-height:1.28;}
+  .card-author{color:var(--paper-dim); font-size:0.82rem; margin-bottom:4px;}
+  .price-row{display:flex; align-items:baseline; gap:8px; margin-top:auto;}
+  .price{font-weight:700; font-size:1.05rem;}
+  .price-old{color:var(--paper-dim); text-decoration:line-through; font-size:0.82rem;}
+  .buy-btn{
+    margin-top:10px; display:flex; align-items:center; justify-content:center; gap:8px;
+    background:var(--whatsapp); color:#0c1f10; border:none; border-radius:8px;
+    padding:10px; font-weight:700; font-size:0.85rem; cursor:pointer; text-decoration:none;
+    transition:filter .15s;
+  }
+  .buy-btn:hover{filter:brightness(1.08);}
+  .buy-btn:disabled, .buy-btn.disabled{background:var(--line); color:var(--paper-dim); pointer-events:none;}
+
+  .empty, .loading{
+    text-align:center; padding:60px 20px; color:var(--paper-dim); grid-column:1/-1;
+  }
+
+  footer{border-top:1px solid var(--line); padding:36px 0; color:var(--paper-dim); font-size:0.85rem;}
+  footer .wrap{display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px;}
+  .wa-float{
+    position:fixed; bottom:22px; right:22px; width:56px; height:56px; border-radius:50%;
+    background:var(--whatsapp); display:flex; align-items:center; justify-content:center;
+    box-shadow:0 6px 18px rgba(0,0,0,0.4); z-index:50; text-decoration:none;
+  }
+
+  @media (max-width:640px){
+    .header-row{flex-wrap:wrap;}
+    .search{order:3; width:100%;}
+    .hero{padding:44px 0 30px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap header-row">
+    <a href="#top" class="brand">
+      <svg class="brand-mark" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="40" height="40" rx="8" fill="#f0a93c"/>
+        <path d="M11 10h11a5 5 0 0 1 5 5v15H16a5 5 0 0 1-5-5V10z" fill="#14120f"/>
+        <rect x="11" y="10" width="4" height="20" fill="#c0392b"/>
+      </svg>
+      Libros para <span>Emprendedor</span>
+    </a>
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="searchInput" type="text" placeholder="¿Qué querés aprender hoy?">
+    </div>
+    <a class="cart-btn" id="headerWaBtn" href="#" target="_blank" rel="noopener">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.48 1.32 4.99L2 22l5.25-1.38c1.44.79 3.07 1.2 4.72 1.2h.01c5.46 0 9.91-4.45 9.91-9.91C21.9 6.45 17.5 2 12.04 2Z"/></svg>
+      Consultar
+    </a>
+  </div>
+  <div class="wrap filters" id="filterBar">
+    <button class="pill active" data-cat="__all">Todo el Inventario</button>
+  </div>
+</header>
+
+<section class="hero" id="top">
+  <div class="wrap">
+    <h1>Invertí en tu mente.<br><em>Conquistá tu mercado.</em></h1>
+    <p>Los libros esenciales de negocios, finanzas y liderazgo, seleccionados para emprendedores paraguayos. Reservá por WhatsApp y coordinamos la entrega.</p>
+    <div class="hero-stats">
+      <div class="stat"><b id="statTitles">—</b><span>títulos disponibles</span></div>
+      <div class="stat"><b>100%</b><span>entrega en Paraguay</span></div>
+      <div class="stat"><b>Gs.</b><span>pago contra entrega o transferencia</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="catalog">
+  <div class="wrap">
+    <div class="catalog-head">
+      <h2>Catálogo</h2>
+      <span class="count" id="resultCount"></span>
+    </div>
+    <div class="grid" id="grid">
+      <div class="loading">Cargando inventario…</div>
+    </div>
+  </div>
+</section>
+
+<a class="wa-float" id="floatWaBtn" href="#" target="_blank" rel="noopener" aria-label="Escribinos por WhatsApp">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="#0c1f10"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.48 1.32 4.99L2 22l5.25-1.38c1.44.79 3.07 1.2 4.72 1.2h.01c5.46 0 9.91-4.45 9.91-9.91C21.9 6.45 17.5 2 12.04 2Zm5.79 14.14c-.24.68-1.4 1.3-1.93 1.38-.49.08-1.11.11-1.79-.11-.41-.13-.94-.31-1.62-.6-2.85-1.23-4.71-4.1-4.85-4.29-.14-.19-1.16-1.54-1.16-2.94 0-1.4.73-2.09 1-2.37.26-.29.57-.36.76-.36h.55c.18 0 .41-.07.64.49.24.58.81 2 .88 2.14.07.14.12.31.02.5-.09.19-.14.31-.28.48-.14.16-.29.36-.42.49-.14.14-.28.29-.12.57.16.28.71 1.17 1.53 1.9 1.05.94 1.94 1.23 2.22 1.37.28.14.44.12.6-.07.16-.19.68-.79.87-1.06.18-.28.36-.23.6-.14.24.09 1.55.73 1.82.86.27.14.45.2.51.31.07.12.07.65-.16 1.33Z"/></svg>
+</a>
+
+<footer>
+  <div class="wrap">
+    <span>© <span id="year"></span> Libros para Emprendedor · Paraguay</span>
+    <span>Consultas y pedidos por WhatsApp</span>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   CONFIGURACIÓN — editá estos valores por los tuyos
+   ============================================================ */
+const CONFIG = {
+  // Número de WhatsApp en formato internacional SIN + ni espacios (Paraguay: 595 9XX XXXXXX)
+  WHATSAPP_NUMBER: "595981658895",
+
+  // ID de tu Google Sheet publicada (ver instrucciones). Dejalo vacío ("")
+  // para usar el catálogo de ejemplo mientras armás la planilla.
+  SHEET_ID: "1oNXhSo1TZMseKm0qMzlRu8swZWBAX1W59bcxz6PEx1s",
+  SHEET_NAME: "Catalogo Web"
+};
+
+// Catálogo de ejemplo — se usa solo si no configuraste SHEET_ID
+const SAMPLE_BOOKS = [
+  {id:1, titulo:"Hábitos Atómicos", autor:"James Clear", categoria:"Desarrollo Personal", precio:150000, promo:"", stock:5, estado:"Publico", imagen:""},
+  {id:2, titulo:"Padre Rico Padre Pobre", autor:"Robert T. Kiyosaki", categoria:"Finanzas", precio:90000, promo:"", stock:5, estado:"Publico", imagen:""},
+  {id:3, titulo:"Véndele a la Mente, no a la Gente", autor:"Jürgen Klaric", categoria:"Trading", precio:112000, promo:96000, stock:3, estado:"Publico", imagen:""},
+  {id:4, titulo:"El Club de las 5 AM", autor:"Robin Sharma", categoria:"Productividad", precio:80000, promo:"", stock:0, estado:"Publico", imagen:""},
+];
+
+/* ============================================================
+   LÓGICA — no hace falta tocar de acá para abajo
+   ============================================================ */
+document.getElementById('year').textContent = new Date().getFullYear();
+
+function gs(n){ return "Gs. " + Number(n).toLocaleString('es-PY'); }
+
+function waLink(book){
+  const base = "¡Hola! Quiero consultar por el libro";
+  const msg = book
+    ? `${base} "${book.titulo}"${book.autor ? ' de ' + book.autor : ''}. ¿Está disponible?`
+    : "¡Hola! Quiero consultar por libros del catálogo.";
+  return `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+}
+
+document.getElementById('headerWaBtn').href = waLink();
+document.getElementById('floatWaBtn').href = waLink();
+
+let ALL_BOOKS = [];
+let activeCat = "__all";
+let searchTerm = "";
+
+function toNumber(raw){
+  // Limpia texto tipo "Gs. 95,000.00" o "95.000,00" y lo convierte en un número real.
+  if(raw === undefined || raw === null || raw === "") return NaN;
+  if(typeof raw === 'number') return raw;
+  let s = String(raw).trim().replace(/[^\d.,-]/g, ''); // saca letras, "Gs.", espacios
+  const lastComma = s.lastIndexOf(',');
+  const lastDot = s.lastIndexOf('.');
+  if(lastComma > -1 && lastDot > -1){
+    // Tiene ambos separadores: el que aparece último es el decimal, el otro es de miles.
+    if(lastComma > lastDot){
+      s = s.replace(/\./g, '').replace(',', '.');
+    }else{
+      s = s.replace(/,/g, '');
+    }
+  }else if(lastComma > -1){
+    // Solo coma: si tiene 3 dígitos después, la tratamos como separador de miles.
+    const decimals = s.length - lastComma - 1;
+    s = decimals === 3 ? s.replace(/,/g, '') : s.replace(',', '.');
+  }else{
+    // Solo punto (o ninguno): si tiene 3 dígitos después, es separador de miles.
+    const decimals = s.length - lastDot - 1;
+    if(lastDot > -1 && decimals === 3) s = s.replace(/\./g, '');
+  }
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
+
+function normalize(book){
+  return {
+    id: book.id || book.ID,
+    titulo: book.titulo || book.Titulo || book.TITULO || "",
+    autor: book.autor || book.Autor || "",
+    categoria: book.categoria || book.Categoria || "General",
+    precio: toNumber(book.precio || book.Precio),
+    promo: (book.promo || book.Promo || book.PrecioPromo || "") === "" ? "" : toNumber(book.promo || book.Promo || book.PrecioPromo),
+    stock: toNumber(book.stock || book.Stock),
+    estado: (book.estado || book.Estado || "Publico"),
+    imagen: book.imagen || book.Imagen || ""
+  };
+}
+
+async function loadBooks(){
+  if(!CONFIG.SHEET_ID){
+    ALL_BOOKS = SAMPLE_BOOKS.map(normalize);
+    render();
+    return;
+  }
+  try{
+    const url = `https://opensheet.elk.sh/${CONFIG.SHEET_ID}/${encodeURIComponent(CONFIG.SHEET_NAME)}`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error("No se pudo leer la planilla");
+    const data = await res.json();
+    ALL_BOOKS = data.map(normalize);
+  }catch(e){
+    console.error(e);
+    ALL_BOOKS = SAMPLE_BOOKS.map(normalize);
+  }
+  render();
+}
+
+function buildFilters(){
+  const cats = Array.from(new Set(ALL_BOOKS.map(b => b.categoria).filter(Boolean)));
+  const bar = document.getElementById('filterBar');
+  bar.innerHTML = `<button class="pill ${activeCat==='__all'?'active':''}" data-cat="__all">Todo el Inventario</button>`;
+  cats.forEach(cat => {
+    bar.innerHTML += `<button class="pill ${activeCat===cat?'active':''}" data-cat="${cat}">${cat}</button>`;
+  });
+  bar.querySelectorAll('.pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeCat = btn.dataset.cat;
+      render();
+    });
+  });
+}
+
+function render(){
+  buildFilters();
+  const visible = ALL_BOOKS.filter(b => b.estado.toLowerCase() !== 'oculto');
+  document.getElementById('statTitles').textContent = visible.length;
+
+  let filtered = visible.filter(b => activeCat === '__all' || b.categoria === activeCat);
+  if(searchTerm.trim()){
+    const t = searchTerm.toLowerCase();
+    filtered = filtered.filter(b => b.titulo.toLowerCase().includes(t) || b.autor.toLowerCase().includes(t));
+  }
+
+  const grid = document.getElementById('grid');
+  document.getElementById('resultCount').textContent = `${filtered.length} resultado${filtered.length===1?'':'s'}`;
+
+  if(filtered.length === 0){
+    grid.innerHTML = `<div class="empty">No encontramos libros con ese criterio. Probá con otra búsqueda o categoría.</div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(b => {
+    const agotado = b.stock <= 0;
+    const hasPromo = b.promo !== "" && !isNaN(b.promo) && b.promo < b.precio;
+    return `
+    <div class="card">
+      ${hasPromo ? `<span class="badge">PROMO</span>` : ''}
+      ${agotado ? `<span class="badge agotado">AGOTADO</span>` : ''}
+      <div class="cover">
+        ${b.imagen ? `<img src="${b.imagen}" alt="${b.titulo}" loading="lazy">` : `<span>${b.titulo}</span>`}
+      </div>
+      <div class="card-body">
+        <span class="card-cat">${b.categoria}</span>
+        <span class="card-title">${b.titulo}</span>
+        <span class="card-author">${b.autor}</span>
+        <div class="price-row">
+          <span class="price">${gs(hasPromo ? b.promo : b.precio)}</span>
+          ${hasPromo ? `<span class="price-old">${gs(b.precio)}</span>` : ''}
+        </div>
+        <a class="buy-btn ${agotado?'disabled':''}" href="${agotado ? '#' : waLink(b)}" target="_blank" rel="noopener">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.48 1.32 4.99L2 22l5.25-1.38c1.44.79 3.07 1.2 4.72 1.2h.01c5.46 0 9.91-4.45 9.91-9.91C21.9 6.45 17.5 2 12.04 2Z"/></svg>
+          ${agotado ? 'Sin stock' : 'Reservar por WhatsApp'}
+        </a>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  searchTerm = e.target.value;
+  render();
+});
+
+loadBooks();
+</script>
+</body>
+</html>
