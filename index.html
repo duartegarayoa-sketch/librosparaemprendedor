@@ -90,6 +90,25 @@
   .stat b{display:block; font-size:1.6rem; font-family:'Space Grotesk',sans-serif; color:var(--gold);}
   .stat span{font-size:0.82rem; color:var(--paper-dim);}
 
+  /* ---------- carruseles ---------- */
+  .carousel-section{padding:36px 0 8px;}
+  .carousel-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;}
+  .carousel-head h2{font-size:1.3rem; margin:0;}
+  .carousel-arrows{display:flex; gap:8px;}
+  .arrow-btn{
+    width:36px; height:36px; border-radius:50%; border:1px solid var(--line);
+    background:var(--bg-elevated); color:var(--paper); cursor:pointer;
+    display:flex; align-items:center; justify-content:center; transition:all .15s;
+  }
+  .arrow-btn:hover{background:var(--gold); color:#1c1204; border-color:var(--gold);}
+  .carousel-track{
+    display:flex; gap:18px; overflow-x:auto; scroll-snap-type:x proximity;
+    scrollbar-width:none; padding-bottom:6px;
+  }
+  .carousel-track::-webkit-scrollbar{display:none;}
+  .carousel-track .card{flex:0 0 200px; scroll-snap-align:start;}
+  .carousel-empty{color:var(--paper-dim); font-size:0.9rem; padding:14px 0;}
+
   /* ---------- catálogo ---------- */
   .catalog{padding:44px 0 80px;}
   .catalog-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:22px; gap:12px; flex-wrap:wrap;}
@@ -188,6 +207,32 @@
   </div>
 </section>
 
+<section class="carousel-section" id="masVendidosSection" style="display:none;">
+  <div class="wrap">
+    <div class="carousel-head">
+      <h2>🔥 Más Vendidos</h2>
+      <div class="carousel-arrows">
+        <button class="arrow-btn" data-scroll="masVendidosTrack" data-dir="-1" aria-label="Anterior">‹</button>
+        <button class="arrow-btn" data-scroll="masVendidosTrack" data-dir="1" aria-label="Siguiente">›</button>
+      </div>
+    </div>
+    <div class="carousel-track" id="masVendidosTrack"></div>
+  </div>
+</section>
+
+<section class="carousel-section" id="ultimosIngresosSection" style="display:none;">
+  <div class="wrap">
+    <div class="carousel-head">
+      <h2>✨ Últimos Ingresos</h2>
+      <div class="carousel-arrows">
+        <button class="arrow-btn" data-scroll="ultimosIngresosTrack" data-dir="-1" aria-label="Anterior">‹</button>
+        <button class="arrow-btn" data-scroll="ultimosIngresosTrack" data-dir="1" aria-label="Siguiente">›</button>
+      </div>
+    </div>
+    <div class="carousel-track" id="ultimosIngresosTrack"></div>
+  </div>
+</section>
+
 <section class="catalog">
   <div class="wrap">
     <div class="catalog-head">
@@ -217,7 +262,7 @@
    ============================================================ */
 const CONFIG = {
   // Número de WhatsApp en formato internacional SIN + ni espacios (Paraguay: 595 9XX XXXXXX)
-  WHATSAPP_NUMBER: "595981658895",
+  WHATSAPP_NUMBER: "595981000000",
 
   // ID de tu Google Sheet publicada (ver instrucciones). Dejalo vacío ("")
   // para usar el catálogo de ejemplo mientras armás la planilla.
@@ -227,10 +272,10 @@ const CONFIG = {
 
 // Catálogo de ejemplo — se usa solo si no configuraste SHEET_ID
 const SAMPLE_BOOKS = [
-  {id:1, titulo:"Hábitos Atómicos", autor:"James Clear", categoria:"Desarrollo Personal", precio:150000, promo:"", stock:5, estado:"Publico", imagen:""},
-  {id:2, titulo:"Padre Rico Padre Pobre", autor:"Robert T. Kiyosaki", categoria:"Finanzas", precio:90000, promo:"", stock:5, estado:"Publico", imagen:""},
-  {id:3, titulo:"Véndele a la Mente, no a la Gente", autor:"Jürgen Klaric", categoria:"Trading", precio:112000, promo:96000, stock:3, estado:"Publico", imagen:""},
-  {id:4, titulo:"El Club de las 5 AM", autor:"Robin Sharma", categoria:"Productividad", precio:80000, promo:"", stock:0, estado:"Publico", imagen:""},
+  {id:1, titulo:"Hábitos Atómicos", autor:"James Clear", categoria:"Desarrollo Personal", precio:150000, promo:"", stock:5, estado:"Publico", imagen:"", masVendido:"SI", ultimoIngreso:""},
+  {id:2, titulo:"Padre Rico Padre Pobre", autor:"Robert T. Kiyosaki", categoria:"Finanzas", precio:90000, promo:"", stock:5, estado:"Publico", imagen:"", masVendido:"SI", ultimoIngreso:""},
+  {id:3, titulo:"Véndele a la Mente, no a la Gente", autor:"Jürgen Klaric", categoria:"Trading", precio:112000, promo:96000, stock:3, estado:"Publico", imagen:"", masVendido:"", ultimoIngreso:"SI"},
+  {id:4, titulo:"El Club de las 5 AM", autor:"Robin Sharma", categoria:"Productividad", precio:80000, promo:"", stock:0, estado:"Publico", imagen:"", masVendido:"", ultimoIngreso:"SI"},
 ];
 
 /* ============================================================
@@ -282,6 +327,11 @@ function toNumber(raw){
   return isNaN(n) ? 0 : n;
 }
 
+function isTruthy(v){
+  const s = String(v || "").trim().toLowerCase();
+  return s === "si" || s === "sí" || s === "true" || s === "1" || s === "x" || s === "yes";
+}
+
 function normalize(book){
   return {
     id: book.id || book.ID,
@@ -292,7 +342,9 @@ function normalize(book){
     promo: (book.promo || book.Promo || book.PrecioPromo || "") === "" ? "" : toNumber(book.promo || book.Promo || book.PrecioPromo),
     stock: toNumber(book.stock || book.Stock),
     estado: (book.estado || book.Estado || "Publico"),
-    imagen: book.imagen || book.Imagen || ""
+    imagen: book.imagen || book.Imagen || "",
+    masVendido: isTruthy(book.masVendido || book.MasVendido),
+    ultimoIngreso: isTruthy(book.ultimoIngreso || book.UltimoIngreso)
   };
 }
 
@@ -330,29 +382,10 @@ function buildFilters(){
   });
 }
 
-function render(){
-  buildFilters();
-  const visible = ALL_BOOKS.filter(b => b.estado.toLowerCase() !== 'oculto');
-  document.getElementById('statTitles').textContent = visible.length;
-
-  let filtered = visible.filter(b => activeCat === '__all' || b.categoria === activeCat);
-  if(searchTerm.trim()){
-    const t = searchTerm.toLowerCase();
-    filtered = filtered.filter(b => b.titulo.toLowerCase().includes(t) || b.autor.toLowerCase().includes(t));
-  }
-
-  const grid = document.getElementById('grid');
-  document.getElementById('resultCount').textContent = `${filtered.length} resultado${filtered.length===1?'':'s'}`;
-
-  if(filtered.length === 0){
-    grid.innerHTML = `<div class="empty">No encontramos libros con ese criterio. Probá con otra búsqueda o categoría.</div>`;
-    return;
-  }
-
-  grid.innerHTML = filtered.map(b => {
-    const agotado = b.stock <= 0;
-    const hasPromo = b.promo !== "" && !isNaN(b.promo) && b.promo < b.precio;
-    return `
+function cardHTML(b){
+  const agotado = b.stock <= 0;
+  const hasPromo = b.promo !== "" && !isNaN(b.promo) && b.promo < b.precio;
+  return `
     <div class="card">
       ${hasPromo ? `<span class="badge">PROMO</span>` : ''}
       ${agotado ? `<span class="badge agotado">AGOTADO</span>` : ''}
@@ -373,7 +406,60 @@ function render(){
         </a>
       </div>
     </div>`;
-  }).join('');
+}
+
+function renderCarousels(visible){
+  const masVendidos = visible.filter(b => b.masVendido);
+  const ultimosIngresos = visible.filter(b => b.ultimoIngreso);
+
+  const mvSection = document.getElementById('masVendidosSection');
+  const uiSection = document.getElementById('ultimosIngresosSection');
+
+  if(masVendidos.length > 0){
+    mvSection.style.display = '';
+    document.getElementById('masVendidosTrack').innerHTML = masVendidos.map(cardHTML).join('');
+  }else{
+    mvSection.style.display = 'none';
+  }
+
+  if(ultimosIngresos.length > 0){
+    uiSection.style.display = '';
+    document.getElementById('ultimosIngresosTrack').innerHTML = ultimosIngresos.map(cardHTML).join('');
+  }else{
+    uiSection.style.display = 'none';
+  }
+}
+
+document.querySelectorAll('.arrow-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const track = document.getElementById(btn.dataset.scroll);
+    const dir = Number(btn.dataset.dir);
+    track.scrollBy({ left: dir * 420, behavior: 'smooth' });
+  });
+});
+
+function render(){
+  buildFilters();
+  const visible = ALL_BOOKS.filter(b => b.estado.toLowerCase() !== 'oculto');
+  document.getElementById('statTitles').textContent = visible.length;
+
+  renderCarousels(visible);
+
+  let filtered = visible.filter(b => activeCat === '__all' || b.categoria === activeCat);
+  if(searchTerm.trim()){
+    const t = searchTerm.toLowerCase();
+    filtered = filtered.filter(b => b.titulo.toLowerCase().includes(t) || b.autor.toLowerCase().includes(t));
+  }
+
+  const grid = document.getElementById('grid');
+  document.getElementById('resultCount').textContent = `${filtered.length} resultado${filtered.length===1?'':'s'}`;
+
+  if(filtered.length === 0){
+    grid.innerHTML = `<div class="empty">No encontramos libros con ese criterio. Probá con otra búsqueda o categoría.</div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(cardHTML).join('');
 }
 
 document.getElementById('searchInput').addEventListener('input', (e) => {
