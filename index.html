@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Libros para Emprendedor | Paraguay</title>
-<meta name="description" content="Catálogo de libros para emprendedores en Paraguay. Desarrollo personal, finanzas, liderazgo y más. Compra directa por WhatsApp.">
+<meta name="description" content="Catálogo de libros para emprendedores en Paraguay. Promo 3x2 en toda la tienda. Compra directa por WhatsApp.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -38,7 +38,9 @@
   h1,h2,h3,.brand,.btn,.pill{font-family:'Space Grotesk',system-ui,sans-serif;}
   a{color:inherit;}
   img{max-width:100%;display:block;}
+  button{font-family:inherit;}
   .wrap{max-width:var(--maxw); margin:0 auto; padding:0 24px;}
+  .visually-hidden{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0);}
 
   /* ---------- header ---------- */
   header{
@@ -47,12 +49,14 @@
     backdrop-filter:blur(8px);
     border-bottom:1px solid var(--line);
   }
-  .header-row{display:flex; align-items:center; gap:20px; padding:16px 0;}
-  .brand{display:flex; align-items:center; gap:10px; font-weight:700; font-size:1.15rem; white-space:nowrap; text-decoration:none;}
+  .header-row{display:flex; align-items:center; gap:16px; padding:16px 0;}
+  .brand{display:flex; align-items:center; gap:10px; font-weight:700; font-size:1.15rem; white-space:nowrap; text-decoration:none; cursor:pointer; border:none; background:none; color:inherit;}
   .brand-mark{width:34px; height:34px; flex-shrink:0;}
   .brand span{color:var(--gold);}
+
+  .search-wrap{flex:1; position:relative; min-width:0;}
   .search{
-    flex:1; display:flex; align-items:center; gap:10px;
+    display:flex; align-items:center; gap:10px;
     background:var(--bg-elevated); border:1px solid var(--line); border-radius:999px;
     padding:10px 16px; min-width:0;
   }
@@ -62,13 +66,50 @@
   }
   .search input::placeholder{color:var(--paper-dim);}
   .search svg{flex-shrink:0; opacity:0.6;}
-  .cart-btn{
+
+  .search-dropdown{
+    position:absolute; top:calc(100% + 8px); left:0; right:0; z-index:60;
+    background:var(--bg-elevated); border:1px solid var(--line); border-radius:12px;
+    box-shadow:0 18px 40px rgba(0,0,0,0.5); overflow:hidden; display:none;
+  }
+  .search-dropdown.open{display:block;}
+  .sd-row{
+    display:flex; align-items:center; gap:12px; padding:10px 14px; cursor:pointer;
+    border-bottom:1px solid var(--line); transition:background .1s;
+  }
+  .sd-row:last-of-type{border-bottom:none;}
+  .sd-row:hover, .sd-row:focus{background:rgba(240,169,60,0.1); outline:none;}
+  .sd-thumb{width:36px; height:48px; flex-shrink:0; border-radius:4px; object-fit:cover; background:var(--card);}
+  .sd-info{min-width:0; flex:1;}
+  .sd-title{font-size:0.88rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .sd-price{font-size:0.8rem; color:var(--gold); display:flex; align-items:center; gap:6px;}
+  .sd-tag{background:var(--red-tag); color:#fff; font-size:0.6rem; font-weight:700; padding:2px 6px; border-radius:4px;}
+  .sd-footer{
+    display:block; width:100%; text-align:left; padding:12px 14px; background:var(--bg);
+    color:var(--gold); font-size:0.85rem; font-weight:600; border:none; cursor:pointer;
+  }
+  .sd-footer:hover{background:#100e0b;}
+  .sd-empty{padding:18px 14px; color:var(--paper-dim); font-size:0.88rem;}
+
+  .header-actions{display:flex; align-items:center; gap:10px;}
+  .icon-btn{
+    position:relative; display:flex; align-items:center; justify-content:center;
+    width:42px; height:42px; border-radius:50%; border:1px solid var(--line);
+    background:var(--bg-elevated); color:var(--paper); cursor:pointer; transition:all .15s;
+  }
+  .icon-btn:hover{border-color:var(--gold);}
+  .cart-count{
+    position:absolute; top:-4px; right:-4px; background:var(--gold); color:#1c1204;
+    font-size:0.68rem; font-weight:700; min-width:18px; height:18px; border-radius:999px;
+    display:flex; align-items:center; justify-content:center; padding:0 4px;
+  }
+  .cart-btn-text{
     display:flex; align-items:center; gap:8px;
     background:var(--whatsapp); color:#0c1f10; text-decoration:none;
     padding:10px 18px; border-radius:999px; font-weight:700; font-size:0.9rem;
-    white-space:nowrap; transition:filter .15s;
+    white-space:nowrap; transition:filter .15s; border:none; cursor:pointer;
   }
-  .cart-btn:hover{filter:brightness(1.08);}
+  .cart-btn-text:hover{filter:brightness(1.08);}
 
   .filters{display:flex; gap:10px; padding:14px 0; overflow-x:auto; scrollbar-width:none;}
   .filters::-webkit-scrollbar{display:none;}
@@ -79,16 +120,17 @@
   }
   .pill.active, .pill:hover{background:var(--gold); color:#1c1204; border-color:var(--gold);}
 
-  /* ---------- hero ---------- */
-  .hero{padding:64px 0 40px; border-bottom:1px solid var(--line);}
-  .hero h1{
-    font-size:clamp(2.1rem, 5vw, 3.4rem); line-height:1.08; margin:0 0 18px; max-width:14ch;
+  /* ---------- hero banner 3x2 ---------- */
+  .hero-banner{display:block; position:relative; border-bottom:1px solid var(--line); background:#0d0c0a;}
+  .hero-banner picture, .hero-banner img{width:100%; display:block;}
+  .hero-banner img{aspect-ratio:1980/812; object-fit:cover;}
+  @media (max-width:768px){
+    .hero-banner img{aspect-ratio:941/1024;}
   }
-  .hero h1 em{font-style:normal; color:var(--gold);}
-  .hero p{color:var(--paper-dim); max-width:52ch; font-size:1.05rem; margin:0 0 26px;}
+  .hero-stats-bar{padding:18px 0; border-bottom:1px solid var(--line);}
   .hero-stats{display:flex; gap:32px; flex-wrap:wrap;}
-  .stat b{display:block; font-size:1.6rem; font-family:'Space Grotesk',sans-serif; color:var(--gold);}
-  .stat span{font-size:0.82rem; color:var(--paper-dim);}
+  .stat b{display:block; font-size:1.4rem; font-family:'Space Grotesk',sans-serif; color:var(--gold);}
+  .stat span{font-size:0.8rem; color:var(--paper-dim);}
 
   /* ---------- carruseles ---------- */
   .carousel-section{padding:36px 0 8px;}
@@ -107,7 +149,6 @@
   }
   .carousel-track::-webkit-scrollbar{display:none;}
   .carousel-track .card{flex:0 0 200px; scroll-snap-align:start;}
-  .carousel-empty{color:var(--paper-dim); font-size:0.9rem; padding:14px 0;}
 
   /* ---------- catálogo ---------- */
   .catalog{padding:44px 0 80px;}
@@ -127,6 +168,7 @@
   .card .cover{
     aspect-ratio:3/4; width:100%; object-fit:cover; background:linear-gradient(155deg,#2a251c,#191712);
     display:flex; align-items:center; justify-content:center; color:var(--paper-dim); font-size:0.8rem; text-align:center; padding:12px;
+    cursor:pointer;
   }
   .card .cover img{width:100%; height:100%; object-fit:cover;}
   .badge{
@@ -136,14 +178,14 @@
   .badge.agotado{background:#54504a;}
   .card-body{padding:14px 14px 16px; display:flex; flex-direction:column; gap:6px; flex:1;}
   .card-cat{font-size:0.7rem; color:var(--gold); font-weight:600; text-transform:uppercase; letter-spacing:.04em;}
-  .card-title{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:0.98rem; line-height:1.28;}
+  .card-title{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:0.98rem; line-height:1.28; cursor:pointer; background:none; border:none; color:inherit; text-align:left; padding:0;}
   .card-author{color:var(--paper-dim); font-size:0.82rem; margin-bottom:4px;}
   .price-row{display:flex; align-items:baseline; gap:8px; margin-top:auto;}
   .price{font-weight:700; font-size:1.05rem;}
   .price-old{color:var(--paper-dim); text-decoration:line-through; font-size:0.82rem;}
   .buy-btn{
     margin-top:10px; display:flex; align-items:center; justify-content:center; gap:8px;
-    background:var(--whatsapp); color:#0c1f10; border:none; border-radius:8px;
+    background:var(--gold); color:#1c1204; border:none; border-radius:8px;
     padding:10px; font-weight:700; font-size:0.85rem; cursor:pointer; text-decoration:none;
     transition:filter .15s;
   }
@@ -162,10 +204,103 @@
     box-shadow:0 6px 18px rgba(0,0,0,0.4); z-index:50; text-decoration:none;
   }
 
+  /* ---------- carrito (drawer) ---------- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:70; display:none;
+  }
+  .overlay.open{display:block;}
+  .cart-drawer{
+    position:fixed; top:0; right:0; bottom:0; width:min(420px,100vw); background:var(--bg-elevated);
+    z-index:80; box-shadow:-12px 0 30px rgba(0,0,0,0.4); transform:translateX(100%);
+    transition:transform .25s ease; display:flex; flex-direction:column;
+  }
+  .cart-drawer.open{transform:translateX(0);}
+  .cart-head{display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid var(--line);}
+  .cart-head h2{font-size:1.15rem; margin:0;}
+  .cart-close{background:none; border:none; color:var(--paper); font-size:1.4rem; cursor:pointer; line-height:1;}
+  .cart-items{flex:1; overflow-y:auto; padding:14px 20px;}
+  .cart-item{display:flex; gap:12px; padding:14px 0; border-bottom:1px solid var(--line);}
+  .cart-item img{width:52px; height:70px; object-fit:cover; border-radius:5px; background:var(--card); flex-shrink:0;}
+  .ci-info{flex:1; min-width:0;}
+  .ci-title{font-size:0.9rem; font-weight:600; margin-bottom:2px;}
+  .ci-price{font-size:0.82rem; color:var(--paper-dim);}
+  .ci-free{color:var(--gold); font-weight:700; font-size:0.78rem;}
+  .ci-qty{display:flex; align-items:center; gap:8px; margin-top:8px;}
+  .qty-btn{
+    width:26px; height:26px; border-radius:6px; border:1px solid var(--line); background:var(--bg);
+    color:var(--paper); cursor:pointer; font-size:0.9rem; display:flex; align-items:center; justify-content:center;
+  }
+  .qty-btn:hover{border-color:var(--gold);}
+  .ci-remove{background:none; border:none; color:var(--paper-dim); font-size:0.78rem; text-decoration:underline; cursor:pointer; margin-left:auto;}
+  .cart-empty{color:var(--paper-dim); text-align:center; padding:40px 10px; font-size:0.9rem;}
+  .cart-footer{padding:16px 20px 20px; border-top:1px solid var(--line);}
+  .cart-line{display:flex; justify-content:space-between; font-size:0.88rem; color:var(--paper-dim); margin-bottom:6px;}
+  .cart-line.discount{color:var(--gold);}
+  .cart-total{display:flex; justify-content:space-between; font-size:1.15rem; font-weight:700; margin:10px 0 16px;}
+  .cart-3x2-note{background:rgba(240,169,60,0.1); border:1px solid var(--gold-dim); border-radius:8px; padding:10px 12px; font-size:0.8rem; color:var(--gold); margin-bottom:14px;}
+  .checkout-btn{
+    width:100%; background:var(--whatsapp); color:#0c1f10; border:none; border-radius:8px;
+    padding:13px; font-weight:700; font-size:0.95rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .checkout-btn:hover{filter:brightness(1.08);}
+  .checkout-btn:disabled{background:var(--line); color:var(--paper-dim); pointer-events:none;}
+
+  /* ---------- página de detalle de producto (PDP) ---------- */
+  .pdp{padding:36px 0 80px; display:none;}
+  .pdp.open{display:block;}
+  .pdp-back{background:none; border:none; color:var(--paper-dim); cursor:pointer; font-size:0.88rem; margin-bottom:18px; display:inline-flex; align-items:center; gap:6px;}
+  .pdp-back:hover{color:var(--gold);}
+  .pdp-grid{display:grid; grid-template-columns:1fr; gap:36px; margin-bottom:56px;}
+  @media (min-width:768px){ .pdp-grid{grid-template-columns:1fr 1fr;} }
+  .pdp-gallery{background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden; aspect-ratio:3/4; display:flex; align-items:center; justify-content:center;}
+  .pdp-gallery img{width:100%; height:100%; object-fit:cover;}
+  .pdp-gallery span{color:var(--paper-dim); padding:20px; text-align:center;}
+  .pdp-cat{color:var(--gold); font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em;}
+  .pdp-title{font-size:clamp(1.6rem,3.4vw,2.2rem); margin:8px 0 6px; line-height:1.15;}
+  .pdp-author{color:var(--paper-dim); margin-bottom:16px;}
+  .pdp-social{background:var(--bg-elevated); border:1px solid var(--line); border-radius:8px; padding:10px 14px; font-size:0.85rem; color:var(--paper-dim); margin-bottom:18px;}
+  .pdp-price-block{margin-bottom:18px;}
+  .pdp-price-row{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;}
+  .pdp-price{font-size:2rem; font-weight:700; font-family:'Space Grotesk',sans-serif;}
+  .pdp-price-old{color:var(--paper-dim); text-decoration:line-through; font-size:1.1rem;}
+  .pdp-discount-badge{background:var(--red-tag); color:#fff; font-size:0.75rem; font-weight:700; padding:3px 9px; border-radius:5px;}
+  .pdp-transfer-note{font-size:0.82rem; color:var(--paper-dim); margin-top:4px;}
+  .pdp-3x2-banner{background:rgba(240,169,60,0.12); border:1px solid var(--gold-dim); border-radius:8px; padding:10px 14px; font-size:0.85rem; color:var(--gold); margin-bottom:18px; font-weight:600;}
+  .qty-selector{display:flex; align-items:center; gap:10px; margin-bottom:16px;}
+  .qty-selector .qty-btn{width:38px; height:38px; font-size:1.1rem;}
+  .qty-selector input{width:48px; text-align:center; background:var(--bg-elevated); border:1px solid var(--line); border-radius:6px; color:var(--paper); font-size:1rem; padding:8px 4px;}
+  .pdp-add-btn{
+    width:100%; background:var(--gold); color:#1c1204; border:none; border-radius:10px;
+    padding:15px; font-weight:700; font-size:1rem; cursor:pointer; margin-bottom:18px;
+  }
+  .pdp-add-btn:hover{filter:brightness(1.08);}
+  .pdp-add-btn:disabled{background:var(--line); color:var(--paper-dim);}
+  .trust-list{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; font-size:0.85rem; color:var(--paper-dim);}
+  .trust-list li{display:flex; align-items:center; gap:8px;}
+  .trust-list svg{flex-shrink:0; color:var(--gold);}
+
+  .pdp-section{margin-bottom:44px;}
+  .pdp-section h2{font-size:1.3rem; margin-bottom:16px;}
+  .pdp-section p{color:var(--paper-dim); line-height:1.7;}
+  .ficha-table{width:100%; border-collapse:collapse; font-size:0.9rem;}
+  .ficha-table tr{border-bottom:1px solid var(--line);}
+  .ficha-table td{padding:10px 4px; color:var(--paper-dim);}
+  .ficha-table td:first-child{color:var(--paper); font-weight:600; width:40%;}
+
+  details.faq-item{border-bottom:1px solid var(--line); padding:14px 0;}
+  details.faq-item summary{cursor:pointer; font-weight:600; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+  details.faq-item summary::-webkit-details-marker{display:none;}
+  details.faq-item summary::after{content:'+'; font-size:1.3rem; color:var(--gold); flex-shrink:0; margin-left:12px;}
+  details.faq-item[open] summary::after{content:'–';}
+  details.faq-item p{margin:10px 0 0; color:var(--paper-dim); font-size:0.9rem; line-height:1.6;}
+
+  .reviews-summary{display:flex; gap:24px; align-items:center; margin-bottom:20px; flex-wrap:wrap;}
+  .reviews-empty{background:var(--bg-elevated); border:1px solid var(--line); border-radius:10px; padding:24px; text-align:center; color:var(--paper-dim);}
+  .reviews-empty a{color:var(--gold); font-weight:600;}
+
   @media (max-width:640px){
     .header-row{flex-wrap:wrap;}
-    .search{order:3; width:100%;}
-    .hero{padding:44px 0 30px;}
+    .search-wrap{order:3; width:100%; flex-basis:100%;}
   }
 </style>
 </head>
@@ -173,77 +308,102 @@
 
 <header>
   <div class="wrap header-row">
-    <a href="#top" class="brand">
+    <button class="brand" onclick="navigateToCatalog()">
       <svg class="brand-mark" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect width="40" height="40" rx="8" fill="#f0a93c"/>
         <path d="M11 10h11a5 5 0 0 1 5 5v15H16a5 5 0 0 1-5-5V10z" fill="#14120f"/>
         <rect x="11" y="10" width="4" height="20" fill="#c0392b"/>
       </svg>
       Libros para <span>Emprendedor</span>
-    </a>
-    <div class="search">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      <input id="searchInput" type="text" placeholder="¿Qué querés aprender hoy?">
+    </button>
+
+    <div class="search-wrap">
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="searchInput" type="text" placeholder="¿Qué querés aprender hoy?" autocomplete="off">
+      </div>
+      <div class="search-dropdown" id="searchDropdown"></div>
     </div>
-    <a class="cart-btn" id="headerWaBtn" href="#" target="_blank" rel="noopener">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.48 1.32 4.99L2 22l5.25-1.38c1.44.79 3.07 1.2 4.72 1.2h.01c5.46 0 9.91-4.45 9.91-9.91C21.9 6.45 17.5 2 12.04 2Z"/></svg>
-      Consultar
-    </a>
+
+    <div class="header-actions">
+      <a class="icon-btn" id="headerWaBtn" href="#" target="_blank" rel="noopener" aria-label="Consultar por WhatsApp">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.48 1.32 4.99L2 22l5.25-1.38c1.44.79 3.07 1.2 4.72 1.2h.01c5.46 0 9.91-4.45 9.91-9.91C21.9 6.45 17.5 2 12.04 2Z"/></svg>
+      </a>
+      <button class="icon-btn" id="cartToggleBtn" aria-label="Ver carrito">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="cart-count" id="cartCount" style="display:none;">0</span>
+      </button>
+    </div>
   </div>
   <div class="wrap filters" id="filterBar">
     <button class="pill active" data-cat="__all">Todo el Inventario</button>
   </div>
 </header>
 
-<section class="hero" id="top">
-  <div class="wrap">
-    <h1>Invertí en tu mente.<br><em>Conquistá tu mercado.</em></h1>
-    <p>Los libros esenciales de negocios, finanzas y liderazgo, seleccionados para emprendedores paraguayos. Reservá por WhatsApp y coordinamos la entrega.</p>
-    <div class="hero-stats">
+<!-- ============ VISTA CATÁLOGO ============ -->
+<div id="catalogView">
+
+  <a class="hero-banner" href="#catalogo" aria-label="Ver promoción 3x2 en toda la tienda">
+    <picture>
+      <source media="(max-width: 768px)" srcset="imagenes/hero-mobile.png">
+      <img src="imagenes/hero-desktop.png" alt="Promoción 3x2 en toda la tienda — Libros para Emprendedor Paraguay" loading="eager" fetchpriority="high" width="1980" height="812">
+    </picture>
+  </a>
+
+  <div class="hero-stats-bar">
+    <div class="wrap hero-stats">
       <div class="stat"><b id="statTitles">—</b><span>títulos disponibles</span></div>
-      <div class="stat"><b>100%</b><span>entrega en Paraguay</span></div>
+      <div class="stat"><b>3x2</b><span>en toda la tienda, tiempo limitado</span></div>
       <div class="stat"><b>Gs.</b><span>pago contra entrega o transferencia</span></div>
     </div>
   </div>
-</section>
 
-<section class="carousel-section" id="masVendidosSection" style="display:none;">
-  <div class="wrap">
-    <div class="carousel-head">
-      <h2>🔥 Más Vendidos</h2>
-      <div class="carousel-arrows">
-        <button class="arrow-btn" data-scroll="masVendidosTrack" data-dir="-1" aria-label="Anterior">‹</button>
-        <button class="arrow-btn" data-scroll="masVendidosTrack" data-dir="1" aria-label="Siguiente">›</button>
+  <section class="carousel-section" id="masVendidosSection" style="display:none;">
+    <div class="wrap">
+      <div class="carousel-head">
+        <h2>🔥 Más Vendidos</h2>
+        <div class="carousel-arrows">
+          <button class="arrow-btn" data-scroll="masVendidosTrack" data-dir="-1" aria-label="Anterior">‹</button>
+          <button class="arrow-btn" data-scroll="masVendidosTrack" data-dir="1" aria-label="Siguiente">›</button>
+        </div>
+      </div>
+      <div class="carousel-track" id="masVendidosTrack"></div>
+    </div>
+  </section>
+
+  <section class="carousel-section" id="ultimosIngresosSection" style="display:none;">
+    <div class="wrap">
+      <div class="carousel-head">
+        <h2>✨ Últimos Ingresos</h2>
+        <div class="carousel-arrows">
+          <button class="arrow-btn" data-scroll="ultimosIngresosTrack" data-dir="-1" aria-label="Anterior">‹</button>
+          <button class="arrow-btn" data-scroll="ultimosIngresosTrack" data-dir="1" aria-label="Siguiente">›</button>
+        </div>
+      </div>
+      <div class="carousel-track" id="ultimosIngresosTrack"></div>
+    </div>
+  </section>
+
+  <section class="catalog" id="catalogo">
+    <div class="wrap">
+      <div class="catalog-head">
+        <h2>Catálogo</h2>
+        <span class="count" id="resultCount"></span>
+      </div>
+      <div class="grid" id="grid">
+        <div class="loading">Cargando inventario…</div>
       </div>
     </div>
-    <div class="carousel-track" id="masVendidosTrack"></div>
-  </div>
-</section>
+  </section>
+</div>
 
-<section class="carousel-section" id="ultimosIngresosSection" style="display:none;">
-  <div class="wrap">
-    <div class="carousel-head">
-      <h2>✨ Últimos Ingresos</h2>
-      <div class="carousel-arrows">
-        <button class="arrow-btn" data-scroll="ultimosIngresosTrack" data-dir="-1" aria-label="Anterior">‹</button>
-        <button class="arrow-btn" data-scroll="ultimosIngresosTrack" data-dir="1" aria-label="Siguiente">›</button>
-      </div>
-    </div>
-    <div class="carousel-track" id="ultimosIngresosTrack"></div>
-  </div>
-</section>
-
-<section class="catalog">
-  <div class="wrap">
-    <div class="catalog-head">
-      <h2>Catálogo</h2>
-      <span class="count" id="resultCount"></span>
-    </div>
-    <div class="grid" id="grid">
-      <div class="loading">Cargando inventario…</div>
-    </div>
-  </div>
-</section>
+<!-- ============ VISTA DETALLE DE PRODUCTO (PDP) ============ -->
+<div class="wrap">
+  <section class="pdp" id="pdpView">
+    <button class="pdp-back" onclick="navigateToCatalog()">← Volver al catálogo</button>
+    <div id="pdpContent"></div>
+  </section>
+</div>
 
 <a class="wa-float" id="floatWaBtn" href="#" target="_blank" rel="noopener" aria-label="Escribinos por WhatsApp">
   <svg width="28" height="28" viewBox="0 0 24 24" fill="#0c1f10"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.48 1.32 4.99L2 22l5.25-1.38c1.44.79 3.07 1.2 4.72 1.2h.01c5.46 0 9.91-4.45 9.91-9.91C21.9 6.45 17.5 2 12.04 2Zm5.79 14.14c-.24.68-1.4 1.3-1.93 1.38-.49.08-1.11.11-1.79-.11-.41-.13-.94-.31-1.62-.6-2.85-1.23-4.71-4.1-4.85-4.29-.14-.19-1.16-1.54-1.16-2.94 0-1.4.73-2.09 1-2.37.26-.29.57-.36.76-.36h.55c.18 0 .41-.07.64.49.24.58.81 2 .88 2.14.07.14.12.31.02.5-.09.19-.14.31-.28.48-.14.16-.29.36-.42.49-.14.14-.28.29-.12.57.16.28.71 1.17 1.53 1.9 1.05.94 1.94 1.23 2.22 1.37.28.14.44.12.6-.07.16-.19.68-.79.87-1.06.18-.28.36-.23.6-.14.24.09 1.55.73 1.82.86.27.14.45.2.51.31.07.12.07.65-.16 1.33Z"/></svg>
@@ -255,6 +415,17 @@
     <span>Consultas y pedidos por WhatsApp</span>
   </div>
 </footer>
+
+<!-- ============ CARRITO (drawer) ============ -->
+<div class="overlay" id="overlay"></div>
+<aside class="cart-drawer" id="cartDrawer" aria-label="Carrito de compras">
+  <div class="cart-head">
+    <h2>Tu carrito</h2>
+    <button class="cart-close" id="cartCloseBtn" aria-label="Cerrar carrito">&times;</button>
+  </div>
+  <div class="cart-items" id="cartItemsContainer"></div>
+  <div class="cart-footer" id="cartFooter"></div>
+</aside>
 
 <script>
 /* ============================================================
@@ -285,11 +456,12 @@ document.getElementById('year').textContent = new Date().getFullYear();
 
 function gs(n){ return "Gs. " + Number(n).toLocaleString('es-PY'); }
 
-function waLink(book){
-  const base = "¡Hola! Quiero consultar por el libro";
-  const msg = book
-    ? `${base} "${book.titulo}"${book.autor ? ' de ' + book.autor : ''}. ¿Está disponible?`
-    : "¡Hola! Quiero consultar por libros del catálogo.";
+function normalizeText(s){
+  return String(s || "").normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+function waLink(customMsg){
+  const msg = customMsg || "¡Hola! Quiero consultar por libros del catálogo.";
   return `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
 }
 
@@ -299,27 +471,21 @@ document.getElementById('floatWaBtn').href = waLink();
 let ALL_BOOKS = [];
 let activeCat = "__all";
 let searchTerm = "";
+let CART = []; // [{id, cantidad}]
 
 function toNumber(raw){
-  // Limpia texto tipo "Gs. 95,000.00" o "95.000,00" y lo convierte en un número real.
   if(raw === undefined || raw === null || raw === "") return NaN;
   if(typeof raw === 'number') return raw;
-  let s = String(raw).trim().replace(/[^\d.,-]/g, ''); // saca letras, "Gs.", espacios
+  let s = String(raw).trim().replace(/[^\d.,-]/g, '');
   const lastComma = s.lastIndexOf(',');
   const lastDot = s.lastIndexOf('.');
   if(lastComma > -1 && lastDot > -1){
-    // Tiene ambos separadores: el que aparece último es el decimal, el otro es de miles.
-    if(lastComma > lastDot){
-      s = s.replace(/\./g, '').replace(',', '.');
-    }else{
-      s = s.replace(/,/g, '');
-    }
+    if(lastComma > lastDot){ s = s.replace(/\./g, '').replace(',', '.'); }
+    else{ s = s.replace(/,/g, ''); }
   }else if(lastComma > -1){
-    // Solo coma: si tiene 3 dígitos después, la tratamos como separador de miles.
     const decimals = s.length - lastComma - 1;
     s = decimals === 3 ? s.replace(/,/g, '') : s.replace(',', '.');
   }else{
-    // Solo punto (o ninguno): si tiene 3 dígitos después, es separador de miles.
     const decimals = s.length - lastDot - 1;
     if(lastDot > -1 && decimals === 3) s = s.replace(/\./g, '');
   }
@@ -334,7 +500,7 @@ function isTruthy(v){
 
 function normalize(book){
   return {
-    id: book.id || book.ID,
+    id: String(book.id || book.ID),
     titulo: book.titulo || book.Titulo || book.TITULO || "",
     autor: book.autor || book.Autor || "",
     categoria: book.categoria || book.Categoria || "General",
@@ -344,14 +510,19 @@ function normalize(book){
     estado: (book.estado || book.Estado || "Publico"),
     imagen: book.imagen || book.Imagen || "",
     masVendido: isTruthy(book.masVendido || book.MasVendido),
-    ultimoIngreso: isTruthy(book.ultimoIngreso || book.UltimoIngreso)
+    ultimoIngreso: isTruthy(book.ultimoIngreso || book.UltimoIngreso),
+    // columnas opcionales para la ficha de producto — se muestran solo si están completas
+    descripcion: book.descripcion || book.Descripcion || "",
+    idioma: book.idioma || book.Idioma || "",
+    formato: book.formato || book.Formato || "",
+    paginas: book.paginas || book.Paginas || ""
   };
 }
 
 async function loadBooks(){
   if(!CONFIG.SHEET_ID){
     ALL_BOOKS = SAMPLE_BOOKS.map(normalize);
-    render();
+    afterBooksLoaded();
     return;
   }
   try{
@@ -364,9 +535,27 @@ async function loadBooks(){
     console.error(e);
     ALL_BOOKS = SAMPLE_BOOKS.map(normalize);
   }
-  render();
+  afterBooksLoaded();
 }
 
+function afterBooksLoaded(){
+  render();
+  routeFromURL();
+}
+
+function findBook(id){
+  return ALL_BOOKS.find(b => String(b.id) === String(id));
+}
+
+function hasPromo(b){
+  return b.promo !== "" && !isNaN(b.promo) && b.promo < b.precio;
+}
+
+function unitPrice(b){
+  return hasPromo(b) ? b.promo : b.precio;
+}
+
+/* ---------- filtros de categoría ---------- */
 function buildFilters(){
   const cats = Array.from(new Set(ALL_BOOKS.map(b => b.categoria).filter(Boolean)));
   const bar = document.getElementById('filterBar');
@@ -377,33 +566,35 @@ function buildFilters(){
   bar.querySelectorAll('.pill').forEach(btn => {
     btn.addEventListener('click', () => {
       activeCat = btn.dataset.cat;
+      navigateToCatalog();
       render();
     });
   });
 }
 
+/* ---------- tarjetas de libro ---------- */
 function cardHTML(b){
   const agotado = b.stock <= 0;
-  const hasPromo = b.promo !== "" && !isNaN(b.promo) && b.promo < b.precio;
+  const promo = hasPromo(b);
   return `
     <div class="card">
-      ${hasPromo ? `<span class="badge">PROMO</span>` : ''}
+      ${promo ? `<span class="badge">PROMO</span>` : ''}
       ${agotado ? `<span class="badge agotado">AGOTADO</span>` : ''}
-      <div class="cover">
+      <div class="cover" onclick="navigateToProduct('${b.id}')">
         ${b.imagen ? `<img src="${b.imagen}" alt="${b.titulo}" loading="lazy">` : `<span>${b.titulo}</span>`}
       </div>
       <div class="card-body">
         <span class="card-cat">${b.categoria}</span>
-        <span class="card-title">${b.titulo}</span>
+        <button class="card-title" onclick="navigateToProduct('${b.id}')">${b.titulo}</button>
         <span class="card-author">${b.autor}</span>
         <div class="price-row">
-          <span class="price">${gs(hasPromo ? b.promo : b.precio)}</span>
-          ${hasPromo ? `<span class="price-old">${gs(b.precio)}</span>` : ''}
+          <span class="price">${gs(unitPrice(b))}</span>
+          ${promo ? `<span class="price-old">${gs(b.precio)}</span>` : ''}
         </div>
-        <a class="buy-btn ${agotado?'disabled':''}" href="${agotado ? '#' : waLink(b)}" target="_blank" rel="noopener">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.48 1.32 4.99L2 22l5.25-1.38c1.44.79 3.07 1.2 4.72 1.2h.01c5.46 0 9.91-4.45 9.91-9.91C21.9 6.45 17.5 2 12.04 2Z"/></svg>
-          ${agotado ? 'Sin stock' : 'Reservar por WhatsApp'}
-        </a>
+        <button class="buy-btn ${agotado?'disabled':''}" ${agotado?'disabled':''} onclick="addToCart('${b.id}',1); event.stopPropagation();">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          ${agotado ? 'Sin stock' : 'Agregar al carrito'}
+        </button>
       </div>
     </div>`;
 }
@@ -411,30 +602,24 @@ function cardHTML(b){
 function renderCarousels(visible){
   const masVendidos = visible.filter(b => b.masVendido);
   const ultimosIngresos = visible.filter(b => b.ultimoIngreso);
-
   const mvSection = document.getElementById('masVendidosSection');
   const uiSection = document.getElementById('ultimosIngresosSection');
 
   if(masVendidos.length > 0){
     mvSection.style.display = '';
     document.getElementById('masVendidosTrack').innerHTML = masVendidos.map(cardHTML).join('');
-  }else{
-    mvSection.style.display = 'none';
-  }
+  }else{ mvSection.style.display = 'none'; }
 
   if(ultimosIngresos.length > 0){
     uiSection.style.display = '';
     document.getElementById('ultimosIngresosTrack').innerHTML = ultimosIngresos.map(cardHTML).join('');
-  }else{
-    uiSection.style.display = 'none';
-  }
+  }else{ uiSection.style.display = 'none'; }
 }
 
 document.querySelectorAll('.arrow-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     const track = document.getElementById(btn.dataset.scroll);
-    const dir = Number(btn.dataset.dir);
-    track.scrollBy({ left: dir * 420, behavior: 'smooth' });
+    track.scrollBy({ left: Number(btn.dataset.dir) * 420, behavior: 'smooth' });
   });
 });
 
@@ -442,13 +627,12 @@ function render(){
   buildFilters();
   const visible = ALL_BOOKS.filter(b => b.estado.toLowerCase() !== 'oculto');
   document.getElementById('statTitles').textContent = visible.length;
-
   renderCarousels(visible);
 
   let filtered = visible.filter(b => activeCat === '__all' || b.categoria === activeCat);
   if(searchTerm.trim()){
-    const t = searchTerm.toLowerCase();
-    filtered = filtered.filter(b => b.titulo.toLowerCase().includes(t) || b.autor.toLowerCase().includes(t));
+    const t = normalizeText(searchTerm);
+    filtered = filtered.filter(b => normalizeText(b.titulo).includes(t) || normalizeText(b.autor).includes(t));
   }
 
   const grid = document.getElementById('grid');
@@ -458,14 +642,319 @@ function render(){
     grid.innerHTML = `<div class="empty">No encontramos libros con ese criterio. Probá con otra búsqueda o categoría.</div>`;
     return;
   }
-
   grid.innerHTML = filtered.map(cardHTML).join('');
 }
 
 document.getElementById('searchInput').addEventListener('input', (e) => {
   searchTerm = e.target.value;
   render();
+  clearTimeout(window.__searchDebounce);
+  window.__searchDebounce = setTimeout(() => handleLiveSearch(searchTerm), 280);
 });
+
+/* ============================================================
+   BUSCADOR PREDICTIVO (dropdown)
+   ============================================================ */
+function handleLiveSearch(term){
+  const dd = document.getElementById('searchDropdown');
+  const clean = term.trim();
+  if(clean.length < 2){ dd.classList.remove('open'); dd.innerHTML = ''; return; }
+
+  const t = normalizeText(clean);
+  const visible = ALL_BOOKS.filter(b => b.estado.toLowerCase() !== 'oculto');
+  const results = visible.filter(b => normalizeText(b.titulo).includes(t) || normalizeText(b.autor).includes(t)).slice(0, 6);
+
+  if(results.length === 0){
+    dd.innerHTML = `<div class="sd-empty">No encontramos libros que coincidan con tu búsqueda.</div>`;
+    dd.classList.add('open');
+    return;
+  }
+
+  dd.innerHTML = results.map(b => `
+    <div class="sd-row" tabindex="0" onclick="navigateToProduct('${b.id}'); closeSearchDropdown();">
+      <img class="sd-thumb" src="${b.imagen || ''}" alt="" onerror="this.style.visibility='hidden'">
+      <div class="sd-info">
+        <div class="sd-title">${b.titulo}</div>
+        <div class="sd-price">${gs(unitPrice(b))} ${hasPromo(b) ? `<span class="sd-tag">PROMO</span>` : ''}</div>
+      </div>
+    </div>
+  `).join('') + `<button class="sd-footer" onclick="viewAllResults('${clean.replace(/'/g,"\\'")}')">Ver todos los resultados para "${clean}"</button>`;
+
+  dd.classList.add('open');
+}
+
+function closeSearchDropdown(){
+  document.getElementById('searchDropdown').classList.remove('open');
+}
+
+function viewAllResults(term){
+  closeSearchDropdown();
+  navigateToCatalog();
+  document.getElementById('searchInput').value = term;
+  searchTerm = term;
+  render();
+  document.getElementById('catalogo').scrollIntoView({behavior:'smooth'});
+}
+
+document.addEventListener('click', (e) => {
+  if(!e.target.closest('.search-wrap')) closeSearchDropdown();
+});
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape') closeSearchDropdown();
+});
+
+/* ============================================================
+   CARRITO + LÓGICA 3x2
+   ============================================================ */
+function addToCart(id, qty){
+  const b = findBook(id);
+  if(!b || b.stock <= 0) return;
+  const existing = CART.find(ci => ci.id === id);
+  if(existing) existing.cantidad += qty;
+  else CART.push({ id, cantidad: qty });
+  updateCartUI();
+  openCart();
+}
+
+function removeFromCart(id){
+  CART = CART.filter(ci => ci.id !== id);
+  updateCartUI();
+}
+
+function changeQty(id, delta){
+  const item = CART.find(ci => ci.id === id);
+  if(!item) return;
+  item.cantidad += delta;
+  if(item.cantidad <= 0) removeFromCart(id);
+  else updateCartUI();
+}
+
+function compute3x2(){
+  let units = [];
+  CART.forEach(ci => {
+    const b = findBook(ci.id);
+    if(!b) return;
+    for(let i = 0; i < ci.cantidad; i++){
+      units.push({ id: b.id, titulo: b.titulo, price: unitPrice(b) });
+    }
+  });
+  units.sort((a, b) => b.price - a.price);
+  units.forEach((u, idx) => { u.free = (idx + 1) % 3 === 0; });
+  const subtotal = units.reduce((s, u) => s + u.price, 0);
+  const descuento = units.filter(u => u.free).reduce((s, u) => s + u.price, 0);
+  return { units, subtotal, descuento, total: subtotal - descuento, freeCount: units.filter(u=>u.free).length };
+}
+
+function updateCartUI(){
+  const totalQty = CART.reduce((s, ci) => s + ci.cantidad, 0);
+  const countEl = document.getElementById('cartCount');
+  countEl.textContent = totalQty;
+  countEl.style.display = totalQty > 0 ? 'flex' : 'none';
+
+  const itemsEl = document.getElementById('cartItemsContainer');
+  const footerEl = document.getElementById('cartFooter');
+  const calc = compute3x2();
+
+  if(CART.length === 0){
+    itemsEl.innerHTML = `<div class="cart-empty">Tu carrito está vacío.<br>Agregá libros para armar tu 3x2.</div>`;
+    footerEl.innerHTML = '';
+    return;
+  }
+
+  itemsEl.innerHTML = CART.map(ci => {
+    const b = findBook(ci.id);
+    if(!b) return '';
+    const lineUnits = calc.units.filter(u => u.id === ci.id);
+    const freeInLine = lineUnits.filter(u => u.free).length;
+    return `
+      <div class="cart-item">
+        <img src="${b.imagen || ''}" alt="">
+        <div class="ci-info">
+          <div class="ci-title">${b.titulo}</div>
+          <div class="ci-price">${gs(unitPrice(b))} c/u ${freeInLine > 0 ? `<span class="ci-free"> · ${freeInLine} gratis</span>` : ''}</div>
+          <div class="ci-qty">
+            <button class="qty-btn" onclick="changeQty('${ci.id}',-1)">−</button>
+            <span>${ci.cantidad}</span>
+            <button class="qty-btn" onclick="changeQty('${ci.id}',1)">+</button>
+            <button class="ci-remove" onclick="removeFromCart('${ci.id}')">Quitar</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  footerEl.innerHTML = `
+    ${calc.freeCount > 0 ? `<div class="cart-3x2-note">🎁 ¡Promo 3x2 aplicada! Tenés ${calc.freeCount} libro${calc.freeCount>1?'s':''} gratis.</div>` : `<div class="cart-3x2-note">Agregá ${3 - (CART.reduce((s,ci)=>s+ci.cantidad,0) % 3 || 3)} libro(s) más para activar el 3x2.</div>`}
+    <div class="cart-line"><span>Subtotal</span><span>${gs(calc.subtotal)}</span></div>
+    ${calc.descuento > 0 ? `<div class="cart-line discount"><span>Descuento 3x2</span><span>-${gs(calc.descuento)}</span></div>` : ''}
+    <div class="cart-total"><span>Total</span><span>${gs(calc.total)}</span></div>
+    <button class="checkout-btn" onclick="checkoutWhatsApp()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.48 1.32 4.99L2 22l5.25-1.38c1.44.79 3.07 1.2 4.72 1.2h.01c5.46 0 9.91-4.45 9.91-9.91C21.9 6.45 17.5 2 12.04 2Z"/></svg>
+      Finalizar pedido por WhatsApp
+    </button>`;
+}
+
+function checkoutWhatsApp(){
+  const calc = compute3x2();
+  let msg = "¡Hola! Quiero hacer este pedido:\n\n";
+  CART.forEach(ci => {
+    const b = findBook(ci.id);
+    if(!b) return;
+    const lineUnits = calc.units.filter(u => u.id === ci.id);
+    const freeInLine = lineUnits.filter(u => u.free).length;
+    msg += `• ${ci.cantidad}x ${b.titulo} (${gs(unitPrice(b))} c/u)${freeInLine > 0 ? ` — ${freeInLine} GRATIS por promo 3x2` : ''}\n`;
+  });
+  msg += `\nSubtotal: ${gs(calc.subtotal)}`;
+  if(calc.descuento > 0) msg += `\nDescuento 3x2: -${gs(calc.descuento)}`;
+  msg += `\nTotal a pagar: ${gs(calc.total)}\n\n¿Está todo disponible? ¿Cómo coordinamos la entrega?`;
+  window.open(waLink(msg), '_blank');
+}
+
+function openCart(){
+  document.getElementById('cartDrawer').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+}
+function closeCart(){
+  document.getElementById('cartDrawer').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+document.getElementById('cartToggleBtn').addEventListener('click', openCart);
+document.getElementById('cartCloseBtn').addEventListener('click', closeCart);
+document.getElementById('overlay').addEventListener('click', closeCart);
+
+/* ============================================================
+   RUTEO Y PÁGINA DE DETALLE DE PRODUCTO
+   ============================================================ */
+function navigateToProduct(id){
+  history.pushState(null, '', '?libro=' + encodeURIComponent(id));
+  showProduct(id);
+  window.scrollTo(0, 0);
+}
+
+function navigateToCatalog(){
+  history.pushState(null, '', location.pathname);
+  document.getElementById('catalogView').style.display = '';
+  document.getElementById('pdpView').classList.remove('open');
+  document.title = "Libros para Emprendedor | Paraguay";
+}
+
+function routeFromURL(){
+  const params = new URLSearchParams(location.search);
+  const id = params.get('libro');
+  if(id && findBook(id)) showProduct(id);
+  else navigateToCatalog();
+}
+window.addEventListener('popstate', routeFromURL);
+
+function pdpQtyChange(delta){
+  const input = document.getElementById('pdpQtyInput');
+  let val = parseInt(input.value || '1', 10) + delta;
+  if(val < 1) val = 1;
+  input.value = val;
+}
+
+function showProduct(id){
+  const b = findBook(id);
+  if(!b){ navigateToCatalog(); return; }
+
+  document.getElementById('catalogView').style.display = 'none';
+  document.getElementById('pdpView').classList.add('open');
+  document.title = `${b.titulo} | Libros para Emprendedor`;
+
+  const promo = hasPromo(b);
+  const discountPct = promo ? Math.round((1 - b.promo / b.precio) * 100) : 0;
+  const agotado = b.stock <= 0;
+
+  const fichaRows = [
+    ['Autor', b.autor],
+    ['Categoría', b.categoria],
+    ['Idioma', b.idioma],
+    ['Formato', b.formato],
+    ['Páginas', b.paginas]
+  ].filter(r => r[1]);
+
+  document.getElementById('pdpContent').innerHTML = `
+    <div class="pdp-grid">
+      <div class="pdp-gallery">
+        ${b.imagen ? `<img src="${b.imagen}" alt="${b.titulo}">` : `<span>${b.titulo}</span>`}
+      </div>
+      <div>
+        <div class="pdp-cat">${b.categoria}</div>
+        <h1 class="pdp-title">${b.titulo}</h1>
+        <p class="pdp-author">${b.autor || ''}</p>
+
+        <div class="pdp-social">Sé el primero en dejar tu opinión sobre este libro.</div>
+
+        <div class="pdp-price-block">
+          <div class="pdp-price-row">
+            <span class="pdp-price">${gs(unitPrice(b))}</span>
+            ${promo ? `<span class="pdp-price-old">${gs(b.precio)}</span><span class="pdp-discount-badge">-${discountPct}%</span>` : ''}
+          </div>
+          <div class="pdp-transfer-note">Coordinamos forma de pago (efectivo, transferencia o contra entrega) por WhatsApp.</div>
+        </div>
+
+        <div class="pdp-3x2-banner">🎁 Promo 3x2: llevá 3 libros y el de menor precio sale gratis. Válido en toda la tienda.</div>
+
+        <div class="qty-selector">
+          <button class="qty-btn" onclick="pdpQtyChange(-1)">−</button>
+          <input id="pdpQtyInput" type="number" value="1" min="1">
+          <button class="qty-btn" onclick="pdpQtyChange(1)">+</button>
+        </div>
+
+        <button class="pdp-add-btn" ${agotado?'disabled':''} onclick="addToCart('${b.id}', parseInt(document.getElementById('pdpQtyInput').value||'1',10))">
+          ${agotado ? 'Sin stock por el momento' : 'Agregar al carrito'}
+        </button>
+
+        <ul class="trust-list">
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5.5 3.4 9.7 8 11 4.6-1.3 8-5.5 8-11V5l-8-3Z"/></svg> Compra protegida, coordinada directamente con vos por WhatsApp</li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="7" width="15" height="13" rx="2"/><path d="M16 11h3l4 4v5h-7"/><circle cx="5.5" cy="20.5" r="1.5"/><circle cx="18.5" cy="20.5" r="1.5"/></svg> Envíos a todo Paraguay</li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg> Coordinación y confirmación directa antes de pagar</li>
+        </ul>
+      </div>
+    </div>
+
+    ${b.descripcion ? `
+    <div class="pdp-section">
+      <h2>Sobre este libro</h2>
+      <p>${b.descripcion}</p>
+    </div>` : ''}
+
+    ${fichaRows.length > 0 ? `
+    <div class="pdp-section">
+      <h2>Ficha técnica</h2>
+      <table class="ficha-table">
+        ${fichaRows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}
+      </table>
+    </div>` : ''}
+
+    <div class="pdp-section">
+      <h2>Preguntas frecuentes</h2>
+      <details class="faq-item">
+        <summary>¿Cómo coordino el pago y la entrega?</summary>
+        <p>Al agregar libros al carrito y tocar "Finalizar pedido por WhatsApp", te escribimos directamente para coordinar forma de pago (efectivo, transferencia o contra entrega) y el lugar de entrega o envío.</p>
+      </details>
+      <details class="faq-item">
+        <summary>¿Cuánto tarda el envío?</summary>
+        <p>Depende de la zona. Te confirmamos el tiempo estimado apenas coordinemos tu pedido por WhatsApp.</p>
+      </details>
+      <details class="faq-item">
+        <summary>¿Cómo funciona la promo 3x2?</summary>
+        <p>Al llevar 3 libros o más (en cualquier combinación de toda la tienda), el de menor precio de cada grupo de 3 sale gratis. El carrito lo calcula automáticamente.</p>
+      </details>
+      <details class="faq-item">
+        <summary>¿Puedo cambiar un libro si no me convence?</summary>
+        <p>Escribinos por WhatsApp dentro de los primeros días después de recibirlo y vemos la mejor solución juntos.</p>
+      </details>
+    </div>
+
+    <div class="pdp-section">
+      <h2>Opiniones de compradores</h2>
+      <div class="reviews-empty">
+        Todavía no hay opiniones para este libro.<br>
+        <a href="${waLink('¡Hola! Quiero dejar mi opinión sobre un libro que compré.')}" target="_blank" rel="noopener">Escribinos por WhatsApp</a> si ya lo compraste y querés ser el primero en dejar la tuya.
+      </div>
+    </div>
+  `;
+}
 
 loadBooks();
 </script>
