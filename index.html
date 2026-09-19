@@ -192,6 +192,16 @@
   .grid{
     display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:22px;
   }
+  #scrollSentinel{ grid-column:1/-1; height:1px; }
+  @media (max-width:768px){
+    #grid{
+      display:flex; overflow-x:auto; scroll-snap-type:x mandatory; gap:16px;
+      scrollbar-width:none; padding-bottom:4px;
+    }
+    #grid::-webkit-scrollbar{display:none;}
+    #grid .card{flex:0 0 82%; scroll-snap-align:center;}
+    #scrollSentinel{flex:0 0 1px; height:1px;}
+  }
   .card{
     background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
     overflow:hidden; display:flex; flex-direction:column; position:relative;
@@ -868,13 +878,14 @@ function renderGridPage(){
   }
   const slice = currentFiltered.slice(0, renderedCount);
   grid.innerHTML = slice.map(cardHTML).join('') +
-    (renderedCount < currentFiltered.length ? `<div id="scrollSentinel" style="grid-column:1/-1;height:1px;"></div>` : '');
+    (renderedCount < currentFiltered.length ? `<div id="scrollSentinel"></div>` : '');
   observeSentinel();
 }
 
 function observeSentinel(){
   const sentinel = document.getElementById('scrollSentinel');
   if(!sentinel) return;
+  const isMobileCarousel = window.matchMedia('(max-width:768px)').matches;
   const obs = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if(entry.isIntersecting){
@@ -883,7 +894,10 @@ function observeSentinel(){
         renderGridPage();
       }
     });
-  }, { rootMargin: '600px' });
+  }, {
+    root: isMobileCarousel ? document.getElementById('grid') : null,
+    rootMargin: isMobileCarousel ? '0px 900px 0px 0px' : '600px'
+  });
   obs.observe(sentinel);
 }
 
