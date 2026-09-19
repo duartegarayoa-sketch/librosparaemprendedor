@@ -498,9 +498,9 @@ function isTruthy(v){
   return s === "si" || s === "sí" || s === "true" || s === "1" || s === "x" || s === "yes";
 }
 
-function normalize(book){
+function normalize(book, rowIndex){
   return {
-    id: String(book.id || book.ID),
+    id: String(rowIndex),
     titulo: book.titulo || book.Titulo || book.TITULO || "",
     autor: book.autor || book.Autor || "",
     categoria: book.categoria || book.Categoria || "General",
@@ -521,7 +521,7 @@ function normalize(book){
 
 async function loadBooks(){
   if(!CONFIG.SHEET_ID){
-    ALL_BOOKS = SAMPLE_BOOKS.map(normalize);
+    ALL_BOOKS = SAMPLE_BOOKS.map((b, i) => normalize(b, i));
     afterBooksLoaded();
     return;
   }
@@ -530,10 +530,10 @@ async function loadBooks(){
     const res = await fetch(url);
     if(!res.ok) throw new Error("No se pudo leer la planilla");
     const data = await res.json();
-    ALL_BOOKS = data.map(normalize);
+    ALL_BOOKS = data.map((b, i) => normalize(b, i));
   }catch(e){
     console.error(e);
-    ALL_BOOKS = SAMPLE_BOOKS.map(normalize);
+    ALL_BOOKS = SAMPLE_BOOKS.map((b, i) => normalize(b, i));
   }
   afterBooksLoaded();
 }
@@ -960,3 +960,4 @@ loadBooks();
 </script>
 </body>
 </html>
+
