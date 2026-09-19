@@ -42,11 +42,28 @@
   .wrap{max-width:var(--maxw); margin:0 auto; padding:0 24px;}
   .visually-hidden{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0);}
 
+  /* ---------- cinta de anuncios (marquee) ---------- */
+  .ticker-bar{
+    background:var(--red-tag); color:#fff; overflow:hidden; position:relative;
+    white-space:nowrap; border-bottom:1px solid rgba(0,0,0,0.2);
+  }
+  .ticker-track{
+    display:inline-flex; align-items:center; gap:0; animation:marquee 22s linear infinite;
+  }
+  .ticker-bar:hover .ticker-track{ animation-play-state:paused; }
+  .ticker-item{
+    display:inline-flex; align-items:center; padding:9px 28px; font-size:0.82rem;
+    font-weight:700; text-transform:uppercase; letter-spacing:.03em; white-space:nowrap;
+  }
+  @keyframes marquee{
+    from{ transform:translateX(0); }
+    to{ transform:translateX(-50%); }
+  }
+
   /* ---------- header ---------- */
   header{
-    position:sticky; top:0; z-index:40;
-    background:rgba(20,18,15,0.92);
-    backdrop-filter:blur(8px);
+    position:static;
+    background:var(--bg);
     border-bottom:1px solid var(--line);
   }
   .header-row{display:flex; align-items:center; gap:16px; padding:16px 0;}
@@ -294,6 +311,46 @@
   details.faq-item[open] summary::after{content:'–';}
   details.faq-item p{margin:10px 0 0; color:var(--paper-dim); font-size:0.9rem; line-height:1.6;}
 
+  .learn-list{list-style:none; padding:0; margin:0; display:grid; gap:10px; grid-template-columns:1fr;}
+  @media (min-width:640px){ .learn-list{grid-template-columns:1fr 1fr;} }
+  .learn-list li{
+    background:var(--bg-elevated); border:1px solid var(--line); border-radius:8px;
+    padding:12px 14px 12px 36px; position:relative; color:var(--paper-dim); font-size:0.9rem; line-height:1.5;
+  }
+  .learn-list li::before{
+    content:'✓'; position:absolute; left:12px; top:12px; color:var(--gold); font-weight:700;
+  }
+  .pillars-grid{display:grid; gap:16px; grid-template-columns:1fr;}
+  @media (min-width:640px){ .pillars-grid{grid-template-columns:repeat(3,1fr);} }
+  .pillar-card{
+    background:var(--bg-elevated); border:1px solid var(--line); border-radius:10px; padding:18px;
+  }
+  .pillar-num{
+    width:28px; height:28px; border-radius:50%; background:var(--gold); color:#1c1204;
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; margin-bottom:10px;
+  }
+  .pillar-card h3{font-size:1rem; margin:0 0 6px;}
+  .pillar-card p{color:var(--paper-dim); font-size:0.85rem; margin:0; line-height:1.5;}
+
+  /* ---------- badge 3x2 animado ---------- */
+  .badge-3x2{
+    position:absolute; top:10px; right:10px; z-index:2;
+    background:linear-gradient(135deg, var(--gold), #ffd27a); color:#1c1204;
+    font-size:0.66rem; font-weight:800; letter-spacing:.02em; padding:5px 9px; border-radius:6px;
+    box-shadow:0 0 0 0 rgba(240,169,60,0.5);
+    animation:badgeGlow 1.8s ease-in-out infinite;
+  }
+  @keyframes badgeGlow{
+    0%{ box-shadow:0 0 0 0 rgba(240,169,60,0.55); }
+    70%{ box-shadow:0 0 0 8px rgba(240,169,60,0); }
+    100%{ box-shadow:0 0 0 0 rgba(240,169,60,0); }
+  }
+  .promo-pill{
+    display:inline-flex; align-items:center; gap:4px; background:rgba(240,169,60,0.15);
+    color:var(--gold); font-size:0.66rem; font-weight:700; padding:3px 8px; border-radius:999px;
+    margin-bottom:2px; width:fit-content;
+  }
+
   .reviews-summary{display:flex; gap:24px; align-items:center; margin-bottom:20px; flex-wrap:wrap;}
   .reviews-empty{background:var(--bg-elevated); border:1px solid var(--line); border-radius:10px; padding:24px; text-align:center; color:var(--paper-dim);}
   .reviews-empty a{color:var(--gold); font-weight:600;}
@@ -305,6 +362,17 @@
 </style>
 </head>
 <body>
+
+<div class="ticker-bar">
+  <div class="ticker-track">
+    <span class="ticker-item">🔥 COMPRÁ 2 LIBROS Y EL TERCERO TE SALE GRATIS (PROMO 3X2)</span>
+    <span class="ticker-item">📦 ENVÍOS A TODO EL PAÍS</span>
+    <span class="ticker-item">💳 PAGÁ CON TRANSFERENCIA</span>
+    <span class="ticker-item">🔥 COMPRÁ 2 LIBROS Y EL TERCERO TE SALE GRATIS (PROMO 3X2)</span>
+    <span class="ticker-item">📦 ENVÍOS A TODO EL PAÍS</span>
+    <span class="ticker-item">💳 PAGÁ CON TRANSFERENCIA</span>
+  </div>
+</div>
 
 <header>
   <div class="wrap header-row">
@@ -354,7 +422,7 @@
     <div class="wrap hero-stats">
       <div class="stat"><b id="statTitles">—</b><span>títulos disponibles</span></div>
       <div class="stat"><b>3x2</b><span>en toda la tienda, tiempo limitado</span></div>
-      <div class="stat"><b>Gs.</b><span>pago contra entrega o transferencia</span></div>
+      <div class="stat"><b>Gs.</b><span>pago por transferencia bancaria o depósito</span></div>
     </div>
   </div>
 
@@ -433,7 +501,7 @@
    ============================================================ */
 const CONFIG = {
   // Número de WhatsApp en formato internacional SIN + ni espacios (Paraguay: 595 9XX XXXXXX)
-  WHATSAPP_NUMBER: "595981000000",
+  WHATSAPP_NUMBER: "595981658895",
 
   // ID de tu Google Sheet publicada (ver instrucciones). Dejalo vacío ("")
   // para usar el catálogo de ejemplo mientras armás la planilla.
@@ -515,7 +583,12 @@ function normalize(book, rowIndex){
     descripcion: book.descripcion || book.Descripcion || "",
     idioma: book.idioma || book.Idioma || "",
     formato: book.formato || book.Formato || "",
-    paginas: book.paginas || book.Paginas || ""
+    paginas: book.paginas || book.Paginas || "",
+    editorial: book.editorial || book.Editorial || "",
+    // Aprenderas: escribir cada punto separado por "|" en la celda. Ej: "Punto 1|Punto 2|Punto 3"
+    aprenderas: book.aprenderas || book.Aprenderas || "",
+    // Pilares: hasta 3 bloques separados por "|", cada uno como "Título::Descripción". Ej: "Foco::Cómo enfocar tu energía|Hábitos::Cómo sostenerlos"
+    pilares: book.pilares || book.Pilares || ""
   };
 }
 
@@ -580,11 +653,13 @@ function cardHTML(b){
     <div class="card">
       ${promo ? `<span class="badge">PROMO</span>` : ''}
       ${agotado ? `<span class="badge agotado">AGOTADO</span>` : ''}
+      ${!agotado ? `<span class="badge-3x2">3x2</span>` : ''}
       <div class="cover" onclick="navigateToProduct('${b.id}')">
         ${b.imagen ? `<img src="${b.imagen}" alt="${b.titulo}" loading="lazy">` : `<span>${b.titulo}</span>`}
       </div>
       <div class="card-body">
         <span class="card-cat">${b.categoria}</span>
+        ${!agotado ? `<span class="promo-pill">LLEVÁ 3 PAGÁS 2 🔥</span>` : ''}
         <button class="card-title" onclick="navigateToProduct('${b.id}')">${b.titulo}</button>
         <span class="card-author">${b.autor}</span>
         <div class="price-row">
@@ -866,11 +941,18 @@ function showProduct(id){
 
   const fichaRows = [
     ['Autor', b.autor],
+    ['Editorial', b.editorial],
     ['Categoría', b.categoria],
     ['Idioma', b.idioma],
     ['Formato', b.formato],
     ['Páginas', b.paginas]
   ].filter(r => r[1]);
+
+  const aprendizajes = (b.aprenderas || "").split('|').map(s => s.trim()).filter(Boolean);
+  const pilares = (b.pilares || "").split('|').map(s => {
+    const [titulo, desc] = s.split('::');
+    return titulo ? { titulo: titulo.trim(), desc: (desc || '').trim() } : null;
+  }).filter(Boolean);
 
   document.getElementById('pdpContent').innerHTML = `
     <div class="pdp-grid">
@@ -889,7 +971,7 @@ function showProduct(id){
             <span class="pdp-price">${gs(unitPrice(b))}</span>
             ${promo ? `<span class="pdp-price-old">${gs(b.precio)}</span><span class="pdp-discount-badge">-${discountPct}%</span>` : ''}
           </div>
-          <div class="pdp-transfer-note">Coordinamos forma de pago (efectivo, transferencia o contra entrega) por WhatsApp.</div>
+          <div class="pdp-transfer-note">Coordinamos el pago por transferencia bancaria o depósito, directamente por WhatsApp.</div>
         </div>
 
         <div class="pdp-3x2-banner">🎁 Promo 3x2: llevá 3 libros y el de menor precio sale gratis. Válido en toda la tienda.</div>
@@ -918,6 +1000,27 @@ function showProduct(id){
       <p>${b.descripcion}</p>
     </div>` : ''}
 
+    ${aprendizajes.length > 0 ? `
+    <div class="pdp-section">
+      <h2>Lo que vas a aprender</h2>
+      <ul class="learn-list">
+        ${aprendizajes.map(a => `<li>${a}</li>`).join('')}
+      </ul>
+    </div>` : ''}
+
+    ${pilares.length > 0 ? `
+    <div class="pdp-section">
+      <h2>Tres pilares del libro</h2>
+      <div class="pillars-grid">
+        ${pilares.map((p, i) => `
+          <div class="pillar-card">
+            <div class="pillar-num">${i + 1}</div>
+            <h3>${p.titulo}</h3>
+            ${p.desc ? `<p>${p.desc}</p>` : ''}
+          </div>`).join('')}
+      </div>
+    </div>` : ''}
+
     ${fichaRows.length > 0 ? `
     <div class="pdp-section">
       <h2>Ficha técnica</h2>
@@ -930,7 +1033,7 @@ function showProduct(id){
       <h2>Preguntas frecuentes</h2>
       <details class="faq-item">
         <summary>¿Cómo coordino el pago y la entrega?</summary>
-        <p>Al agregar libros al carrito y tocar "Finalizar pedido por WhatsApp", te escribimos directamente para coordinar forma de pago (efectivo, transferencia o contra entrega) y el lugar de entrega o envío.</p>
+        <p>Al agregar libros al carrito y tocar "Finalizar pedido por WhatsApp", te escribimos directamente para coordinar el pago por transferencia bancaria o depósito, y el lugar de entrega o envío.</p>
       </details>
       <details class="faq-item">
         <summary>¿Cuánto tarda el envío?</summary>
@@ -960,4 +1063,3 @@ loadBooks();
 </script>
 </body>
 </html>
-
