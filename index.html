@@ -144,10 +144,26 @@
   @media (max-width:768px){
     .hero-banner img{aspect-ratio:941/1024;}
   }
-  .hero-stats-bar{padding:18px 0; border-bottom:1px solid var(--line);}
-  .hero-stats{display:flex; gap:32px; flex-wrap:wrap;}
-  .stat b{display:block; font-size:1.4rem; font-family:'Space Grotesk',sans-serif; color:var(--gold);}
-  .stat span{font-size:0.8rem; color:var(--paper-dim);}
+  .benefits-section{padding:20px 0; border-bottom:1px solid var(--line);}
+  .benefits-track{
+    display:flex; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none;
+  }
+  .benefits-track::-webkit-scrollbar{display:none;}
+  .benefit-card{
+    flex:0 0 86%; scroll-snap-align:center; background:var(--bg-elevated); border:1px solid var(--line);
+    border-radius:12px; padding:18px 20px;
+  }
+  @media (min-width:768px){
+    .benefits-track{display:grid; grid-template-columns:1fr 1fr; overflow:visible;}
+    .benefit-card{flex:auto;}
+  }
+  .benefit-icon{font-size:1.5rem; margin-bottom:8px;}
+  .benefit-card h3{font-size:1rem; margin:0 0 6px; font-family:'Space Grotesk',sans-serif;}
+  .benefit-card p{color:var(--paper-dim); font-size:0.85rem; margin:0; line-height:1.5;}
+  .benefits-dots{display:flex; justify-content:center; gap:6px; margin-top:10px;}
+  @media (min-width:768px){ .benefits-dots{display:none;} }
+  .benefit-dot{width:6px; height:6px; border-radius:50%; background:var(--line); transition:background .2s;}
+  .benefit-dot.active{background:var(--gold);}
 
   /* ---------- carruseles ---------- */
   .carousel-section{padding:36px 0 8px;}
@@ -193,6 +209,7 @@
     font-size:0.68rem; font-weight:700; letter-spacing:.02em; padding:4px 9px; border-radius:5px;
   }
   .badge.agotado{background:#54504a;}
+  .badge.combo-badge{background:var(--gold); color:#1c1204; left:auto; right:10px;}
   .card-body{padding:14px 14px 16px; display:flex; flex-direction:column; gap:6px; flex:1;}
   .card-cat{font-size:0.7rem; color:var(--gold); font-weight:600; text-transform:uppercase; letter-spacing:.04em;}
   .card-title{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:0.98rem; line-height:1.28; cursor:pointer; background:none; border:none; color:inherit; text-align:left; padding:0;}
@@ -355,6 +372,27 @@
   .reviews-empty{background:var(--bg-elevated); border:1px solid var(--line); border-radius:10px; padding:24px; text-align:center; color:var(--paper-dim);}
   .reviews-empty a{color:var(--gold); font-weight:600;}
 
+  /* ---------- modal "Cómo comprar" ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:90;
+    display:none; align-items:center; justify-content:center; padding:20px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-box{
+    background:var(--bg-elevated); border:1px solid var(--line); border-radius:14px;
+    padding:28px; max-width:420px; width:100%; position:relative;
+  }
+  .modal-box .cart-close{position:absolute; top:14px; right:14px;}
+  .howto-steps{list-style:none; padding:0; margin:18px 0 0; display:flex; flex-direction:column; gap:18px; counter-reset:howto;}
+  .howto-steps li{color:var(--paper-dim); font-size:0.9rem; line-height:1.55; padding-left:38px; position:relative; counter-increment:howto;}
+  .howto-steps li::before{
+    content:counter(howto); position:absolute; left:0; top:0; width:26px; height:26px; border-radius:50%;
+    background:var(--gold); color:#1c1204; font-weight:700; font-size:0.85rem; font-family:'Space Grotesk',sans-serif;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .howto-steps b{color:var(--paper); font-family:'Space Grotesk',sans-serif; display:block; margin-bottom:2px;}
+  .footer-link{background:none; border:none; color:var(--gold); text-decoration:underline; cursor:pointer; font-size:0.85rem; padding:0; font-family:inherit;}
+
   @media (max-width:640px){
     .header-row{flex-wrap:wrap;}
     .search-wrap{order:3; width:100%; flex-basis:100%;}
@@ -418,13 +456,23 @@
     </picture>
   </a>
 
-  <div class="hero-stats-bar">
-    <div class="wrap hero-stats">
-      <div class="stat"><b id="statTitles">—</b><span>títulos disponibles</span></div>
-      <div class="stat"><b>3x2</b><span>en toda la tienda, tiempo limitado</span></div>
-      <div class="stat"><b>Gs.</b><span>pago por transferencia bancaria o depósito</span></div>
+  <section class="benefits-section">
+    <div class="wrap">
+      <div class="benefits-track" id="benefitsTrack">
+        <div class="benefit-card">
+          <div class="benefit-icon">🎁</div>
+          <h3>Oferta ÚNICA: 3x2 en toda la tienda</h3>
+          <p>Comprás dos libros y el tercero te sale gratis. Por tiempo limitado.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">🚚</div>
+          <h3>Envíos seguros a todo el país</h3>
+          <p>Envíos rápidos y coordinados a todo Paraguay, directo a tu puerta.</p>
+        </div>
+      </div>
+      <div class="benefits-dots" id="benefitsDots"></div>
     </div>
-  </div>
+  </section>
 
   <section class="carousel-section" id="masVendidosSection" style="display:none;">
     <div class="wrap">
@@ -449,6 +497,15 @@
         </div>
       </div>
       <div class="carousel-track" id="ultimosIngresosTrack"></div>
+    </div>
+  </section>
+
+  <section class="carousel-section" id="combosSection" style="display:none;">
+    <div class="wrap">
+      <div class="carousel-head">
+        <h2>📦 Combos con descuento</h2>
+      </div>
+      <div class="grid" id="combosGrid"></div>
     </div>
   </section>
 
@@ -480,9 +537,22 @@
 <footer>
   <div class="wrap">
     <span>© <span id="year"></span> Libros para Emprendedor · Paraguay</span>
+    <button class="footer-link" onclick="openHowToBuy()">¿Cómo comprar?</button>
     <span>Consultas y pedidos por WhatsApp</span>
   </div>
 </footer>
+
+<div class="modal-overlay" id="howToBuyOverlay">
+  <div class="modal-box">
+    <button class="cart-close" onclick="closeHowToBuy()" aria-label="Cerrar">&times;</button>
+    <h2>¿Cómo comprar?</h2>
+    <ol class="howto-steps">
+      <li><b>Agregá al carrito</b>Elegí los libros que te interesan y tocá "Agregar al carrito" en cada uno.</li>
+      <li><b>Revisá tu 3x2</b>En el carrito vas a ver el descuento aplicado automáticamente si llevás 3 libros o más.</li>
+      <li><b>Finalizá por WhatsApp</b>Tocá "Finalizar pedido por WhatsApp" y coordinamos el pago (transferencia o depósito) y la entrega.</li>
+    </ol>
+  </div>
+</div>
 
 <!-- ============ CARRITO (drawer) ============ -->
 <div class="overlay" id="overlay"></div>
@@ -506,7 +576,9 @@ const CONFIG = {
   // ID de tu Google Sheet publicada (ver instrucciones). Dejalo vacío ("")
   // para usar el catálogo de ejemplo mientras armás la planilla.
   SHEET_ID: "1oNXhSo1TZMseKm0qMzlRu8swZWBAX1W59bcxz6PEx1s",
-  SHEET_NAME: "Catalogo Web"
+  SHEET_NAME: "Catalogo Web",
+  // Nombre de la pestaña de combos (opcional). Si no existe todavía, el sitio simplemente no muestra combos.
+  COMBOS_SHEET_NAME: "Combos"
 };
 
 // Catálogo de ejemplo — se usa solo si no configuraste SHEET_ID
@@ -520,6 +592,19 @@ const SAMPLE_BOOKS = [
 /* ============================================================
    LÓGICA — no hace falta tocar de acá para abajo
    ============================================================ */
+function setupBenefitsDots(){
+  const track = document.getElementById('benefitsTrack');
+  const dotsWrap = document.getElementById('benefitsDots');
+  const cards = track.querySelectorAll('.benefit-card');
+  dotsWrap.innerHTML = Array.from(cards).map((_, i) => `<span class="benefit-dot ${i===0?'active':''}"></span>`).join('');
+  const dots = dotsWrap.querySelectorAll('.benefit-dot');
+  track.addEventListener('scroll', () => {
+    const idx = Math.round(track.scrollLeft / track.clientWidth);
+    dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+  });
+}
+setupBenefitsDots();
+
 document.getElementById('year').textContent = new Date().getFullYear();
 
 function gs(n){ return "Gs. " + Number(n).toLocaleString('es-PY'); }
@@ -537,9 +622,11 @@ document.getElementById('headerWaBtn').href = waLink();
 document.getElementById('floatWaBtn').href = waLink();
 
 let ALL_BOOKS = [];
+let ALL_COMBOS = [];
 let activeCat = "__all";
 let searchTerm = "";
-let CART = []; // [{id, cantidad}]
+let CART = []; // [{id, cantidad}] — libros individuales
+let COMBO_CART = []; // [{id, cantidad}] — combos
 
 function toNumber(raw){
   if(raw === undefined || raw === null || raw === "") return NaN;
@@ -616,6 +703,34 @@ function afterBooksLoaded(){
   routeFromURL();
 }
 
+function normalizeCombo(c, idx){
+  const librosRaw = c.LibrosIncluidos || c.librosIncluidos || c.Libros || c.libros || "";
+  return {
+    id: 'combo-' + idx,
+    nombre: c.nombre || c.Nombre || "",
+    descripcion: c.descripcion || c.Descripcion || "",
+    librosIncluidos: librosRaw.split('|').map(s => s.trim()).filter(Boolean),
+    precio: toNumber(c.precio || c.Precio),
+    imagen: c.imagen || c.Imagen || "",
+    estado: c.estado || c.Estado || "Publico"
+  };
+}
+
+async function loadCombos(){
+  if(!CONFIG.SHEET_ID || !CONFIG.COMBOS_SHEET_NAME){ ALL_COMBOS = []; renderCombos(); return; }
+  try{
+    const url = `https://opensheet.elk.sh/${CONFIG.SHEET_ID}/${encodeURIComponent(CONFIG.COMBOS_SHEET_NAME)}`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error("Pestaña de combos no encontrada todavía");
+    const data = await res.json();
+    ALL_COMBOS = data.map((c, i) => normalizeCombo(c, i)).filter(c => c.nombre && c.estado.toLowerCase() !== 'oculto');
+  }catch(e){
+    console.warn("Combos no disponibles:", e.message);
+    ALL_COMBOS = [];
+  }
+  renderCombos();
+}
+
 function findBook(id){
   return ALL_BOOKS.find(b => String(b.id) === String(id));
 }
@@ -674,6 +789,32 @@ function cardHTML(b){
     </div>`;
 }
 
+function comboCardHTML(c){
+  return `
+    <div class="card">
+      <span class="badge combo-badge">COMBO</span>
+      <div class="cover">
+        ${c.imagen ? `<img src="${c.imagen}" alt="${c.nombre}" loading="lazy">` : `<span>${c.nombre}</span>`}
+      </div>
+      <div class="card-body">
+        <span class="card-cat">Combo especial</span>
+        <span class="card-title" style="cursor:default;">${c.nombre}</span>
+        <span class="card-author">${c.librosIncluidos.join(' + ')}</span>
+        ${c.descripcion ? `<span class="card-author">${c.descripcion}</span>` : ''}
+        <div class="price-row"><span class="price">${gs(c.precio)}</span></div>
+        <button class="buy-btn" onclick="addComboToCart('${c.id}')">Agregar combo al carrito</button>
+      </div>
+    </div>`;
+}
+
+function renderCombos(){
+  const section = document.getElementById('combosSection');
+  const grid = document.getElementById('combosGrid');
+  if(ALL_COMBOS.length === 0){ section.style.display = 'none'; return; }
+  section.style.display = '';
+  grid.innerHTML = ALL_COMBOS.map(comboCardHTML).join('');
+}
+
 function renderCarousels(visible){
   const masVendidos = visible.filter(b => b.masVendido);
   const ultimosIngresos = visible.filter(b => b.ultimoIngreso);
@@ -698,10 +839,13 @@ document.querySelectorAll('.arrow-btn').forEach(btn => {
   });
 });
 
+let PAGE_SIZE = 20;
+let renderedCount = PAGE_SIZE;
+let currentFiltered = [];
+
 function render(){
   buildFilters();
   const visible = ALL_BOOKS.filter(b => b.estado.toLowerCase() !== 'oculto');
-  document.getElementById('statTitles').textContent = visible.length;
   renderCarousels(visible);
 
   let filtered = visible.filter(b => activeCat === '__all' || b.categoria === activeCat);
@@ -709,15 +853,38 @@ function render(){
     const t = normalizeText(searchTerm);
     filtered = filtered.filter(b => normalizeText(b.titulo).includes(t) || normalizeText(b.autor).includes(t));
   }
+  currentFiltered = filtered;
+  renderedCount = PAGE_SIZE;
+  renderGridPage();
+}
 
+function renderGridPage(){
   const grid = document.getElementById('grid');
-  document.getElementById('resultCount').textContent = `${filtered.length} resultado${filtered.length===1?'':'s'}`;
+  document.getElementById('resultCount').textContent = `${currentFiltered.length} resultado${currentFiltered.length===1?'':'s'}`;
 
-  if(filtered.length === 0){
+  if(currentFiltered.length === 0){
     grid.innerHTML = `<div class="empty">No encontramos libros con ese criterio. Probá con otra búsqueda o categoría.</div>`;
     return;
   }
-  grid.innerHTML = filtered.map(cardHTML).join('');
+  const slice = currentFiltered.slice(0, renderedCount);
+  grid.innerHTML = slice.map(cardHTML).join('') +
+    (renderedCount < currentFiltered.length ? `<div id="scrollSentinel" style="grid-column:1/-1;height:1px;"></div>` : '');
+  observeSentinel();
+}
+
+function observeSentinel(){
+  const sentinel = document.getElementById('scrollSentinel');
+  if(!sentinel) return;
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        obs.disconnect();
+        renderedCount += PAGE_SIZE;
+        renderGridPage();
+      }
+    });
+  }, { rootMargin: '600px' });
+  obs.observe(sentinel);
 }
 
 document.getElementById('searchInput').addEventListener('input', (e) => {
@@ -804,6 +971,29 @@ function changeQty(id, delta){
   else updateCartUI();
 }
 
+function addComboToCart(id){
+  const c = ALL_COMBOS.find(x => x.id === id);
+  if(!c) return;
+  const existing = COMBO_CART.find(ci => ci.id === id);
+  if(existing) existing.cantidad += 1;
+  else COMBO_CART.push({ id, cantidad: 1 });
+  updateCartUI();
+  openCart();
+}
+
+function removeCombo(id){
+  COMBO_CART = COMBO_CART.filter(ci => ci.id !== id);
+  updateCartUI();
+}
+
+function changeComboQty(id, delta){
+  const item = COMBO_CART.find(ci => ci.id === id);
+  if(!item) return;
+  item.cantidad += delta;
+  if(item.cantidad <= 0) removeCombo(id);
+  else updateCartUI();
+}
+
 function compute3x2(){
   let units = [];
   CART.forEach(ci => {
@@ -821,7 +1011,7 @@ function compute3x2(){
 }
 
 function updateCartUI(){
-  const totalQty = CART.reduce((s, ci) => s + ci.cantidad, 0);
+  const totalQty = CART.reduce((s, ci) => s + ci.cantidad, 0) + COMBO_CART.reduce((s, ci) => s + ci.cantidad, 0);
   const countEl = document.getElementById('cartCount');
   countEl.textContent = totalQty;
   countEl.style.display = totalQty > 0 ? 'flex' : 'none';
@@ -829,14 +1019,18 @@ function updateCartUI(){
   const itemsEl = document.getElementById('cartItemsContainer');
   const footerEl = document.getElementById('cartFooter');
   const calc = compute3x2();
+  const combosTotal = COMBO_CART.reduce((s, ci) => {
+    const c = ALL_COMBOS.find(x => x.id === ci.id);
+    return s + (c ? c.precio * ci.cantidad : 0);
+  }, 0);
 
-  if(CART.length === 0){
+  if(CART.length === 0 && COMBO_CART.length === 0){
     itemsEl.innerHTML = `<div class="cart-empty">Tu carrito está vacío.<br>Agregá libros para armar tu 3x2.</div>`;
     footerEl.innerHTML = '';
     return;
   }
 
-  itemsEl.innerHTML = CART.map(ci => {
+  const bookItemsHTML = CART.map(ci => {
     const b = findBook(ci.id);
     if(!b) return '';
     const lineUnits = calc.units.filter(u => u.id === ci.id);
@@ -857,11 +1051,37 @@ function updateCartUI(){
       </div>`;
   }).join('');
 
+  const comboItemsHTML = COMBO_CART.map(ci => {
+    const c = ALL_COMBOS.find(x => x.id === ci.id);
+    if(!c) return '';
+    return `
+      <div class="cart-item">
+        <img src="${c.imagen || ''}" alt="">
+        <div class="ci-info">
+          <div class="ci-title">📦 ${c.nombre}</div>
+          <div class="ci-price">${gs(c.precio)} c/u <span class="ci-free"> · precio fijo del combo</span></div>
+          <div class="ci-qty">
+            <button class="qty-btn" onclick="changeComboQty('${ci.id}',-1)">−</button>
+            <span>${ci.cantidad}</span>
+            <button class="qty-btn" onclick="changeComboQty('${ci.id}',1)">+</button>
+            <button class="ci-remove" onclick="removeCombo('${ci.id}')">Quitar</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  itemsEl.innerHTML = bookItemsHTML + comboItemsHTML;
+
+  const grandTotal = calc.total + combosTotal;
+
   footerEl.innerHTML = `
-    ${calc.freeCount > 0 ? `<div class="cart-3x2-note">🎁 ¡Promo 3x2 aplicada! Tenés ${calc.freeCount} libro${calc.freeCount>1?'s':''} gratis.</div>` : `<div class="cart-3x2-note">Agregá ${3 - (CART.reduce((s,ci)=>s+ci.cantidad,0) % 3 || 3)} libro(s) más para activar el 3x2.</div>`}
-    <div class="cart-line"><span>Subtotal</span><span>${gs(calc.subtotal)}</span></div>
+    ${calc.freeCount > 0
+      ? `<div class="cart-3x2-note">🎁 ¡Promo 3x2 aplicada! Tenés ${calc.freeCount} libro${calc.freeCount>1?'s':''} gratis.</div>`
+      : (CART.length > 0 ? `<div class="cart-3x2-note">Agregá ${3 - (CART.reduce((s,ci)=>s+ci.cantidad,0) % 3 || 3)} libro(s) más para activar el 3x2.</div>` : '')}
+    ${calc.subtotal > 0 ? `<div class="cart-line"><span>Subtotal libros</span><span>${gs(calc.subtotal)}</span></div>` : ''}
     ${calc.descuento > 0 ? `<div class="cart-line discount"><span>Descuento 3x2</span><span>-${gs(calc.descuento)}</span></div>` : ''}
-    <div class="cart-total"><span>Total</span><span>${gs(calc.total)}</span></div>
+    ${combosTotal > 0 ? `<div class="cart-line"><span>Combos</span><span>${gs(combosTotal)}</span></div>` : ''}
+    <div class="cart-total"><span>Total</span><span>${gs(grandTotal)}</span></div>
     <button class="checkout-btn" onclick="checkoutWhatsApp()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.48 1.32 4.99L2 22l5.25-1.38c1.44.79 3.07 1.2 4.72 1.2h.01c5.46 0 9.91-4.45 9.91-9.91C21.9 6.45 17.5 2 12.04 2Z"/></svg>
       Finalizar pedido por WhatsApp
@@ -870,6 +1090,10 @@ function updateCartUI(){
 
 function checkoutWhatsApp(){
   const calc = compute3x2();
+  const combosTotal = COMBO_CART.reduce((s, ci) => {
+    const c = ALL_COMBOS.find(x => x.id === ci.id);
+    return s + (c ? c.precio * ci.cantidad : 0);
+  }, 0);
   let msg = "¡Hola! Quiero hacer este pedido:\n\n";
   CART.forEach(ci => {
     const b = findBook(ci.id);
@@ -878,9 +1102,15 @@ function checkoutWhatsApp(){
     const freeInLine = lineUnits.filter(u => u.free).length;
     msg += `• ${ci.cantidad}x ${b.titulo} (${gs(unitPrice(b))} c/u)${freeInLine > 0 ? ` — ${freeInLine} GRATIS por promo 3x2` : ''}\n`;
   });
-  msg += `\nSubtotal: ${gs(calc.subtotal)}`;
+  COMBO_CART.forEach(ci => {
+    const c = ALL_COMBOS.find(x => x.id === ci.id);
+    if(!c) return;
+    msg += `• ${ci.cantidad}x Combo "${c.nombre}" (${gs(c.precio)} c/u) — incluye: ${c.librosIncluidos.join(', ')}\n`;
+  });
+  msg += `\nSubtotal libros: ${gs(calc.subtotal)}`;
   if(calc.descuento > 0) msg += `\nDescuento 3x2: -${gs(calc.descuento)}`;
-  msg += `\nTotal a pagar: ${gs(calc.total)}\n\n¿Está todo disponible? ¿Cómo coordinamos la entrega?`;
+  if(combosTotal > 0) msg += `\nCombos: ${gs(combosTotal)}`;
+  msg += `\nTotal a pagar: ${gs(calc.total + combosTotal)}\n\n¿Está todo disponible? ¿Cómo coordinamos la entrega?`;
   window.open(waLink(msg), '_blank');
 }
 
@@ -895,6 +1125,12 @@ function closeCart(){
 document.getElementById('cartToggleBtn').addEventListener('click', openCart);
 document.getElementById('cartCloseBtn').addEventListener('click', closeCart);
 document.getElementById('overlay').addEventListener('click', closeCart);
+
+function openHowToBuy(){ document.getElementById('howToBuyOverlay').classList.add('open'); }
+function closeHowToBuy(){ document.getElementById('howToBuyOverlay').classList.remove('open'); }
+document.getElementById('howToBuyOverlay').addEventListener('click', (e) => {
+  if(e.target.id === 'howToBuyOverlay') closeHowToBuy();
+});
 
 /* ============================================================
    RUTEO Y PÁGINA DE DETALLE DE PRODUCTO
@@ -1060,6 +1296,7 @@ function showProduct(id){
 }
 
 loadBooks();
+loadCombos();
 </script>
 </body>
 </html>
