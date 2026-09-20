@@ -136,6 +136,7 @@
     font-weight:600; cursor:pointer; transition:all .15s;
   }
   .pill.active, .pill:hover{background:var(--gold); color:#1c1204; border-color:var(--gold);}
+  .pill.combos-pill{border-color:var(--gold-dim); color:var(--gold);}
 
   /* ---------- hero banner 3x2 ---------- */
   .hero-banner{display:block; position:relative; border-bottom:1px solid var(--line); background:#0d0c0a;}
@@ -453,7 +454,7 @@
     <div class="search-wrap">
       <div class="search">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-        <input id="searchInput" type="text" placeholder="¿Qué querés aprender hoy?" autocomplete="off">
+        <input id="searchInput" type="text" placeholder="¿Qué estás buscando?" autocomplete="off">
       </div>
       <div class="search-dropdown" id="searchDropdown"></div>
     </div>
@@ -738,6 +739,7 @@ function normalizeCombo(c, idx){
     descripcion: c.descripcion || c.Descripcion || "",
     librosIncluidos: librosRaw.split('|').map(s => s.trim()).filter(Boolean),
     precio: toNumber(c.precio || c.Precio),
+    valorTotal: (c.valorTotal || c.ValorTotal || "") === "" ? "" : toNumber(c.valorTotal || c.ValorTotal),
     imagen: c.imagen || c.Imagen || "",
     estado: c.estado || c.Estado || "Publico"
   };
@@ -778,13 +780,25 @@ function buildFilters(){
   cats.forEach(cat => {
     bar.innerHTML += `<button class="pill ${activeCat===cat?'active':''}" data-cat="${cat}">${cat}</button>`;
   });
-  bar.querySelectorAll('.pill').forEach(btn => {
+  if(ALL_COMBOS.length > 0){
+    bar.innerHTML += `<button class="pill combos-pill" id="combosNavBtn">📦 Combos</button>`;
+  }
+  bar.querySelectorAll('.pill:not(.combos-pill)').forEach(btn => {
     btn.addEventListener('click', () => {
       activeCat = btn.dataset.cat;
       navigateToCatalog();
       render();
+      document.getElementById('catalogo').scrollIntoView({ behavior: 'smooth' });
     });
   });
+  const combosBtn = document.getElementById('combosNavBtn');
+  if(combosBtn){
+    combosBtn.addEventListener('click', () => {
+      navigateToCatalog();
+      const section = document.getElementById('combosSection');
+      if(section) section.scrollIntoView({ behavior: 'smooth' });
+    });
+  }
 }
 
 /* ---------- tarjetas de libro ---------- */
@@ -828,7 +842,10 @@ function comboCardHTML(c){
         <span class="card-title" style="cursor:default;">${c.nombre}</span>
         <span class="card-author">${c.librosIncluidos.join(' + ')}</span>
         ${c.descripcion ? `<span class="card-author">${c.descripcion}</span>` : ''}
-        <div class="price-row"><span class="price">${gs(c.precio)}</span></div>
+        <div class="price-row">
+          <span class="price">${gs(c.precio)}</span>
+          ${c.valorTotal !== "" && !isNaN(c.valorTotal) && c.valorTotal > c.precio ? `<span class="price-old">${gs(c.valorTotal)}</span>` : ''}
+        </div>
         <button class="buy-btn" onclick="addComboToCart('${c.id}')">Agregar combo al carrito</button>
       </div>
     </div>`;
@@ -837,9 +854,10 @@ function comboCardHTML(c){
 function renderCombos(){
   const section = document.getElementById('combosSection');
   const grid = document.getElementById('combosGrid');
-  if(ALL_COMBOS.length === 0){ section.style.display = 'none'; return; }
+  if(ALL_COMBOS.length === 0){ section.style.display = 'none'; buildFilters(); return; }
   section.style.display = '';
   grid.innerHTML = ALL_COMBOS.map(comboCardHTML).join('');
+  buildFilters();
 }
 
 function renderCarousels(visible){
