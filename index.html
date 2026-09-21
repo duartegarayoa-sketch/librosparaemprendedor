@@ -621,8 +621,20 @@
         <input type="tel" id="ckTelefono" required>
       </label>
       <label class="form-field">
+        <span>Departamento *</span>
+        <select id="ckDepartamento" required onchange="populateCiudades()">
+          <option value="">Elegí tu departamento</option>
+        </select>
+      </label>
+      <label class="form-field" id="ckCiudadWrap">
         <span>Ciudad *</span>
-        <input type="text" id="ckCiudad" required>
+        <select id="ckCiudad" required disabled>
+          <option value="">Primero elegí un departamento</option>
+        </select>
+      </label>
+      <label class="form-field" id="ckOtraCiudadWrap" style="display:none;">
+        <span>Escribí tu ciudad</span>
+        <input type="text" id="ckOtraCiudad">
       </label>
       <label class="form-field">
         <span>Dirección exacta de entrega</span>
@@ -663,6 +675,67 @@
 </aside>
 
 <script>
+/* ============================================================
+   DEPARTAMENTOS Y CIUDADES PRINCIPALES DE PARAGUAY
+   Nota: Paraguay tiene 263 distritos oficiales en total. Acá listamos
+   los más poblados y conocidos de cada departamento (donde vive la
+   gran mayoría de la gente). Si el cliente no encuentra su ciudad,
+   puede elegir "Otra ciudad" y escribirla a mano.
+   ============================================================ */
+const CIUDADES_POR_DEPARTAMENTO = {
+  "Asunción": ["Asunción"],
+  "Central": ["San Lorenzo","Luque","Capiatá","Lambaré","Fernando de la Mora","Ñemby","Villa Elisa","Itauguá","Limpio","Mariano Roque Alonso","San Antonio","Areguá","Ypacaraí","Itá","Guarambaré","J. Augusto Saldívar","Villeta","Nueva Italia"],
+  "Alto Paraná": ["Ciudad del Este","Hernandarias","Presidente Franco","Minga Guazú","Minga Porá","Santa Rita","Los Cedrales","Yguazú","Naranjal","Juan León Mallorquín"],
+  "Itapúa": ["Encarnación","Cambyretá","Capitán Miranda","Coronel Bogado","Trinidad","Hohenau","Obligado","Bella Vista","Carmen del Paraná","Jesús","Fram"],
+  "Caaguazú": ["Coronel Oviedo","Caaguazú","J. Eulogio Estigarribia","Yhú","Raúl Arsenio Oviedo","San Joaquín","Repatriación"],
+  "Guairá": ["Villarrica","Independencia","Borja","Iturbe"],
+  "Cordillera": ["Caacupé","Atyrá","Tobatí","Piribebuy","Eusebio Ayala","Altos","San Bernardino","Emboscada"],
+  "Paraguarí": ["Paraguarí","Carapeguá","Ybycuí","Quiindy","Acahay"],
+  "Concepción": ["Concepción","Horqueta","Yby Yaú"],
+  "San Pedro": ["San Pedro del Ycuamandiyú","San Estanislao","Santa Rosa del Aguaray"],
+  "Canindeyú": ["Salto del Guairá","Curuguaty","Katueté"],
+  "Caazapá": ["Caazapá","San Juan Nepomuceno","Yuty"],
+  "Misiones": ["San Juan Bautista","Ayolas","San Ignacio"],
+  "Ñeembucú": ["Pilar"],
+  "Amambay": ["Pedro Juan Caballero","Bella Vista (Amambay)"],
+  "Presidente Hayes": ["Villa Hayes","Benjamín Aceval"],
+  "Boquerón": ["Filadelfia","Mariscal Estigarribia","Loma Plata"],
+  "Alto Paraguay": ["Fuerte Olimpo","Bahía Negra"]
+};
+
+function populateDepartamentos(){
+  const sel = document.getElementById('ckDepartamento');
+  Object.keys(CIUDADES_POR_DEPARTAMENTO).forEach(dep => {
+    sel.innerHTML += `<option value="${dep}">${dep}</option>`;
+  });
+}
+
+function populateCiudades(){
+  const dep = document.getElementById('ckDepartamento').value;
+  const citySel = document.getElementById('ckCiudad');
+  const otraWrap = document.getElementById('ckOtraCiudadWrap');
+  otraWrap.style.display = 'none';
+  document.getElementById('ckOtraCiudad').value = '';
+
+  if(!dep){
+    citySel.innerHTML = `<option value="">Primero elegí un departamento</option>`;
+    citySel.disabled = true;
+    return;
+  }
+  citySel.disabled = false;
+  const ciudades = CIUDADES_POR_DEPARTAMENTO[dep] || [];
+  citySel.innerHTML = `<option value="">Elegí tu ciudad</option>` +
+    ciudades.map(c => `<option value="${c}">${c}</option>`).join('') +
+    `<option value="__otra">Otra ciudad</option>`;
+}
+
+document.getElementById('ckCiudad').addEventListener('change', (e) => {
+  const otraWrap = document.getElementById('ckOtraCiudadWrap');
+  otraWrap.style.display = e.target.value === '__otra' ? '' : 'none';
+});
+
+populateDepartamentos();
+
 /* ============================================================
    CONFIGURACIÓN — editá estos valores por los tuyos
    ============================================================ */
@@ -1215,7 +1288,7 @@ function checkoutWhatsApp(customerData){
   let msg = "¡Hola! Quiero hacer este pedido:\n\n";
   msg += `👤 Nombre: ${customerData.nombre}\n`;
   msg += `📞 Teléfono: ${customerData.telefono}\n`;
-  msg += `📍 Ciudad: ${customerData.ciudad}\n`;
+  msg += `📍 Ciudad: ${customerData.ciudad} (${customerData.departamento})\n`;
   msg += customerData.direccion ? `🏠 Dirección: ${customerData.direccion}\n` : `🏠 Entrega: retiro por agencia\n`;
   msg += `💳 Forma de pago: ${customerData.formaPago}\n`;
   if(customerData.necesitaFactura) msg += `🧾 Necesita factura — CI/RUC: ${customerData.cedulaRuc || '(lo confirmo por acá)'}\n`;
@@ -1256,23 +1329,33 @@ document.getElementById('facturaCheckbox').addEventListener('change', (e) => {
 
 function submitCheckoutForm(event){
   event.preventDefault();
+  const departamento = document.getElementById('ckDepartamento').value;
+  const ciudadSelValue = document.getElementById('ckCiudad').value;
+  const ciudadFinal = ciudadSelValue === '__otra'
+    ? document.getElementById('ckOtraCiudad').value.trim()
+    : ciudadSelValue;
+
   const customerData = {
     nombre: document.getElementById('ckNombre').value.trim(),
     telefono: document.getElementById('ckTelefono').value.trim(),
-    ciudad: document.getElementById('ckCiudad').value.trim(),
+    departamento: departamento,
+    ciudad: ciudadFinal,
     direccion: document.getElementById('ckDireccion').value.trim(),
     formaPago: document.getElementById('ckFormaPago').value,
     necesitaFactura: document.getElementById('facturaCheckbox').checked,
     cedulaRuc: document.getElementById('ckCedulaRuc').value.trim()
   };
-  if(!customerData.nombre || !customerData.telefono || !customerData.ciudad){
-    alert('Por favor completá nombre, teléfono y ciudad antes de continuar.');
+  if(!customerData.nombre || !customerData.telefono || !departamento || !ciudadFinal){
+    alert('Por favor completá nombre, teléfono, departamento y ciudad antes de continuar.');
     return;
   }
   checkoutWhatsApp(customerData);
   closeCheckoutForm();
   document.getElementById('checkoutForm').reset();
   document.getElementById('facturaFields').style.display = 'none';
+  document.getElementById('ckCiudad').innerHTML = `<option value="">Primero elegí un departamento</option>`;
+  document.getElementById('ckCiudad').disabled = true;
+  document.getElementById('ckOtraCiudadWrap').style.display = 'none';
 }
 
 function openCart(){
