@@ -80,11 +80,7 @@
   }
   .header-row{display:flex; align-items:center; gap:16px; padding:16px 0;}
   .brand{display:flex; align-items:center; gap:10px; font-weight:700; font-size:1.15rem; white-space:nowrap; text-decoration:none; cursor:pointer; border:none; background:none; color:inherit; padding:0;}
-  .brand-logo{height:72px; width:auto; display:block;}
-  @media (max-width:640px){
-    .brand{flex:1; justify-content:center;}
-    .brand-logo{height:56px;}
-  }
+  .brand-logo{height:88px; width:auto; display:block;}
 
   .search-wrap{flex:1; position:relative; min-width:0;}
   .search{
@@ -447,8 +443,17 @@
   #checkoutForm .checkout-btn{margin-top:6px;}
 
   @media (max-width:640px){
-    .header-row{flex-wrap:wrap;}
-    .search-wrap{order:3; width:100%; flex-basis:100%;}
+    .header-row{
+      display:grid;
+      grid-template-columns:1fr auto 1fr;
+      grid-template-rows:auto auto;
+      align-items:center;
+      row-gap:12px;
+    }
+    .brand{grid-column:2; grid-row:1; justify-content:center;}
+    .brand-logo{height:64px;}
+    .header-actions{grid-column:3; grid-row:1; justify-self:end;}
+    .search-wrap{grid-column:1/-1; grid-row:2; width:100%;}
   }
 </style>
 </head>
