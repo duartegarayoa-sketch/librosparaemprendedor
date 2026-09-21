@@ -79,9 +79,9 @@
     border-bottom:1px solid var(--line);
   }
   .header-row{display:flex; align-items:center; gap:16px; padding:16px 0;}
-  .brand{display:flex; align-items:center; gap:10px; font-weight:700; font-size:1.15rem; white-space:nowrap; text-decoration:none; cursor:pointer; border:none; background:none; color:inherit;}
-  .brand-mark{width:34px; height:34px; flex-shrink:0;}
-  .brand span{color:var(--gold);}
+  .brand{display:flex; align-items:center; gap:10px; font-weight:700; font-size:1.15rem; white-space:nowrap; text-decoration:none; cursor:pointer; border:none; background:none; color:inherit; padding:0;}
+  .brand-logo{height:38px; width:auto; display:block;}
+  @media (max-width:640px){ .brand-logo{height:30px;} }
 
   .search-wrap{flex:1; position:relative; min-width:0;}
   .search{
@@ -467,12 +467,7 @@
 <header>
   <div class="wrap header-row">
     <button class="brand" onclick="navigateToCatalog()">
-      <svg class="brand-mark" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="40" height="40" rx="8" fill="#f0a93c"/>
-        <path d="M11 10h11a5 5 0 0 1 5 5v15H16a5 5 0 0 1-5-5V10z" fill="#14120f"/>
-        <rect x="11" y="10" width="4" height="20" fill="#c0392b"/>
-      </svg>
-      Libros para <span>Emprendedor</span>
+      <img src="imagenes/logo.webp" alt="Libros para Emprendedor Paraguay" class="brand-logo">
     </button>
 
     <div class="search-wrap">
