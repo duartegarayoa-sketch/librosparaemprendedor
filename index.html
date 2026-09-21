@@ -5,6 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Libros para Emprendedor | Paraguay</title>
 <meta name="description" content="Catálogo de libros para emprendedores en Paraguay. Promo 3x2 en toda la tienda. Compra directa por WhatsApp.">
+
+<!-- Vista previa al compartir en WhatsApp, Instagram, Facebook, etc. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Libros para Emprendedor Paraguay">
+<meta property="og:title" content="Libros para Emprendedor | 3x2 en toda la tienda">
+<meta property="og:description" content="Catálogo de libros para emprendedores en Paraguay. Promo 3x2 en toda la tienda + Kit de Implementación de regalo. Compra directa por WhatsApp.">
+<meta property="og:image" content="https://duartegarayoa-sketch.github.io/librosparaemprendedor/imagenes/hero-desktop.webp">
+<meta property="og:url" content="https://duartegarayoa-sketch.github.io/librosparaemprendedor/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Libros para Emprendedor | 3x2 en toda la tienda">
+<meta name="twitter:description" content="Catálogo de libros para emprendedores en Paraguay. Promo 3x2 en toda la tienda + Kit de Implementación de regalo.">
+<meta name="twitter:image" content="https://duartegarayoa-sketch.github.io/librosparaemprendedor/imagenes/hero-desktop.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -419,6 +431,18 @@
   .howto-steps b{color:var(--paper); font-family:'Space Grotesk',sans-serif; display:block; margin-bottom:2px;}
   .footer-link{background:none; border:none; color:var(--gold); text-decoration:underline; cursor:pointer; font-size:0.85rem; padding:0; font-family:inherit;}
 
+  /* ---------- formulario de datos de envío ---------- */
+  .checkout-form-intro{color:var(--paper-dim); font-size:0.88rem; margin:8px 0 18px;}
+  .form-field{display:flex; flex-direction:column; gap:6px; margin-bottom:14px; font-size:0.85rem; color:var(--paper-dim);}
+  .form-field input, .form-field select{
+    background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px 12px;
+    color:var(--paper); font-size:0.9rem; font-family:inherit;
+  }
+  .form-field input:focus, .form-field select:focus{outline:none; border-color:var(--gold);}
+  .form-checkbox{display:flex; align-items:center; gap:8px; margin-bottom:14px; font-size:0.88rem; color:var(--paper-dim); cursor:pointer;}
+  .form-checkbox input{width:16px; height:16px;}
+  #checkoutForm .checkout-btn{margin-top:6px;}
+
   @media (max-width:640px){
     .header-row{flex-wrap:wrap;}
     .search-wrap{order:3; width:100%; flex-basis:100%;}
@@ -479,8 +503,8 @@
 
   <a class="hero-banner" href="#catalogo" aria-label="Ver promoción 3x2 en toda la tienda">
     <picture>
-      <source media="(max-width: 768px)" srcset="imagenes/hero-mobile.png">
-      <img src="imagenes/hero-desktop.png" alt="Promoción 3x2 en toda la tienda — Libros para Emprendedor Paraguay" loading="eager" fetchpriority="high" width="1983" height="793">
+      <source media="(max-width: 768px)" srcset="imagenes/hero-mobile.webp">
+      <img src="imagenes/hero-desktop.webp" alt="Promoción 3x2 en toda la tienda — Libros para Emprendedor Paraguay" loading="eager" fetchpriority="high" width="1983" height="793">
     </picture>
   </a>
 
@@ -577,8 +601,53 @@
     <ol class="howto-steps">
       <li><b>Agregá al carrito</b>Elegí los libros que te interesan y tocá "Agregar al carrito" en cada uno.</li>
       <li><b>Revisá tu 3x2</b>En el carrito vas a ver el descuento aplicado automáticamente si llevás 3 libros o más.</li>
-      <li><b>Finalizá por WhatsApp</b>Tocá "Finalizar pedido por WhatsApp" y coordinamos el pago (transferencia o depósito) y la entrega.</li>
+      <li><b>Finalizá por WhatsApp</b>Completá tus datos y coordinamos el pago (transferencia o depósito) y la entrega.</li>
     </ol>
+  </div>
+</div>
+
+<div class="modal-overlay" id="checkoutFormOverlay">
+  <div class="modal-box">
+    <button class="cart-close" onclick="closeCheckoutForm()" aria-label="Cerrar">&times;</button>
+    <h2>Un último paso</h2>
+    <p class="checkout-form-intro">Completá tus datos para que armemos tu pedido y coordinemos la entrega por WhatsApp.</p>
+    <form id="checkoutForm" onsubmit="submitCheckoutForm(event)">
+      <label class="form-field">
+        <span>Nombre completo *</span>
+        <input type="text" id="ckNombre" required>
+      </label>
+      <label class="form-field">
+        <span>Teléfono de contacto *</span>
+        <input type="tel" id="ckTelefono" required>
+      </label>
+      <label class="form-field">
+        <span>Ciudad *</span>
+        <input type="text" id="ckCiudad" required>
+      </label>
+      <label class="form-field">
+        <span>Dirección exacta de entrega</span>
+        <input type="text" id="ckDireccion" placeholder="Dejalo vacío si retirás por agencia">
+      </label>
+      <label class="form-field">
+        <span>Forma de pago preferida *</span>
+        <select id="ckFormaPago" required>
+          <option value="Transferencia bancaria">Transferencia bancaria</option>
+          <option value="Depósito">Depósito</option>
+        </select>
+      </label>
+      <label class="form-checkbox">
+        <input type="checkbox" id="facturaCheckbox">
+        <span>¿Necesitás factura?</span>
+      </label>
+      <label class="form-field" id="facturaFields" style="display:none;">
+        <span>Cédula o RUC</span>
+        <input type="text" id="ckCedulaRuc">
+      </label>
+      <button type="submit" class="checkout-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.48 1.32 4.99L2 22l5.25-1.38c1.44.79 3.07 1.2 4.72 1.2h.01c5.46 0 9.91-4.45 9.91-9.91C21.9 6.45 17.5 2 12.04 2Z"/></svg>
+        Enviar pedido por WhatsApp
+      </button>
+    </form>
   </div>
 </div>
 
@@ -1131,19 +1200,26 @@ function updateCartUI(){
     ${calc.descuento > 0 ? `<div class="cart-line discount"><span>Descuento 3x2</span><span>-${gs(calc.descuento)}</span></div>` : ''}
     ${combosTotal > 0 ? `<div class="cart-line"><span>Combos</span><span>${gs(combosTotal)}</span></div>` : ''}
     <div class="cart-total"><span>Total</span><span>${gs(grandTotal)}</span></div>
-    <button class="checkout-btn" onclick="checkoutWhatsApp()">
+    <button class="checkout-btn" onclick="openCheckoutForm()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.48 1.32 4.99L2 22l5.25-1.38c1.44.79 3.07 1.2 4.72 1.2h.01c5.46 0 9.91-4.45 9.91-9.91C21.9 6.45 17.5 2 12.04 2Z"/></svg>
       Finalizar pedido por WhatsApp
     </button>`;
 }
 
-function checkoutWhatsApp(){
+function checkoutWhatsApp(customerData){
   const calc = compute3x2();
   const combosTotal = COMBO_CART.reduce((s, ci) => {
     const c = ALL_COMBOS.find(x => x.id === ci.id);
     return s + (c ? c.precio * ci.cantidad : 0);
   }, 0);
   let msg = "¡Hola! Quiero hacer este pedido:\n\n";
+  msg += `👤 Nombre: ${customerData.nombre}\n`;
+  msg += `📞 Teléfono: ${customerData.telefono}\n`;
+  msg += `📍 Ciudad: ${customerData.ciudad}\n`;
+  msg += customerData.direccion ? `🏠 Dirección: ${customerData.direccion}\n` : `🏠 Entrega: retiro por agencia\n`;
+  msg += `💳 Forma de pago: ${customerData.formaPago}\n`;
+  if(customerData.necesitaFactura) msg += `🧾 Necesita factura — CI/RUC: ${customerData.cedulaRuc || '(lo confirmo por acá)'}\n`;
+  msg += `\n`;
   CART.forEach(ci => {
     const b = findBook(ci.id);
     if(!b) return;
@@ -1161,6 +1237,42 @@ function checkoutWhatsApp(){
   if(combosTotal > 0) msg += `\nCombos: ${gs(combosTotal)}`;
   msg += `\nTotal a pagar: ${gs(calc.total + combosTotal)}\n\n¿Está todo disponible? ¿Cómo coordinamos la entrega?`;
   window.open(waLink(msg), '_blank');
+}
+
+function openCheckoutForm(){
+  if(CART.length === 0 && COMBO_CART.length === 0) return;
+  closeCart();
+  document.getElementById('checkoutFormOverlay').classList.add('open');
+}
+function closeCheckoutForm(){
+  document.getElementById('checkoutFormOverlay').classList.remove('open');
+}
+document.getElementById('checkoutFormOverlay').addEventListener('click', (e) => {
+  if(e.target.id === 'checkoutFormOverlay') closeCheckoutForm();
+});
+document.getElementById('facturaCheckbox').addEventListener('change', (e) => {
+  document.getElementById('facturaFields').style.display = e.target.checked ? '' : 'none';
+});
+
+function submitCheckoutForm(event){
+  event.preventDefault();
+  const customerData = {
+    nombre: document.getElementById('ckNombre').value.trim(),
+    telefono: document.getElementById('ckTelefono').value.trim(),
+    ciudad: document.getElementById('ckCiudad').value.trim(),
+    direccion: document.getElementById('ckDireccion').value.trim(),
+    formaPago: document.getElementById('ckFormaPago').value,
+    necesitaFactura: document.getElementById('facturaCheckbox').checked,
+    cedulaRuc: document.getElementById('ckCedulaRuc').value.trim()
+  };
+  if(!customerData.nombre || !customerData.telefono || !customerData.ciudad){
+    alert('Por favor completá nombre, teléfono y ciudad antes de continuar.');
+    return;
+  }
+  checkoutWhatsApp(customerData);
+  closeCheckoutForm();
+  document.getElementById('checkoutForm').reset();
+  document.getElementById('facturaFields').style.display = 'none';
 }
 
 function openCart(){
@@ -1282,7 +1394,7 @@ function showProduct(id){
     <div class="pdp-section">
       <h2>🎁 Con tu compra hoy te llevás GRATIS</h2>
       <div class="kit-card">
-        <img src="imagenes/kit-implementacion.png" alt="Kit de Implementación para Emprendedores: tracker mensual, resaltadores, separadores y calcomanías motivadoras" loading="lazy">
+        <img src="imagenes/kit-implementacion.webp" alt="Kit de Implementación para Emprendedores: tracker mensual, resaltadores, separadores y calcomanías motivadoras" loading="lazy">
         <div class="kit-info">
           <h3>Kit de Implementación para Emprendedores</h3>
           <ul class="kit-checklist">
