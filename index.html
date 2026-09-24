@@ -294,6 +294,11 @@
   .cart-line.discount{color:var(--gold);}
   .cart-total{display:flex; justify-content:space-between; font-size:1.15rem; font-weight:700; margin:10px 0 16px;}
   .cart-3x2-note{background:rgba(240,169,60,0.1); border:1px solid var(--gold-dim); border-radius:8px; padding:10px 12px; font-size:0.8rem; color:var(--gold); margin-bottom:14px;}
+  .continue-shopping-btn{
+    width:100%; background:none; border:1px solid var(--line); color:var(--paper);
+    border-radius:8px; padding:11px; font-weight:600; font-size:0.88rem; cursor:pointer; margin-bottom:14px;
+  }
+  .continue-shopping-btn:hover{border-color:var(--gold); color:var(--gold);}
   .checkout-btn{
     width:100%; background:var(--whatsapp); color:#0c1f10; border:none; border-radius:8px;
     padding:13px; font-weight:700; font-size:0.95rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
@@ -1372,6 +1377,7 @@ function updateCartUI(){
   const grandTotal = calc.total + combosTotal;
 
   footerEl.innerHTML = `
+    <button class="continue-shopping-btn" onclick="closeCart()">← Seguir eligiendo</button>
     ${calc.freeCount > 0
       ? `<div class="cart-3x2-note">🎁 ¡Promo 3x2 aplicada! Tenés ${calc.freeCount} libro${calc.freeCount>1?'s':''} gratis + tu Kit de Implementación de regalo.</div>`
       : (CART.length > 0 ? `<div class="cart-3x2-note">🎁 Agregá ${3 - (CART.reduce((s,ci)=>s+ci.cantidad,0) % 3 || 3)} libro(s) más para activar el 3x2 y desbloquear tu Kit de Implementación de regalo.</div>` : '')}
