@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es-PY">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de Ventas (privado)</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root{
+    --bg:#14120f; --bg-elevated:#1c1a16; --card:#201d18; --line:#33302a;
+    --gold:#f0a93c; --paper:#f4ede1; --paper-dim:#b7ada0; --red:#c0392b; --green:#3fbf5f;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--paper); font-family:system-ui,sans-serif; padding:20px;}
+  .wrap{max-width:560px; margin:0 auto;}
+  h1{font-size:1.3rem; margin-bottom:4px;}
+  .subtitle{color:var(--paper-dim); font-size:0.85rem; margin-bottom:24px;}
+  .card{background:var(--bg-elevated); border:1px solid var(--line); border-radius:12px; padding:20px; margin-bottom:20px;}
+  input, select{
+    width:100%; background:var(--card); border:1px solid var(--line); border-radius:8px;
+    padding:10px 12px; color:var(--paper); font-size:0.95rem; margin-bottom:10px;
+  }
+  button{
+    background:var(--gold); color:#1c1204; border:none; border-radius:8px; padding:12px;
+    font-weight:700; font-size:0.95rem; cursor:pointer; width:100%;
+  }
+  button:hover{filter:brightness(1.08);}
+  button.secondary{background:var(--card); color:var(--paper); border:1px solid var(--line);}
+  button.danger{background:var(--red); color:#fff;}
+  .item-row{display:flex; gap:8px; align-items:center; margin-bottom:10px;}
+  .item-row input{margin-bottom:0;}
+  .item-row input[name="titulo"]{flex:3;}
+  .item-row input[name="cantidad"]{flex:1;}
+  .item-row button{width:auto; padding:10px 14px; flex-shrink:0;}
+  .summary-grid{display:flex; gap:14px; flex-wrap:wrap; margin-top:10px;}
+  .summary-box{flex:1; min-width:140px; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; text-align:center;}
+  .summary-box b{display:block; font-size:1.4rem; color:var(--gold);}
+  .summary-box span{font-size:0.78rem; color:var(--paper-dim);}
+  .result{background:rgba(63,191,95,0.1); border:1px solid var(--green); border-radius:10px; padding:14px; margin-top:16px; font-size:0.88rem; display:none;}
+  .result.error{background:rgba(192,57,43,0.1); border-color:var(--red);}
+  .result.show{display:block;}
+  #loginScreen{max-width:320px; margin:80px auto; text-align:center;}
+  .hidden{display:none;}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <h1>🔒 Panel de Ventas</h1>
+  <p class="subtitle">Acceso privado. No compartas este link.</p>
+  <div class="card">
+    <input type="password" id="loginPassword" placeholder="Contraseña">
+    <button onclick="intentarLogin()">Entrar</button>
+    <div id="loginError" style="color:var(--red); font-size:0.85rem; margin-top:10px; display:none;">Contraseña incorrecta.</div>
+  </div>
+</div>
+
+<div class="wrap hidden" id="panelScreen">
+  <h1>Panel de Ventas</h1>
+  <p class="subtitle">Cargá cada venta acá. El 3x2 se calcula solo, el stock se descuenta solo, y tu ganancia se suma a la semana automáticamente.</p>
+
+  <div class="card">
+    <h3 style="margin-top:0;">Ganancia de esta semana</h3>
+    <div class="summary-grid" id="resumenSemanal">
+      <div class="summary-box"><b>...</b><span>Cargando</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0;">Registrar nueva venta</h3>
+    <div id="itemsContainer"></div>
+    <button class="secondary" onclick="agregarLinea()">+ Agregar libro</button>
+    <div style="height:14px;"></div>
+    <button onclick="registrarVenta()">Registrar venta</button>
+    <div class="result" id="resultBox"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   CONFIGURACIÓN — completá estos dos valores
+   ============================================================ */
+const CONFIG = {
+  // La misma clave que pusiste en PASSWORD dentro del Apps Script
+  PANEL_PASSWORD: "281099",
+  // La URL que te da Google al "Implementar" el Apps Script (termina en /exec)
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzsgKpWY3bmHRBJkRW4UeI6KjgkNb_BInK43nY47Hl8bq48ZhDJO1bKRvta28Y6aZQr/exec"
+};
+
+let PASSWORD_SESION = "";
+let LIBROS_DISPONIBLES = [];
+
+function intentarLogin(){
+  const val = document.getElementById('loginPassword').value;
+  if(val === CONFIG.PANEL_PASSWORD){
+    PASSWORD_SESION = val;
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('panelScreen').classList.remove('hidden');
+    cargarLibros();
+    cargarResumenSemanal();
+    agregarLinea();
+  }else{
+    document.getElementById('loginError').style.display = 'block';
+  }
+}
+document.getElementById('loginPassword').addEventListener('keydown', e => {
+  if(e.key === 'Enter') intentarLogin();
+});
+
+async function llamarApi(payload){
+  const res = await fetch(CONFIG.APPS_SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify({ password: PASSWORD_SESION, ...payload })
+  });
+  return res.json();
+}
+
+async function cargarLibros(){
+  try{
+    const data = await llamarApi({ action: 'listarLibros' });
+    if(data.ok) LIBROS_DISPONIBLES = data.libros;
+  }catch(e){ console.error(e); }
+}
+
+async function cargarResumenSemanal(){
+  const box = document.getElementById('resumenSemanal');
+  try{
+    const data = await llamarApi({ action: 'resumenSemanal' });
+    if(data.ok){
+      box.innerHTML = `
+        <div class="summary-box"><b>Gs. ${Number(data.ganancia).toLocaleString('es-PY')}</b><span>Ganancia</span></div>
+        <div class="summary-box"><b>Gs. ${Number(data.totalCobrado).toLocaleString('es-PY')}</b><span>Cobrado</span></div>
+        <div class="summary-box"><b>${data.cantidadVentas}</b><span>Ventas</span></div>
+      `;
+    }
+  }catch(e){
+    box.innerHTML = `<div class="summary-box"><b>—</b><span>No se pudo cargar</span></div>`;
+  }
+}
+
+function agregarLinea(){
+  const container = document.getElementById('itemsContainer');
+  const row = document.createElement('div');
+  row.className = 'item-row';
+  const datalistId = 'librosList';
+  row.innerHTML = `
+    <input type="text" name="titulo" list="${datalistId}" placeholder="Título del libro">
+    <input type="number" name="cantidad" value="1" min="1">
+    <button class="danger" onclick="this.parentElement.remove()">✕</button>
+  `;
+  container.appendChild(row);
+
+  if(!document.getElementById(datalistId)){
+    const dl = document.createElement('datalist');
+    dl.id = datalistId;
+    document.body.appendChild(dl);
+  }
+  const dl = document.getElementById(datalistId);
+  dl.innerHTML = LIBROS_DISPONIBLES.map(l => `<option value="${l.titulo}">`).join('');
+}
+
+async function registrarVenta(){
+  const rows = document.querySelectorAll('#itemsContainer .item-row');
+  const items = [];
+  rows.forEach(row => {
+    const titulo = row.querySelector('[name="titulo"]').value.trim();
+    const cantidad = parseInt(row.querySelector('[name="cantidad"]').value, 10);
+    if(titulo && cantidad > 0) items.push({ titulo, cantidad });
+  });
+
+  const resultBox = document.getElementById('resultBox');
+  if(items.length === 0){
+    resultBox.className = 'result error show';
+    resultBox.textContent = 'Agregá al menos un libro antes de registrar.';
+    return;
+  }
+
+  resultBox.className = 'result show';
+  resultBox.textContent = 'Registrando...';
+
+  try{
+    const data = await llamarApi({ action: 'registrarVenta', items });
+    if(data.ok){
+      resultBox.className = 'result show';
+      resultBox.innerHTML = `
+        ✅ Venta registrada.<br>
+        <b>Cobrado:</b> Gs. ${Number(data.totalCobrado).toLocaleString('es-PY')}<br>
+        <b>Ganancia:</b> Gs. ${Number(data.ganancia).toLocaleString('es-PY')}<br>
+        <b>Detalle:</b> ${data.detalle}
+      `;
+      document.getElementById('itemsContainer').innerHTML = '';
+      agregarLinea();
+      cargarResumenSemanal();
+      cargarLibros();
+    }else{
+      resultBox.className = 'result error show';
+      resultBox.textContent = '❌ ' + data.error;
+    }
+  }catch(e){
+    resultBox.className = 'result error show';
+    resultBox.textContent = '❌ Error de conexión: ' + e.message;
+  }
+}
+</script>
+</body>
+</html>
