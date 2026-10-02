@@ -8,11 +8,11 @@
 <style>
   :root{
     --bg:#14120f; --bg-elevated:#1c1a16; --card:#201d18; --line:#33302a;
-    --gold:#f0a93c; --paper:#f4ede1; --paper-dim:#b7ada0; --red:#c0392b; --green:#3fbf5f;
+    --gold:#f0a93c; --gold-dim:#b9812c; --paper:#f4ede1; --paper-dim:#b7ada0; --red:#c0392b; --green:#3fbf5f;
   }
   *{box-sizing:border-box;}
   body{margin:0; background:var(--bg); color:var(--paper); font-family:system-ui,sans-serif; padding:20px;}
-  .wrap{max-width:600px; margin:0 auto;}
+  .wrap{max-width:620px; margin:0 auto;}
   h1{font-size:1.3rem; margin-bottom:4px;}
   .subtitle{color:var(--paper-dim); font-size:0.85rem; margin-bottom:24px;}
   .card{background:var(--bg-elevated); border:1px solid var(--line); border-radius:12px; padding:20px; margin-bottom:20px;}
@@ -29,10 +29,14 @@
   button.secondary{background:var(--card); color:var(--paper); border:1px solid var(--line);}
   button.danger{background:var(--red); color:#fff;}
   button.outline-danger{background:none; border:1px solid var(--red); color:var(--red);}
+  button.small{width:auto; padding:6px 10px; font-size:0.78rem;}
+  .tabs{display:flex; gap:8px; margin-bottom:16px;}
+  .tab-btn{flex:1; background:var(--card); border:1px solid var(--line); color:var(--paper-dim); padding:10px; border-radius:8px; cursor:pointer; font-weight:600; font-size:0.88rem;}
+  .tab-btn.active{background:var(--gold); color:#1c1204; border-color:var(--gold);}
   .summary-grid{display:flex; gap:14px; flex-wrap:wrap; margin-top:10px;}
-  .summary-box{flex:1; min-width:140px; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; text-align:center;}
-  .summary-box b{display:block; font-size:1.4rem; color:var(--gold);}
-  .summary-box span{font-size:0.78rem; color:var(--paper-dim);}
+  .summary-box{flex:1; min-width:130px; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; text-align:center;}
+  .summary-box b{display:block; font-size:1.3rem; color:var(--gold);}
+  .summary-box span{font-size:0.76rem; color:var(--paper-dim);}
   .result{background:rgba(63,191,95,0.1); border:1px solid var(--green); border-radius:10px; padding:14px; margin-top:16px; font-size:0.88rem; display:none;}
   .result.error{background:rgba(192,57,43,0.1); border-color:var(--red);}
   .result.show{display:block;}
@@ -69,20 +73,35 @@
   .sale-line .remove-btn{background:none; border:none; color:var(--paper-dim); font-size:1.1rem; cursor:pointer; padding:0 4px; width:auto;}
   .sale-line .remove-btn:hover{color:var(--red);}
   .free-tag{background:var(--gold); color:#1c1204; font-size:0.68rem; font-weight:700; padding:2px 7px; border-radius:5px; white-space:nowrap;}
+  .combo-tag{background:var(--gold-dim); color:#1c1204; font-size:0.68rem; font-weight:700; padding:2px 7px; border-radius:5px; white-space:nowrap;}
 
   .preview-totals{border-top:1px dashed var(--line); margin-top:12px; padding-top:12px;}
   .preview-row{display:flex; justify-content:space-between; font-size:0.88rem; color:var(--paper-dim); margin-bottom:4px;}
   .preview-row.total{font-size:1.1rem; font-weight:700; color:var(--paper); margin-top:6px;}
   .empty-cart{color:var(--paper-dim); font-size:0.85rem; text-align:center; padding:10px 0;}
 
-  .low-stock-card{border-color:var(--gold-dim,#b9812c); display:none;}
+  .low-stock-card{display:none;}
   .low-stock-card.show{display:block;}
   .low-stock-item{display:flex; justify-content:space-between; font-size:0.86rem; padding:6px 0; border-bottom:1px solid var(--line);}
   .low-stock-item:last-child{border-bottom:none;}
   .low-stock-item .cant{color:var(--gold); font-weight:700;}
   .low-stock-item .cant.cero{color:var(--red);}
 
-  .undo-row{margin-top:10px;}
+  .recent-sale-item{padding:10px 0; border-bottom:1px solid var(--line); font-size:0.85rem;}
+  .recent-sale-item:last-child{border-bottom:none;}
+  .recent-sale-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;}
+  .recent-sale-head .fecha{color:var(--paper-dim); font-size:0.76rem;}
+  .recent-sale-detalle{color:var(--paper-dim); font-size:0.8rem; margin-bottom:6px;}
+  .recent-sale-nums{display:flex; gap:12px; font-size:0.78rem; color:var(--paper-dim);}
+
+  .top-item{display:flex; justify-content:space-between; font-size:0.86rem; padding:7px 0; border-bottom:1px solid var(--line);}
+  .top-item:last-child{border-bottom:none;}
+  .top-item .rank{color:var(--gold); font-weight:700; margin-right:8px;}
+
+  .confirm-detail{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; margin-top:14px;}
+  .confirm-row{display:flex; justify-content:space-between; font-size:0.88rem; margin-bottom:6px;}
+  .confirm-row b{color:var(--paper);}
+  .confirm-row.pct{color:var(--gold); font-weight:700; font-size:1rem; margin-top:8px;}
 </style>
 </head>
 <body>
@@ -99,13 +118,13 @@
 
 <div class="wrap hidden" id="panelScreen">
   <h1>Panel de Ventas</h1>
-  <p class="subtitle">Buscá cada libro vendido. El 3x2 se calcula solo en vivo, antes de registrar.</p>
+  <p class="subtitle">Buscá cada libro o combo vendido. El 3x2 se calcula solo en vivo, antes de registrar.</p>
 
   <div class="card">
-    <h3>Ganancia de esta semana</h3>
-    <div class="summary-grid" id="resumenSemanal">
-      <div class="summary-box"><b>...</b><span>Cargando</span></div>
-    </div>
+    <h3>Ganancia</h3>
+    <div class="summary-grid" id="resumenHoy"></div>
+    <div style="height:10px;"></div>
+    <div class="summary-grid" id="resumenSemanal"></div>
   </div>
 
   <div class="card low-stock-card" id="lowStockCard">
@@ -114,38 +133,72 @@
   </div>
 
   <div class="card">
+    <h3>🏆 Más vendidos (últimos 30 días)</h3>
+    <div id="topVendidosList" style="color:var(--paper-dim); font-size:0.85rem;">Cargando...</div>
+  </div>
+
+  <div class="card">
     <h3>Registrar nueva venta</h3>
 
-    <div class="search-field">
+    <div class="tabs">
+      <button class="tab-btn active" id="tabLibro" onclick="cambiarTab('libro')">📖 Libros sueltos</button>
+      <button class="tab-btn" id="tabCombo" onclick="cambiarTab('combo')">📦 Combos</button>
+    </div>
+
+    <div class="search-field" id="buscadorLibro">
       <input type="text" id="searchInput" placeholder="Escribí el título del libro..." autocomplete="off">
       <div class="dropdown" id="searchDropdown"></div>
     </div>
 
+    <div class="search-field hidden" id="buscadorCombo">
+      <input type="text" id="comboSearchInput" placeholder="Escribí el nombre del combo..." autocomplete="off">
+      <div class="dropdown" id="comboDropdown"></div>
+    </div>
+
     <div id="saleLines"></div>
-    <div class="empty-cart" id="emptyCartMsg">Todavía no agregaste ningún libro.</div>
+    <div class="empty-cart" id="emptyCartMsg">Todavía no agregaste ningún libro o combo.</div>
 
     <div class="preview-totals" id="previewTotals" style="display:none;"></div>
+
+    <input type="text" id="clienteInput" placeholder="Cliente (opcional, para pedirle reseña después)" style="margin-top:14px;">
+
+    <label style="display:flex; align-items:center; gap:8px; font-size:0.86rem; color:var(--paper-dim); margin:14px 0 0; cursor:pointer;">
+      <input type="checkbox" id="precioManualCheck" style="width:16px; height:16px;" onchange="toggleMontoManual()">
+      ¿Le hiciste un precio especial a esta venta? (solo aplica a los libros sueltos, no a los combos)
+    </label>
+    <input type="number" id="montoManualInput" placeholder="Monto total que cobraste por los libros sueltos (Gs.)" style="margin-top:10px; display:none;">
 
     <div style="height:14px;"></div>
     <button onclick="registrarVenta()" id="submitBtn">Registrar venta</button>
     <div class="result" id="resultBox"></div>
-    <div class="undo-row hidden" id="undoRow">
-      <button class="outline-danger" onclick="deshacerVenta()">↩️ Deshacer esta venta</button>
-    </div>
   </div>
 
   <div class="card">
-    <h3>Reponer stock</h3>
-    <p class="subtitle" style="margin-bottom:14px;">Cuando te llega mercadería nueva, sumala acá.</p>
+    <h3>Últimas ventas</h3>
+    <div id="ultimasVentasList" style="color:var(--paper-dim); font-size:0.85rem;">Cargando...</div>
+  </div>
+
+  <div class="card">
+    <h3>Stock: reponer o ajustar</h3>
+    <div class="tabs">
+      <button class="tab-btn active" id="tabReponer" onclick="cambiarTabStock('reponer')">+ Reponer</button>
+      <button class="tab-btn" id="tabAjustar" onclick="cambiarTabStock('ajustar')">🎯 Ajustar a un número</button>
+    </div>
 
     <div class="search-field">
       <input type="text" id="restockSearchInput" placeholder="Escribí el título del libro..." autocomplete="off">
       <div class="dropdown" id="restockDropdown"></div>
     </div>
     <div id="restockSelected" style="font-size:0.88rem; color:var(--paper-dim); margin-bottom:10px;"></div>
-    <input type="number" id="restockCantidad" placeholder="Cantidad que llegó" min="1" style="margin-bottom:10px;">
-    <button class="secondary" onclick="reponerStock()">Reponer stock</button>
+
+    <input type="number" id="restockCantidad" placeholder="Cantidad que llegó" min="1" style="margin-bottom:10px;" class="modo-reponer">
+    <input type="number" id="ajustarCantidad" placeholder="Stock real (el número exacto que contaste)" min="0" style="margin-bottom:10px; display:none;" class="modo-ajustar">
+
+    <button class="secondary" onclick="confirmarStock()" id="stockSubmitBtn">Reponer stock</button>
     <div class="result" id="restockResultBox"></div>
+    <div class="hidden" id="undoStockRow" style="margin-top:10px;">
+      <button class="outline-danger" onclick="deshacerReposicion()">↩️ Deshacer este cambio de stock</button>
+    </div>
   </div>
 </div>
 
@@ -155,15 +208,19 @@ const CONFIG = {
   APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzsgKpWY3bmHRBJkRW4UeI6KjgkNb_BInK43nY47Hl8bq48ZhDJO1bKRvta28Y6aZQr/exec"
 };
 
-const STOCK_BAJO_UMBRAL = 2; // libros con esta cantidad o menos se marcan como "poco stock"
+const STOCK_BAJO_UMBRAL = 2;
 
 let PASSWORD_SESION = "";
 let LIBROS_DISPONIBLES = [];
-let VENTA_ACTUAL = [];
+let COMBOS_DISPONIBLES = [];
+let VENTA_ACTUAL = []; // [{tipo:'libro'|'combo', titulo/nombre, cantidad, precio}]
 let LIBRO_A_REPONER = null;
+let modoStock = 'reponer';
+let tabActivo = 'libro';
 
 function gs(n){ return "Gs. " + Number(n).toLocaleString('es-PY'); }
 function normalizarTexto(s){ return String(s||"").normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
+function esc(s){ return String(s).replace(/'/g,"\\'"); }
 
 function intentarLogin(){
   const val = document.getElementById('loginPassword').value;
@@ -172,7 +229,10 @@ function intentarLogin(){
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('panelScreen').classList.remove('hidden');
     cargarLibros();
-    cargarResumenSemanal();
+    cargarCombos();
+    cargarResumen();
+    cargarTopVendidos();
+    cargarUltimasVentas();
   }else{
     document.getElementById('loginError').style.display = 'block';
   }
@@ -187,14 +247,106 @@ async function llamarApi(payload){
   return res.json();
 }
 
+/* ---------- carga inicial ---------- */
 async function cargarLibros(){
   try{
     const data = await llamarApi({ action: 'listarLibros' });
-    if(data.ok){
-      LIBROS_DISPONIBLES = data.libros;
-      renderStockBajo();
-    }
+    if(data.ok){ LIBROS_DISPONIBLES = data.libros; renderStockBajo(); }
   }catch(e){ console.error(e); }
+}
+async function cargarCombos(){
+  try{
+    const data = await llamarApi({ action: 'listarCombos' });
+    if(data.ok) COMBOS_DISPONIBLES = data.combos;
+  }catch(e){ console.error(e); }
+}
+async function cargarResumen(){
+  const boxHoy = document.getElementById('resumenHoy');
+  const boxSemana = document.getElementById('resumenSemanal');
+  try{
+    const data = await llamarApi({ action: 'resumen' });
+    if(data.ok){
+      boxHoy.innerHTML = `
+        <div class="summary-box"><b>${gs(data.hoy.ganancia)}</b><span>Ganancia hoy</span></div>
+        <div class="summary-box"><b>${gs(data.hoy.totalCobrado)}</b><span>Cobrado hoy</span></div>
+        <div class="summary-box"><b>${data.hoy.cantidadVentas}</b><span>Ventas hoy</span></div>
+      `;
+      boxSemana.innerHTML = `
+        <div class="summary-box"><b>${gs(data.semana.ganancia)}</b><span>Ganancia semana</span></div>
+        <div class="summary-box"><b>${gs(data.semana.totalCobrado)}</b><span>Cobrado semana</span></div>
+        <div class="summary-box"><b>${data.semana.cantidadVentas}</b><span>Ventas semana</span></div>
+      `;
+    }
+  }catch(e){
+    boxHoy.innerHTML = `<div class="summary-box"><b>—</b><span>No se pudo cargar</span></div>`;
+  }
+}
+async function cargarTopVendidos(){
+  const box = document.getElementById('topVendidosList');
+  try{
+    const data = await llamarApi({ action: 'topVendidos', dias: 30 });
+    if(data.ok && data.top.length > 0){
+      box.innerHTML = data.top.map((t,i) => `
+        <div class="top-item"><span><span class="rank">#${i+1}</span>${t.titulo}</span><span>${t.cantidad} vendidos</span></div>
+      `).join('');
+    }else{
+      box.innerHTML = `<p style="margin:0;">Todavía no hay suficientes ventas registradas para armar el ranking.</p>`;
+    }
+  }catch(e){
+    box.innerHTML = `<p style="margin:0;">No se pudo cargar.</p>`;
+  }
+}
+async function cargarUltimasVentas(){
+  const box = document.getElementById('ultimasVentasList');
+  try{
+    const data = await llamarApi({ action: 'listarUltimasVentas', cantidad: 10 });
+    if(data.ok && data.ventas.length > 0){
+      box.innerHTML = data.ventas.map(v => {
+        const fecha = new Date(v.fecha);
+        const fechaStr = fecha.toLocaleDateString('es-PY') + ' ' + fecha.toLocaleTimeString('es-PY', {hour:'2-digit', minute:'2-digit'});
+        return `
+        <div class="recent-sale-item">
+          <div class="recent-sale-head">
+            <span class="fecha">${fechaStr}${v.cliente ? ' · '+v.cliente : ''}</span>
+            <button class="small outline-danger" onclick="eliminarVenta(${v.fila})">Eliminar</button>
+          </div>
+          <div class="recent-sale-detalle">${v.detalle}</div>
+          <div class="recent-sale-nums">
+            <span>Cobrado: ${gs(v.totalCobrado)}</span>
+            <span>Ganancia: ${gs(v.ganancia)}</span>
+          </div>
+        </div>`;
+      }).join('');
+    }else{
+      box.innerHTML = `<p style="margin:0;">Todavía no registraste ninguna venta.</p>`;
+    }
+  }catch(e){
+    box.innerHTML = `<p style="margin:0;">No se pudo cargar.</p>`;
+  }
+}
+
+async function eliminarVenta(fila){
+  if(!confirm('¿Eliminar esta venta? Se va a reponer el stock correspondiente.')) return;
+  try{
+    const data = await llamarApi({ action: 'eliminarVentaPorFila', fila });
+    if(data.ok){
+      cargarUltimasVentas();
+      cargarResumen();
+      cargarLibros();
+      cargarTopVendidos();
+    }else{
+      alert('Error: ' + data.error);
+    }
+  }catch(e){ alert('Error de conexión: ' + e.message); }
+}
+
+/* ---------- pestañas libro / combo ---------- */
+function cambiarTab(tab){
+  tabActivo = tab;
+  document.getElementById('tabLibro').classList.toggle('active', tab==='libro');
+  document.getElementById('tabCombo').classList.toggle('active', tab==='combo');
+  document.getElementById('buscadorLibro').classList.toggle('hidden', tab!=='libro');
+  document.getElementById('buscadorCombo').classList.toggle('hidden', tab!=='combo');
 }
 
 function renderStockBajo(){
@@ -211,65 +363,69 @@ function renderStockBajo(){
   `).join('');
 }
 
-async function cargarResumenSemanal(){
-  const box = document.getElementById('resumenSemanal');
-  try{
-    const data = await llamarApi({ action: 'resumenSemanal' });
-    if(data.ok){
-      box.innerHTML = `
-        <div class="summary-box"><b>${gs(data.ganancia)}</b><span>Ganancia</span></div>
-        <div class="summary-box"><b>${gs(data.totalCobrado)}</b><span>Cobrado</span></div>
-        <div class="summary-box"><b>${data.cantidadVentas}</b><span>Ventas</span></div>
-      `;
-    }
-  }catch(e){
-    box.innerHTML = `<div class="summary-box"><b>—</b><span>No se pudo cargar</span></div>`;
-  }
-}
-
-/* ---------- buscador para REGISTRAR VENTA ---------- */
+/* ---------- buscador de LIBROS para la venta ---------- */
 const searchInput = document.getElementById('searchInput');
 const dropdown = document.getElementById('searchDropdown');
-
 searchInput.addEventListener('input', () => {
   const term = searchInput.value.trim();
   if(term.length < 1){ dropdown.classList.remove('open'); return; }
   const t = normalizarTexto(term);
   const resultados = LIBROS_DISPONIBLES.filter(l => normalizarTexto(l.titulo).includes(t)).slice(0, 8);
-
-  if(resultados.length === 0){
-    dropdown.innerHTML = `<div class="dropdown-empty">No se encontró ningún libro con ese nombre.</div>`;
-  }else{
-    dropdown.innerHTML = resultados.map(l => {
+  dropdown.innerHTML = resultados.length === 0
+    ? `<div class="dropdown-empty">No se encontró ningún libro con ese nombre.</div>`
+    : resultados.map(l => {
       const precioMostrar = (l.promo!==''&&!isNaN(l.promo)&&Number(l.promo)<l.precio) ? l.promo : l.precio;
       const claseStock = l.stock<=0 ? 'agotado' : (l.stock<=STOCK_BAJO_UMBRAL ? 'bajo' : '');
-      return `
-      <div class="dropdown-item" onclick="agregarLibro('${l.titulo.replace(/'/g,"\\'")}')">
+      return `<div class="dropdown-item" onclick="agregarLibro('${esc(l.titulo)}')">
         <span>${l.titulo}</span>
         <span class="stock-tag ${claseStock}">${l.stock<=0?'Sin stock':'Stock: '+l.stock+' · '+gs(precioMostrar)}</span>
       </div>`;
     }).join('');
-  }
   dropdown.classList.add('open');
 });
+
+/* ---------- buscador de COMBOS para la venta ---------- */
+const comboSearchInput = document.getElementById('comboSearchInput');
+const comboDropdown = document.getElementById('comboDropdown');
+comboSearchInput.addEventListener('input', () => {
+  const term = comboSearchInput.value.trim();
+  if(term.length < 1){ comboDropdown.classList.remove('open'); return; }
+  const t = normalizarTexto(term);
+  const resultados = COMBOS_DISPONIBLES.filter(c => normalizarTexto(c.nombre).includes(t)).slice(0, 8);
+  comboDropdown.innerHTML = resultados.length === 0
+    ? `<div class="dropdown-empty">No se encontró ningún combo con ese nombre.</div>`
+    : resultados.map(c => `<div class="dropdown-item" onclick="agregarCombo('${esc(c.nombre)}')">
+        <span>${c.nombre}</span>
+        <span class="stock-tag">${gs(c.precio)}</span>
+      </div>`).join('');
+  comboDropdown.classList.add('open');
+});
+
 document.addEventListener('click', (e) => {
   if(!e.target.closest('#searchInput') && !e.target.closest('#searchDropdown')) dropdown.classList.remove('open');
+  if(!e.target.closest('#comboSearchInput') && !e.target.closest('#comboDropdown')) comboDropdown.classList.remove('open');
   if(!e.target.closest('#restockSearchInput') && !e.target.closest('#restockDropdown')) document.getElementById('restockDropdown').classList.remove('open');
 });
 
 function agregarLibro(titulo){
   const libro = LIBROS_DISPONIBLES.find(l => l.titulo === titulo);
   if(!libro) return;
-  const existente = VENTA_ACTUAL.find(v => v.titulo === titulo);
-  if(existente){
-    existente.cantidad++;
-  }else{
+  const existente = VENTA_ACTUAL.find(v => v.tipo==='libro' && v.titulo === titulo);
+  if(existente){ existente.cantidad++; }
+  else{
     const precioUnit = (libro.promo!==''&&!isNaN(libro.promo)&&Number(libro.promo)<libro.precio) ? Number(libro.promo) : libro.precio;
-    VENTA_ACTUAL.push({ titulo: libro.titulo, cantidad: 1, precio: precioUnit, stock: libro.stock });
+    VENTA_ACTUAL.push({ tipo:'libro', titulo: libro.titulo, cantidad: 1, precio: precioUnit, stock: libro.stock });
   }
-  searchInput.value = '';
-  dropdown.classList.remove('open');
-  renderVenta();
+  searchInput.value = ''; dropdown.classList.remove('open'); renderVenta();
+}
+
+function agregarCombo(nombre){
+  const combo = COMBOS_DISPONIBLES.find(c => c.nombre === nombre);
+  if(!combo) return;
+  const existente = VENTA_ACTUAL.find(v => v.tipo==='combo' && v.titulo === nombre);
+  if(existente){ existente.cantidad++; }
+  else{ VENTA_ACTUAL.push({ tipo:'combo', titulo: combo.nombre, cantidad: 1, precio: combo.precio }); }
+  comboSearchInput.value = ''; comboDropdown.classList.remove('open'); renderVenta();
 }
 
 function cambiarCantidad(titulo, delta){
@@ -286,7 +442,7 @@ function quitarLibro(titulo){
 
 function calcular3x2(){
   let unidades = [];
-  VENTA_ACTUAL.forEach(item => {
+  VENTA_ACTUAL.filter(v => v.tipo==='libro').forEach(item => {
     for(let i=0; i<item.cantidad; i++) unidades.push({ titulo: item.titulo, precio: item.precio });
   });
   unidades.sort((a,b) => b.precio - a.precio);
@@ -302,49 +458,81 @@ function renderVenta(){
   const totalsBox = document.getElementById('previewTotals');
 
   if(VENTA_ACTUAL.length === 0){
-    container.innerHTML = '';
-    emptyMsg.style.display = 'block';
-    totalsBox.style.display = 'none';
+    container.innerHTML = ''; emptyMsg.style.display = 'block'; totalsBox.style.display = 'none';
     return;
   }
-  emptyMsg.style.display = 'none';
-  totalsBox.style.display = 'block';
+  emptyMsg.style.display = 'none'; totalsBox.style.display = 'block';
 
   const calc = calcular3x2();
+  const totalCombos = VENTA_ACTUAL.filter(v=>v.tipo==='combo').reduce((s,v) => s + v.precio*v.cantidad, 0);
 
   container.innerHTML = VENTA_ACTUAL.map(item => {
+    if(item.tipo === 'combo'){
+      return `
+      <div class="sale-line">
+        <div class="titulo">${item.titulo} <span class="combo-tag">COMBO</span><small>${gs(item.precio)} c/u (precio fijo)</small></div>
+        <div class="qty-controls">
+          <button class="qty-btn" onclick="cambiarCantidad('${esc(item.titulo)}',-1)">−</button>
+          <span>${item.cantidad}</span>
+          <button class="qty-btn" onclick="cambiarCantidad('${esc(item.titulo)}',1)">+</button>
+        </div>
+        <button class="remove-btn" onclick="quitarLibro('${esc(item.titulo)}')">✕</button>
+      </div>`;
+    }
     const unidadesDeEste = calc.unidades.filter(u => u.titulo === item.titulo);
     const gratisDeEste = unidadesDeEste.filter(u => u.gratis).length;
     return `
       <div class="sale-line">
-        <div class="titulo">
-          ${item.titulo}
-          <small>${gs(item.precio)} c/u · Stock: ${item.stock}${gratisDeEste>0?` · <span class="free-tag">${gratisDeEste} GRATIS</span>`:''}</small>
-        </div>
+        <div class="titulo">${item.titulo}<small>${gs(item.precio)} c/u · Stock: ${item.stock}${gratisDeEste>0?` · <span class="free-tag">${gratisDeEste} GRATIS</span>`:''}</small></div>
         <div class="qty-controls">
-          <button class="qty-btn" onclick="cambiarCantidad('${item.titulo.replace(/'/g,"\\'")}',-1)">−</button>
+          <button class="qty-btn" onclick="cambiarCantidad('${esc(item.titulo)}',-1)">−</button>
           <span>${item.cantidad}</span>
-          <button class="qty-btn" onclick="cambiarCantidad('${item.titulo.replace(/'/g,"\\'")}',1)">+</button>
+          <button class="qty-btn" onclick="cambiarCantidad('${esc(item.titulo)}',1)">+</button>
         </div>
-        <button class="remove-btn" onclick="quitarLibro('${item.titulo.replace(/'/g,"\\'")}')">✕</button>
+        <button class="remove-btn" onclick="quitarLibro('${esc(item.titulo)}')">✕</button>
       </div>`;
   }).join('');
 
-  totalsBox.innerHTML = `
-    <div class="preview-row"><span>Subtotal</span><span>${gs(calc.subtotal)}</span></div>
-    ${calc.descuento > 0 ? `<div class="preview-row"><span>Descuento 3x2</span><span>-${gs(calc.descuento)}</span></div>` : `<div class="preview-row">Agregá ${3 - (VENTA_ACTUAL.reduce((s,i)=>s+i.cantidad,0) % 3 || 3)} libro(s) más para activar el 3x2</div>`}
-    <div class="preview-row total"><span>Total a cobrar</span><span>${gs(calc.total)}</span></div>
-  `;
+  const esManual = document.getElementById('precioManualCheck').checked;
+  let filas = '';
+  if(esManual){
+    const montoManual = parseFloat(document.getElementById('montoManualInput').value) || 0;
+    filas += `<div class="preview-row"><span>Libros (precio de lista, referencia)</span><span>${gs(calc.subtotal)}</span></div>`;
+    filas += `<div class="preview-row"><span>Libros (precio especial)</span><span>${gs(montoManual)}</span></div>`;
+  }else{
+    filas += `<div class="preview-row"><span>Libros — Subtotal</span><span>${gs(calc.subtotal)}</span></div>`;
+    filas += calc.descuento > 0
+      ? `<div class="preview-row"><span>Descuento 3x2</span><span>-${gs(calc.descuento)}</span></div>`
+      : (calc.unidades.length > 0 ? `<div class="preview-row">Agregá ${3 - (calc.unidades.length % 3 || 3)} libro(s) más para activar el 3x2</div>` : '');
+  }
+  if(totalCombos > 0) filas += `<div class="preview-row"><span>Combos</span><span>${gs(totalCombos)}</span></div>`;
+
+  const totalFinal = (esManual ? parseFloat(document.getElementById('montoManualInput').value)||0 : calc.total) + totalCombos;
+  filas += `<div class="preview-row total"><span>Total a cobrar</span><span>${gs(totalFinal)}</span></div>`;
+  totalsBox.innerHTML = filas;
+}
+
+document.getElementById('montoManualInput').addEventListener('input', renderVenta);
+
+function toggleMontoManual(){
+  const check = document.getElementById('precioManualCheck').checked;
+  document.getElementById('montoManualInput').style.display = check ? 'block' : 'none';
+  if(!check) document.getElementById('montoManualInput').value = '';
+  renderVenta();
 }
 
 async function registrarVenta(){
   const resultBox = document.getElementById('resultBox');
-  const undoRow = document.getElementById('undoRow');
-  undoRow.classList.add('hidden');
-
   if(VENTA_ACTUAL.length === 0){
     resultBox.className = 'result error show';
-    resultBox.textContent = 'Agregá al menos un libro antes de registrar.';
+    resultBox.textContent = 'Agregá al menos un libro o combo antes de registrar.';
+    return;
+  }
+  const esManual = document.getElementById('precioManualCheck').checked;
+  const montoManual = esManual ? parseFloat(document.getElementById('montoManualInput').value) : null;
+  if(esManual && (!montoManual || montoManual < 0)){
+    resultBox.className = 'result error show';
+    resultBox.textContent = 'Ingresá el monto especial que cobraste por los libros sueltos.';
     return;
   }
 
@@ -353,23 +541,36 @@ async function registrarVenta(){
   resultBox.className = 'result show';
   resultBox.textContent = 'Registrando...';
 
-  const items = VENTA_ACTUAL.map(v => ({ titulo: v.titulo, cantidad: v.cantidad }));
+  const items = VENTA_ACTUAL.map(v => v.tipo === 'combo'
+    ? { tipo: 'combo', nombre: v.titulo, cantidad: v.cantidad }
+    : { tipo: 'libro', titulo: v.titulo, cantidad: v.cantidad }
+  );
+  const cliente = document.getElementById('clienteInput').value.trim();
 
   try{
-    const data = await llamarApi({ action: 'registrarVenta', items });
+    const data = await llamarApi({ action: 'registrarVenta', items, montoManual: esManual ? montoManual : null, cliente });
     if(data.ok){
+      const porcentaje = data.totalCobrado > 0 ? Math.round((data.ganancia / data.totalCobrado) * 1000) / 10 : 0;
       resultBox.className = 'result show';
       resultBox.innerHTML = `
-        ✅ Venta registrada.<br>
-        <b>Cobrado:</b> ${gs(data.totalCobrado)}<br>
-        <b>Ganancia:</b> ${gs(data.ganancia)}<br>
-        <b>Detalle:</b> ${data.detalle}
+        ✅ Venta registrada. Te mandamos un email con el detalle.
+        <div class="confirm-detail">
+          <div class="confirm-row"><span>Costo</span><b>${gs(data.totalCosto)}</b></div>
+          <div class="confirm-row"><span>Precio de venta</span><b>${gs(data.totalCobrado)}</b></div>
+          <div class="confirm-row"><span>Ganancia</span><b>${gs(data.ganancia)}</b></div>
+          <div class="confirm-row pct"><span>% de ganancia</span><span>${porcentaje}%</span></div>
+        </div>
       `;
-      undoRow.classList.remove('hidden');
       VENTA_ACTUAL = [];
+      document.getElementById('clienteInput').value = '';
+      document.getElementById('precioManualCheck').checked = false;
+      document.getElementById('montoManualInput').value = '';
+      document.getElementById('montoManualInput').style.display = 'none';
       renderVenta();
-      cargarResumenSemanal();
+      cargarResumen();
       cargarLibros();
+      cargarTopVendidos();
+      cargarUltimasVentas();
     }else{
       resultBox.className = 'result error show';
       resultBox.textContent = '❌ ' + data.error;
@@ -381,44 +582,27 @@ async function registrarVenta(){
   btn.disabled = false;
 }
 
-async function deshacerVenta(){
-  if(!confirm('¿Seguro que querés deshacer la última venta registrada? Esto repone el stock y borra el registro.')) return;
-  const resultBox = document.getElementById('resultBox');
-  const undoRow = document.getElementById('undoRow');
-  try{
-    const data = await llamarApi({ action: 'deshacerUltimaVenta' });
-    if(data.ok){
-      resultBox.className = 'result show';
-      resultBox.textContent = '↩️ ' + data.mensaje;
-      undoRow.classList.add('hidden');
-      cargarResumenSemanal();
-      cargarLibros();
-    }else{
-      resultBox.className = 'result error show';
-      resultBox.textContent = '❌ ' + data.error;
-    }
-  }catch(e){
-    resultBox.className = 'result error show';
-    resultBox.textContent = '❌ Error de conexión: ' + e.message;
-  }
+/* ---------- STOCK: reponer / ajustar ---------- */
+function cambiarTabStock(modo){
+  modoStock = modo;
+  document.getElementById('tabReponer').classList.toggle('active', modo==='reponer');
+  document.getElementById('tabAjustar').classList.toggle('active', modo==='ajustar');
+  document.getElementById('restockCantidad').style.display = modo==='reponer' ? 'block' : 'none';
+  document.getElementById('ajustarCantidad').style.display = modo==='ajustar' ? 'block' : 'none';
+  document.getElementById('stockSubmitBtn').textContent = modo==='reponer' ? 'Reponer stock' : 'Ajustar stock';
 }
 
-/* ---------- buscador para REPONER STOCK ---------- */
 const restockSearchInput = document.getElementById('restockSearchInput');
 const restockDropdown = document.getElementById('restockDropdown');
-
 restockSearchInput.addEventListener('input', () => {
   const term = restockSearchInput.value.trim();
   if(term.length < 1){ restockDropdown.classList.remove('open'); return; }
   const t = normalizarTexto(term);
   const resultados = LIBROS_DISPONIBLES.filter(l => normalizarTexto(l.titulo).includes(t)).slice(0, 8);
-
   restockDropdown.innerHTML = resultados.length === 0
     ? `<div class="dropdown-empty">No se encontró ningún libro con ese nombre.</div>`
-    : resultados.map(l => `
-      <div class="dropdown-item" onclick="seleccionarParaReponer('${l.titulo.replace(/'/g,"\\'")}')">
-        <span>${l.titulo}</span>
-        <span class="stock-tag">Stock actual: ${l.stock}</span>
+    : resultados.map(l => `<div class="dropdown-item" onclick="seleccionarParaReponer('${esc(l.titulo)}')">
+        <span>${l.titulo}</span><span class="stock-tag">Stock actual: ${l.stock}</span>
       </div>`).join('');
   restockDropdown.classList.add('open');
 });
@@ -431,33 +615,70 @@ function seleccionarParaReponer(titulo){
   document.getElementById('restockSelected').textContent = libro ? `Stock actual: ${libro.stock} unidades` : '';
 }
 
-async function reponerStock(){
+async function confirmarStock(){
   const resultBox = document.getElementById('restockResultBox');
-  const cantidad = parseInt(document.getElementById('restockCantidad').value, 10);
+  const undoRow = document.getElementById('undoStockRow');
+  undoRow.classList.add('hidden');
 
   if(!LIBRO_A_REPONER){
     resultBox.className = 'result error show';
     resultBox.textContent = 'Elegí un libro de la lista primero.';
     return;
   }
-  if(!cantidad || cantidad <= 0){
-    resultBox.className = 'result error show';
-    resultBox.textContent = 'Ingresá una cantidad válida.';
-    return;
+
+  let payload;
+  if(modoStock === 'reponer'){
+    const cantidad = parseInt(document.getElementById('restockCantidad').value, 10);
+    if(!cantidad || cantidad <= 0){
+      resultBox.className = 'result error show';
+      resultBox.textContent = 'Ingresá una cantidad válida.';
+      return;
+    }
+    payload = { action: 'reponerStock', titulo: LIBRO_A_REPONER, cantidad };
+  }else{
+    const nuevoStock = parseInt(document.getElementById('ajustarCantidad').value, 10);
+    if(nuevoStock === undefined || nuevoStock === null || isNaN(nuevoStock) || nuevoStock < 0){
+      resultBox.className = 'result error show';
+      resultBox.textContent = 'Ingresá el número real de stock.';
+      return;
+    }
+    payload = { action: 'ajustarStock', titulo: LIBRO_A_REPONER, nuevoStock };
   }
 
   resultBox.className = 'result show';
-  resultBox.textContent = 'Reponiendo...';
+  resultBox.textContent = 'Guardando...';
 
   try{
-    const data = await llamarApi({ action: 'reponerStock', titulo: LIBRO_A_REPONER, cantidad });
+    const data = await llamarApi(payload);
     if(data.ok){
       resultBox.className = 'result show';
-      resultBox.innerHTML = `✅ Stock actualizado. Nuevo stock: <b>${data.nuevoStock}</b> unidades.`;
+      resultBox.innerHTML = `✅ Listo. Nuevo stock: <b>${data.nuevoStock}</b> unidades.`;
+      undoRow.classList.remove('hidden');
       document.getElementById('restockCantidad').value = '';
+      document.getElementById('ajustarCantidad').value = '';
       restockSearchInput.value = '';
       document.getElementById('restockSelected').textContent = '';
       LIBRO_A_REPONER = null;
+      cargarLibros();
+    }else{
+      resultBox.className = 'result error show';
+      resultBox.textContent = '❌ ' + data.error;
+    }
+  }catch(e){
+    resultBox.className = 'result error show';
+    resultBox.textContent = '❌ Error de conexión: ' + e.message;
+  }
+}
+
+async function deshacerReposicion(){
+  if(!confirm('¿Deshacer el último cambio de stock (reposición o ajuste)?')) return;
+  const resultBox = document.getElementById('restockResultBox');
+  try{
+    const data = await llamarApi({ action: 'deshacerUltimaReposicion' });
+    if(data.ok){
+      resultBox.className = 'result show';
+      resultBox.textContent = '↩️ ' + data.mensaje;
+      document.getElementById('undoStockRow').classList.add('hidden');
       cargarLibros();
     }else{
       resultBox.className = 'result error show';
