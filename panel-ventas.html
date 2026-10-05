@@ -12,683 +12,1124 @@
   }
   *{box-sizing:border-box;}
   body{margin:0; background:var(--bg); color:var(--paper); font-family:system-ui,sans-serif; padding:20px;}
-  .wrap{max-width:620px; margin:0 auto;}
-  h1{font-size:1.3rem; margin-bottom:4px;}
-  .subtitle{color:var(--paper-dim); font-size:0.85rem; margin-bottom:24px;}
+  .wrap{max-width:780px; margin:0 auto;}
+  h1{font-size:1.3rem; margin:0;}
+  h3{margin:0 0 12px;}
+  .subtitle{color:var(--paper-dim); font-size:0.85rem; margin:4px 0 0;}
+  .hidden{display:none !important;}
   .card{background:var(--bg-elevated); border:1px solid var(--line); border-radius:12px; padding:20px; margin-bottom:20px;}
-  .card h3{margin-top:0;}
   input, select{
     width:100%; background:var(--card); border:1px solid var(--line); border-radius:8px;
-    padding:10px 12px; color:var(--paper); font-size:0.95rem;
+    padding:10px 12px; color:var(--paper); font-size:0.95rem; font-family:inherit;
   }
+  input:focus, select:focus{outline:none; border-color:var(--gold);}
   button{
     background:var(--gold); color:#1c1204; border:none; border-radius:8px; padding:12px;
-    font-weight:700; font-size:0.95rem; cursor:pointer; width:100%;
+    font-weight:700; font-size:0.95rem; cursor:pointer; width:100%; font-family:inherit;
   }
   button:hover{filter:brightness(1.08);}
+  button:disabled{opacity:0.55; cursor:default; filter:none;}
   button.secondary{background:var(--card); color:var(--paper); border:1px solid var(--line);}
-  button.danger{background:var(--red); color:#fff;}
   button.outline-danger{background:none; border:1px solid var(--red); color:var(--red);}
   button.small{width:auto; padding:6px 10px; font-size:0.78rem;}
+  .link-btn{background:none; border:none; color:var(--paper-dim); width:auto; padding:6px 0; font-weight:600; font-size:0.82rem; text-decoration:underline;}
+
+  .topbar{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px;}
+  .main-tabs{display:flex; gap:8px; margin-bottom:20px;}
+  .main-tab{flex:1; background:var(--card); border:1px solid var(--line); color:var(--paper-dim); padding:12px 8px; border-radius:10px; font-size:0.9rem;}
+  .main-tab.active{background:var(--gold); color:#1c1204; border-color:var(--gold);}
+
   .tabs{display:flex; gap:8px; margin-bottom:16px;}
   .tab-btn{flex:1; background:var(--card); border:1px solid var(--line); color:var(--paper-dim); padding:10px; border-radius:8px; cursor:pointer; font-weight:600; font-size:0.88rem;}
   .tab-btn.active{background:var(--gold); color:#1c1204; border-color:var(--gold);}
-  .summary-grid{display:flex; gap:14px; flex-wrap:wrap; margin-top:10px;}
-  .summary-box{flex:1; min-width:130px; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; text-align:center;}
-  .summary-box b{display:block; font-size:1.3rem; color:var(--gold);}
-  .summary-box span{font-size:0.76rem; color:var(--paper-dim);}
+
+  .summary-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(88px,1fr)); gap:10px; margin-top:10px;}
+  .summary-grid.cols2{grid-template-columns:repeat(2,1fr);}
+  @media (min-width:560px){ .summary-grid.cols2{grid-template-columns:repeat(4,1fr);} }
+  .summary-box{min-width:0; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 6px; text-align:center;}
+  .summary-box b{display:block; font-size:1.05rem; color:var(--gold); overflow-wrap:anywhere;}
+  .summary-box span{font-size:0.72rem; color:var(--paper-dim);}
+  .row-label{font-size:0.78rem; color:var(--paper-dim); margin:12px 0 0; font-weight:600; text-transform:uppercase; letter-spacing:.04em;}
+
   .result{background:rgba(63,191,95,0.1); border:1px solid var(--green); border-radius:10px; padding:14px; margin-top:16px; font-size:0.88rem; display:none;}
   .result.error{background:rgba(192,57,43,0.1); border-color:var(--red);}
   .result.show{display:block;}
-  #loginScreen{max-width:320px; margin:80px auto; text-align:center;}
-  .hidden{display:none;}
+  #loginScreen{max-width:340px; margin:80px auto; text-align:center;}
 
   .search-field{position:relative; margin-bottom:14px;}
   .dropdown{
     position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:20;
     background:var(--card); border:1px solid var(--line); border-radius:8px;
-    max-height:220px; overflow-y:auto; display:none; box-shadow:0 10px 24px rgba(0,0,0,0.4);
+    max-height:230px; overflow-y:auto; display:none; box-shadow:0 10px 24px rgba(0,0,0,0.4);
   }
   .dropdown.open{display:block;}
   .dropdown-item{padding:9px 12px; cursor:pointer; display:flex; justify-content:space-between; gap:10px; font-size:0.88rem; border-bottom:1px solid var(--line);}
   .dropdown-item:last-child{border-bottom:none;}
   .dropdown-item:hover{background:rgba(240,169,60,0.12);}
-  .dropdown-item .stock-tag{color:var(--paper-dim); font-size:0.76rem; white-space:nowrap;}
-  .dropdown-item .stock-tag.agotado{color:var(--red);}
-  .dropdown-item .stock-tag.bajo{color:var(--gold);}
+  .stock-tag{color:var(--paper-dim); font-size:0.76rem; white-space:nowrap;}
+  .stock-tag.agotado{color:var(--red);}
+  .stock-tag.bajo{color:var(--gold);}
   .dropdown-empty{padding:12px; color:var(--paper-dim); font-size:0.85rem;}
 
-  .sale-line{
-    display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--line);
-    border-radius:8px; padding:10px 12px; margin-bottom:10px;
-  }
+  .sale-line{display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--line); border-radius:8px; padding:10px 12px; margin-bottom:10px;}
   .sale-line .titulo{flex:1; font-size:0.9rem;}
-  .sale-line .titulo small{display:block; color:var(--paper-dim); font-size:0.76rem;}
+  .sale-line .titulo small{display:block; color:var(--paper-dim); font-size:0.76rem; margin-top:2px;}
   .qty-controls{display:flex; align-items:center; gap:6px;}
-  .qty-btn{
-    width:26px; height:26px; border-radius:6px; border:1px solid var(--line); background:var(--bg);
-    color:var(--paper); cursor:pointer; font-size:0.9rem; padding:0;
-  }
+  .qty-btn{width:26px; height:26px; border-radius:6px; border:1px solid var(--line); background:var(--bg); color:var(--paper); cursor:pointer; font-size:0.9rem; padding:0;}
   .qty-btn:hover{border-color:var(--gold); filter:none;}
-  .sale-line .remove-btn{background:none; border:none; color:var(--paper-dim); font-size:1.1rem; cursor:pointer; padding:0 4px; width:auto;}
-  .sale-line .remove-btn:hover{color:var(--red);}
+  .remove-btn{background:none; border:none; color:var(--paper-dim); font-size:1.1rem; cursor:pointer; padding:0 4px; width:auto;}
+  .remove-btn:hover{color:var(--red); filter:none;}
   .free-tag{background:var(--gold); color:#1c1204; font-size:0.68rem; font-weight:700; padding:2px 7px; border-radius:5px; white-space:nowrap;}
   .combo-tag{background:var(--gold-dim); color:#1c1204; font-size:0.68rem; font-weight:700; padding:2px 7px; border-radius:5px; white-space:nowrap;}
+  .origin-tag{background:var(--card); border:1px solid var(--line); color:var(--paper-dim); font-size:0.7rem; padding:2px 8px; border-radius:999px; white-space:nowrap;}
 
   .preview-totals{border-top:1px dashed var(--line); margin-top:12px; padding-top:12px;}
   .preview-row{display:flex; justify-content:space-between; font-size:0.88rem; color:var(--paper-dim); margin-bottom:4px;}
   .preview-row.total{font-size:1.1rem; font-weight:700; color:var(--paper); margin-top:6px;}
   .empty-cart{color:var(--paper-dim); font-size:0.85rem; text-align:center; padding:10px 0;}
-
-  .low-stock-card{display:none;}
-  .low-stock-card.show{display:block;}
-  .low-stock-item{display:flex; justify-content:space-between; font-size:0.86rem; padding:6px 0; border-bottom:1px solid var(--line);}
-  .low-stock-item:last-child{border-bottom:none;}
-  .low-stock-item .cant{color:var(--gold); font-weight:700;}
-  .low-stock-item .cant.cero{color:var(--red);}
-
-  .recent-sale-item{padding:10px 0; border-bottom:1px solid var(--line); font-size:0.85rem;}
-  .recent-sale-item:last-child{border-bottom:none;}
-  .recent-sale-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;}
-  .recent-sale-head .fecha{color:var(--paper-dim); font-size:0.76rem;}
-  .recent-sale-detalle{color:var(--paper-dim); font-size:0.8rem; margin-bottom:6px;}
-  .recent-sale-nums{display:flex; gap:12px; font-size:0.78rem; color:var(--paper-dim);}
-
-  .top-item{display:flex; justify-content:space-between; font-size:0.86rem; padding:7px 0; border-bottom:1px solid var(--line);}
-  .top-item:last-child{border-bottom:none;}
-  .top-item .rank{color:var(--gold); font-weight:700; margin-right:8px;}
+  .field-label{font-size:0.8rem; color:var(--paper-dim); margin:14px 0 6px; display:block;}
+  .grid-2{display:grid; grid-template-columns:1fr; gap:10px;}
+  @media (min-width:560px){ .grid-2{grid-template-columns:1fr 1fr;} }
 
   .confirm-detail{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; margin-top:14px;}
   .confirm-row{display:flex; justify-content:space-between; font-size:0.88rem; margin-bottom:6px;}
   .confirm-row b{color:var(--paper);}
+  .confirm-row.sep{border-top:1px dashed var(--line); padding-top:8px; margin-top:8px;}
   .confirm-row.pct{color:var(--gold); font-weight:700; font-size:1rem; margin-top:8px;}
+
+  .list-item{padding:10px 0; border-bottom:1px solid var(--line); font-size:0.85rem;}
+  .list-item:last-child{border-bottom:none;}
+  .list-head{display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:4px;}
+  .list-head .fecha{color:var(--paper-dim); font-size:0.76rem;}
+  .list-detalle{color:var(--paper-dim); font-size:0.8rem; margin-bottom:6px;}
+  .list-nums{display:flex; gap:12px; flex-wrap:wrap; font-size:0.78rem; color:var(--paper-dim);}
+  .muted{color:var(--paper-dim); font-size:0.85rem; margin:0;}
+
+  /* métricas */
+  .period-row{display:flex; gap:8px; margin-bottom:6px;}
+  .period-btn{flex:1; background:var(--card); border:1px solid var(--line); color:var(--paper-dim); padding:9px; border-radius:8px; font-size:0.85rem; font-weight:600;}
+  .period-btn.active{background:var(--gold); color:#1c1204; border-color:var(--gold);}
+  .kpi-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin:14px 0 20px;}
+  @media (min-width:640px){ .kpi-grid{grid-template-columns:repeat(4,1fr);} }
+  .kpi{background:var(--bg-elevated); border:1px solid var(--line); border-radius:12px; padding:14px;}
+  .kpi.destacado{border-color:var(--gold-dim);}
+  .kpi-label{font-size:0.72rem; color:var(--paper-dim); margin-bottom:6px;}
+  .kpi-value{font-size:1.15rem; font-weight:700; color:var(--paper);}
+  .kpi.destacado .kpi-value{color:var(--gold);}
+  .kpi-delta{font-size:0.7rem; margin-top:6px; color:var(--paper-dim);}
+  .kpi-delta.good{color:var(--green);}
+  .kpi-delta.bad{color:#e5675a;}
+  .charts-grid{display:grid; grid-template-columns:1fr; gap:20px;}
+  @media (min-width:720px){ .charts-grid .wide{grid-column:1 / -1;} .charts-grid{grid-template-columns:1fr 1fr;} }
+  .chart-card{margin-bottom:0;}
+  .chart-box{position:relative; height:260px;}
+  .chart-box.tall{height:300px;}
+  .chart-empty{color:var(--paper-dim); font-size:0.85rem; text-align:center; padding:60px 10px;}
+  .table-scroll{overflow-x:auto;}
+  table{width:100%; border-collapse:collapse; font-size:0.8rem;}
+  th, td{padding:8px 6px; text-align:right; border-bottom:1px solid var(--line); white-space:nowrap;}
+  th:first-child, td:first-child{text-align:left; white-space:normal;}
+  th{color:var(--paper-dim); font-weight:600; font-size:0.72rem;}
+  .pos{color:var(--green);} .neg{color:#e5675a;}
+  .nota{font-size:0.78rem; color:var(--paper-dim); margin-top:10px; line-height:1.5;}
+
+  .filter-chips{display:flex; gap:8px; margin:12px 0;}
+  .chip{background:var(--card); border:1px solid var(--line); color:var(--paper-dim); padding:7px 12px; border-radius:999px; font-size:0.8rem; width:auto; font-weight:600;}
+  .chip.active{background:var(--gold); color:#1c1204; border-color:var(--gold);}
+  .stock-row{display:flex; justify-content:space-between; gap:10px; padding:9px 4px; border-bottom:1px solid var(--line); font-size:0.86rem; cursor:pointer;}
+  .stock-row:hover{background:rgba(240,169,60,0.08);}
+  .stock-row:last-child{border-bottom:none;}
+  .stock-num{font-weight:700; white-space:nowrap;}
+  .stock-num.cero{color:var(--red);} .stock-num.bajo{color:var(--gold);}
 </style>
 </head>
 <body>
 
+<!-- ============ LOGIN ============ -->
 <div id="loginScreen">
   <h1>🔒 Panel de Ventas</h1>
-  <p class="subtitle">Acceso privado. No compartas este link.</p>
+  <p class="subtitle" style="margin-bottom:20px;">Acceso privado. No compartas este link.</p>
   <div class="card">
-    <input type="password" id="loginPassword" placeholder="Contraseña" style="margin-bottom:10px;">
-    <button onclick="intentarLogin()">Entrar</button>
-    <div id="loginError" style="color:var(--red); font-size:0.85rem; margin-top:10px; display:none;">Contraseña incorrecta.</div>
+    <input type="password" id="loginPassword" placeholder="Contraseña" autocomplete="current-password" style="margin-bottom:10px;">
+    <button id="loginBtn" onclick="intentarLogin()">Entrar</button>
+    <div id="loginError" style="color:#e5675a; font-size:0.85rem; margin-top:10px; display:none;"></div>
   </div>
 </div>
 
+<!-- ============ PANEL ============ -->
 <div class="wrap hidden" id="panelScreen">
-  <h1>Panel de Ventas</h1>
-  <p class="subtitle">Buscá cada libro o combo vendido. El 3x2 se calcula solo en vivo, antes de registrar.</p>
 
-  <div class="card">
-    <h3>Ganancia</h3>
-    <div class="summary-grid" id="resumenHoy"></div>
-    <div style="height:10px;"></div>
-    <div class="summary-grid" id="resumenSemanal"></div>
+  <div class="topbar">
+    <div>
+      <h1>Panel de Ventas</h1>
+      <p class="subtitle">Libros para Emprendedor Paraguay</p>
+    </div>
+    <button class="link-btn" onclick="cerrarSesion()">Salir</button>
   </div>
 
-  <div class="card low-stock-card" id="lowStockCard">
-    <h3>⚠️ Libros con poco stock</h3>
-    <div id="lowStockList"></div>
+  <div class="main-tabs">
+    <button class="main-tab active" id="mainTab-ventas" onclick="mostrarTab('ventas')">🧾 Ventas</button>
+    <button class="main-tab" id="mainTab-metricas" onclick="mostrarTab('metricas')">📊 Métricas</button>
+    <button class="main-tab" id="mainTab-stock" onclick="mostrarTab('stock')">📦 Stock</button>
   </div>
 
-  <div class="card">
-    <h3>🏆 Más vendidos (últimos 30 días)</h3>
-    <div id="topVendidosList" style="color:var(--paper-dim); font-size:0.85rem;">Cargando...</div>
+  <!-- ===================== PESTAÑA VENTAS ===================== -->
+  <div id="tab-ventas">
+
+    <div class="card">
+      <h3>Resumen</h3>
+      <div class="row-label">Hoy</div>
+      <div class="summary-grid" id="resumenHoy"></div>
+      <div class="row-label">Esta semana (lunes a domingo)</div>
+      <div class="summary-grid" id="resumenSemanal"></div>
+      <p class="nota">Ganancia neta = lo cobrado, menos el costo de los libros, el packaging y el gasto publicitario.</p>
+    </div>
+
+    <div class="card">
+      <h3>Registrar nueva venta</h3>
+
+      <div class="tabs">
+        <button class="tab-btn active" id="tabLibro" onclick="cambiarTab('libro')">📖 Libros sueltos</button>
+        <button class="tab-btn" id="tabCombo" onclick="cambiarTab('combo')">📦 Combos</button>
+      </div>
+
+      <div class="search-field" id="buscadorLibro">
+        <input type="text" id="searchInput" placeholder="Escribí el título del libro..." autocomplete="off">
+        <div class="dropdown" id="searchDropdown"></div>
+      </div>
+      <div class="search-field hidden" id="buscadorCombo">
+        <input type="text" id="comboSearchInput" placeholder="Escribí el nombre del combo..." autocomplete="off">
+        <div class="dropdown" id="comboDropdown"></div>
+      </div>
+
+      <div id="saleLines"></div>
+      <div class="empty-cart" id="emptyCartMsg">Todavía no agregaste ningún libro o combo.</div>
+      <div class="preview-totals" id="previewTotals" style="display:none;"></div>
+
+      <label class="field-label" for="origenSelect">¿De dónde vino esta venta? *</label>
+      <div class="grid-2">
+        <select id="origenSelect" onchange="onOrigenChange()">
+          <option value="">Elegí el origen...</option>
+          <option value="Publicidad">Publicidad</option>
+          <option value="Seguimiento de anuncio">Seguimiento de anuncio</option>
+          <option value="Recompra">Recompra</option>
+          <option value="Orgánico">Orgánico</option>
+        </select>
+        <select id="campanaVentaSelect" class="hidden"></select>
+      </div>
+      <p class="nota" style="margin-top:8px;"><b>Publicidad:</b> compró en la primera charla · <b>Seguimiento de anuncio:</b> llegó por un anuncio y cerraste después · <b>Recompra:</b> ya era cliente · <b>Orgánico:</b> llegó sin anuncio.</p>
+
+      <input type="text" id="clienteInput" placeholder="Cliente (opcional, para pedirle reseña después)" style="margin-top:14px;">
+
+      <label style="display:flex; align-items:center; gap:8px; font-size:0.86rem; color:var(--paper-dim); margin:14px 0 0; cursor:pointer;">
+        <input type="checkbox" id="precioManualCheck" style="width:16px; height:16px;" onchange="toggleMontoManual()">
+        ¿Precio especial? (solo aplica a libros sueltos, no a combos)
+      </label>
+      <input type="number" id="montoManualInput" placeholder="Monto total cobrado por los libros sueltos (Gs.)" style="margin-top:10px;" class="hidden">
+
+      <div style="height:14px;"></div>
+      <button onclick="registrarVenta()" id="submitBtn">Registrar venta</button>
+      <div class="result" id="resultBox"></div>
+    </div>
+
+    <div class="card">
+      <h3>Últimas ventas</h3>
+      <div id="ultimasVentasList"><p class="muted">Cargando...</p></div>
+    </div>
   </div>
 
-  <div class="card">
-    <h3>Registrar nueva venta</h3>
+  <!-- ===================== PESTAÑA MÉTRICAS ===================== -->
+  <div id="tab-metricas" class="hidden">
 
-    <div class="tabs">
-      <button class="tab-btn active" id="tabLibro" onclick="cambiarTab('libro')">📖 Libros sueltos</button>
-      <button class="tab-btn" id="tabCombo" onclick="cambiarTab('combo')">📦 Combos</button>
+    <div class="period-row">
+      <button class="period-btn" data-dias="7" onclick="cambiarPeriodo(7)">7 días</button>
+      <button class="period-btn active" data-dias="30" onclick="cambiarPeriodo(30)">30 días</button>
+      <button class="period-btn" data-dias="90" onclick="cambiarPeriodo(90)">90 días</button>
+    </div>
+    <p class="muted" id="periodoLabel"></p>
+
+    <div class="kpi-grid" id="kpiGrid"></div>
+
+    <div class="card">
+      <h3>💸 Cargar gasto publicitario</h3>
+      <div class="grid-2">
+        <input type="date" id="gastoFecha">
+        <input type="number" id="gastoMonto" placeholder="Monto gastado (Gs.)" min="1">
+      </div>
+      <select id="gastoCampana" style="margin-top:10px;"></select>
+      <button onclick="registrarGasto()" id="gastoBtn" style="margin-top:10px;">Cargar gasto</button>
+      <div class="result" id="gastoResult"></div>
+      <div class="row-label" style="margin-top:18px;">Últimos gastos cargados</div>
+      <div id="gastosList"><p class="muted">Cargando...</p></div>
     </div>
 
-    <div class="search-field" id="buscadorLibro">
-      <input type="text" id="searchInput" placeholder="Escribí el título del libro..." autocomplete="off">
-      <div class="dropdown" id="searchDropdown"></div>
+    <div class="card">
+      <h3>🎯 Campañas</h3>
+      <p class="muted" style="margin-bottom:12px;">Creá una campaña por cada anuncio o promo que pautes, para saber cuál rinde mejor.</p>
+      <div class="grid-2">
+        <input type="text" id="nuevaCampanaInput" placeholder="Ej: Promo 3x2 - Octubre" maxlength="60">
+        <button onclick="crearCampana()">Crear campaña</button>
+      </div>
+      <div class="result" id="campanaResult"></div>
+      <div id="campanasList" style="margin-top:12px;"></div>
     </div>
 
-    <div class="search-field hidden" id="buscadorCombo">
-      <input type="text" id="comboSearchInput" placeholder="Escribí el nombre del combo..." autocomplete="off">
-      <div class="dropdown" id="comboDropdown"></div>
+    <div class="charts-grid">
+      <div class="card chart-card wide">
+        <h3>Evolución diaria</h3>
+        <div class="chart-box tall"><canvas id="chartEvolucion"></canvas></div>
+        <p class="chart-empty hidden">Todavía no hay datos en este período.</p>
+      </div>
+      <div class="card chart-card wide">
+        <h3>Ganancia neta por día</h3>
+        <div class="chart-box"><canvas id="chartNeta"></canvas></div>
+        <p class="chart-empty hidden">Todavía no hay datos en este período.</p>
+      </div>
+      <div class="card chart-card">
+        <h3>Origen de las ventas</h3>
+        <div class="chart-box"><canvas id="chartOrigen"></canvas></div>
+        <p class="chart-empty hidden">Todavía no hay ventas en este período.</p>
+      </div>
+      <div class="card chart-card">
+        <h3>ROAS por campaña</h3>
+        <div class="chart-box"><canvas id="chartCampanas"></canvas></div>
+        <p class="chart-empty hidden">Cargá gasto en una campaña y ventas de anuncio para verlo.</p>
+      </div>
+      <div class="card chart-card">
+        <h3>Libros más vendidos</h3>
+        <div class="chart-box"><canvas id="chartTop"></canvas></div>
+        <p class="chart-empty hidden">Todavía no hay ventas en este período.</p>
+      </div>
+      <div class="card chart-card">
+        <h3>Qué días se vende más</h3>
+        <div class="chart-box"><canvas id="chartSemana"></canvas></div>
+        <p class="chart-empty hidden">Todavía no hay ventas en este período.</p>
+      </div>
     </div>
 
-    <div id="saleLines"></div>
-    <div class="empty-cart" id="emptyCartMsg">Todavía no agregaste ningún libro o combo.</div>
-
-    <div class="preview-totals" id="previewTotals" style="display:none;"></div>
-
-    <input type="text" id="clienteInput" placeholder="Cliente (opcional, para pedirle reseña después)" style="margin-top:14px;">
-
-    <label style="display:flex; align-items:center; gap:8px; font-size:0.86rem; color:var(--paper-dim); margin:14px 0 0; cursor:pointer;">
-      <input type="checkbox" id="precioManualCheck" style="width:16px; height:16px;" onchange="toggleMontoManual()">
-      ¿Le hiciste un precio especial a esta venta? (solo aplica a los libros sueltos, no a los combos)
-    </label>
-    <input type="number" id="montoManualInput" placeholder="Monto total que cobraste por los libros sueltos (Gs.)" style="margin-top:10px; display:none;">
-
-    <div style="height:14px;"></div>
-    <button onclick="registrarVenta()" id="submitBtn">Registrar venta</button>
-    <div class="result" id="resultBox"></div>
+    <div class="card" style="margin-top:20px;">
+      <h3>Detalle por campaña</h3>
+      <div class="table-scroll" id="tablaCampanas"></div>
+      <p class="nota">ROAS = cuánto cobrás por cada guaraní invertido. Cuenta las ventas de Publicidad y Seguimiento de anuncio. El gasto "General" es el que no se asignó a ninguna campaña.</p>
+    </div>
   </div>
 
-  <div class="card">
-    <h3>Últimas ventas</h3>
-    <div id="ultimasVentasList" style="color:var(--paper-dim); font-size:0.85rem;">Cargando...</div>
-  </div>
+  <!-- ===================== PESTAÑA STOCK ===================== -->
+  <div id="tab-stock" class="hidden">
 
-  <div class="card">
-    <h3>Stock: reponer o ajustar</h3>
-    <div class="tabs">
-      <button class="tab-btn active" id="tabReponer" onclick="cambiarTabStock('reponer')">+ Reponer</button>
-      <button class="tab-btn" id="tabAjustar" onclick="cambiarTabStock('ajustar')">🎯 Ajustar a un número</button>
+    <div class="card">
+      <h3>Resumen de stock</h3>
+      <div class="summary-grid cols2" id="stockResumen"></div>
     </div>
 
-    <div class="search-field">
-      <input type="text" id="restockSearchInput" placeholder="Escribí el título del libro..." autocomplete="off">
-      <div class="dropdown" id="restockDropdown"></div>
+    <div class="card hidden" id="lowStockCard">
+      <h3>⚠️ Para reponer pronto</h3>
+      <div id="lowStockList"></div>
     </div>
-    <div id="restockSelected" style="font-size:0.88rem; color:var(--paper-dim); margin-bottom:10px;"></div>
 
-    <input type="number" id="restockCantidad" placeholder="Cantidad que llegó" min="1" style="margin-bottom:10px;" class="modo-reponer">
-    <input type="number" id="ajustarCantidad" placeholder="Stock real (el número exacto que contaste)" min="0" style="margin-bottom:10px; display:none;" class="modo-ajustar">
+    <div class="card">
+      <h3>Stock completo</h3>
+      <input type="text" id="stockBuscar" placeholder="Buscar un libro..." autocomplete="off">
+      <div class="filter-chips">
+        <button class="chip active" data-f="todos" onclick="setFiltroStock('todos')">Todos</button>
+        <button class="chip" data-f="poco" onclick="setFiltroStock('poco')">Poco stock</button>
+        <button class="chip" data-f="sin" onclick="setFiltroStock('sin')">Sin stock</button>
+      </div>
+      <p class="muted" id="stockContador" style="margin-bottom:8px;"></p>
+      <div id="stockLista"></div>
+      <p class="nota">Tocá un libro para cargarlo abajo y reponerlo o ajustarlo.</p>
+    </div>
 
-    <button class="secondary" onclick="confirmarStock()" id="stockSubmitBtn">Reponer stock</button>
-    <div class="result" id="restockResultBox"></div>
-    <div class="hidden" id="undoStockRow" style="margin-top:10px;">
-      <button class="outline-danger" onclick="deshacerReposicion()">↩️ Deshacer este cambio de stock</button>
+    <div class="card" id="cardReponer">
+      <h3>Reponer o ajustar stock</h3>
+      <div class="tabs">
+        <button class="tab-btn active" id="tabReponer" onclick="cambiarTabStock('reponer')">+ Reponer</button>
+        <button class="tab-btn" id="tabAjustar" onclick="cambiarTabStock('ajustar')">🎯 Ajustar a un número</button>
+      </div>
+      <div class="search-field">
+        <input type="text" id="restockSearchInput" placeholder="Escribí el título del libro..." autocomplete="off">
+        <div class="dropdown" id="restockDropdown"></div>
+      </div>
+      <div id="restockSelected" class="muted" style="margin-bottom:10px;"></div>
+      <input type="number" id="restockCantidad" placeholder="Cantidad que llegó" min="1" style="margin-bottom:10px;">
+      <input type="number" id="ajustarCantidad" placeholder="Stock real (el número exacto que contaste)" min="0" style="margin-bottom:10px;" class="hidden">
+      <button class="secondary" onclick="confirmarStock()" id="stockSubmitBtn">Reponer stock</button>
+      <div class="result" id="restockResultBox"></div>
+      <div class="hidden" id="undoStockRow" style="margin-top:10px;">
+        <button class="outline-danger" onclick="deshacerReposicion()">↩️ Deshacer este cambio de stock</button>
+      </div>
     </div>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
 <script>
-const CONFIG = {
-  PANEL_PASSWORD: "281099",
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzsgKpWY3bmHRBJkRW4UeI6KjgkNb_BInK43nY47Hl8bq48ZhDJO1bKRvta28Y6aZQr/exec"
-};
-
+/* ============================================================
+   CONFIGURACIÓN
+   La contraseña YA NO está acá: se escribe en el login y se
+   valida en el servidor (Apps Script).
+   ============================================================ */
+const API_URL = "https://script.google.com/macros/s/AKfycbzsgKpWY3bmHRBJkRW4UeI6KjgkNb_BInK43nY47Hl8bq48ZhDJO1bKRvta28Y6aZQr/exec";
 const STOCK_BAJO_UMBRAL = 2;
+const MAX_FILAS_STOCK = 80;
 
-let PASSWORD_SESION = "";
+let PASS = "";
 let LIBROS_DISPONIBLES = [];
 let COMBOS_DISPONIBLES = [];
-let VENTA_ACTUAL = []; // [{tipo:'libro'|'combo', titulo/nombre, cantidad, precio}]
-let LIBRO_A_REPONER = null;
-let modoStock = 'reponer';
+let CAMPANAS = [];
+let VENTA_ACTUAL = []; // [{tipo, titulo, cantidad, precio, stock}]
 let tabActivo = 'libro';
+let tabPrincipal = 'ventas';
+let periodoDias = 30;
+let modoStock = 'reponer';
+let LIBRO_A_REPONER = null;
+let stockFiltro = 'todos';
+let resultadosLibros = [], resultadosCombos = [], resultadosRestock = [], filasStockVisibles = [];
+const charts = {};
 
-function gs(n){ return "Gs. " + Number(n).toLocaleString('es-PY'); }
-function normalizarTexto(s){ return String(s||"").normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
-function esc(s){ return String(s).replace(/'/g,"\\'"); }
-
-function intentarLogin(){
-  const val = document.getElementById('loginPassword').value;
-  if(val === CONFIG.PANEL_PASSWORD){
-    PASSWORD_SESION = val;
-    document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('panelScreen').classList.remove('hidden');
-    cargarLibros();
-    cargarCombos();
-    cargarResumen();
-    cargarTopVendidos();
-    cargarUltimasVentas();
-  }else{
-    document.getElementById('loginError').style.display = 'block';
-  }
+/* ---------- utilidades ---------- */
+function num(n){ return Math.round(Number(n) || 0).toLocaleString('es-PY'); }
+function gs(n){ return "Gs. " + num(n); }
+function h(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function normalizarTexto(s){ return String(s || "").normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
+function $(id){ return document.getElementById(id); }
+function precioVigente(l){ return (l.promo !== '' && !isNaN(l.promo) && Number(l.promo) < l.precio) ? Number(l.promo) : l.precio; }
+function abreviar(n){
+  const a = Math.abs(n);
+  if(a >= 1e6) return (n/1e6).toFixed(1).replace('.0','') + 'M';
+  if(a >= 1e3) return Math.round(n/1e3) + 'k';
+  return String(Math.round(n));
 }
-document.getElementById('loginPassword').addEventListener('keydown', e => { if(e.key === 'Enter') intentarLogin(); });
+function fechaCorta(iso){ const p = iso.split('-'); return p[2] + '/' + p[1]; }
+function hoyLocalISO(){ return new Date().toLocaleDateString('en-CA'); }
+function mostrarResultado(box, ok, html){ box.className = 'result show' + (ok ? '' : ' error'); box.innerHTML = html; }
 
-async function llamarApi(payload){
-  const res = await fetch(CONFIG.APPS_SCRIPT_URL, {
-    method: 'POST',
-    body: JSON.stringify({ password: PASSWORD_SESION, ...payload })
-  });
+/* ---------- conexión con el servidor ---------- */
+async function apiRaw(payload, pass){
+  const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ password: pass }, payload)) });
   return res.json();
 }
+async function llamarApi(payload){
+  const data = await apiRaw(payload, PASS);
+  if(data && data.ok === false && /Contraseña incorrecta|intentos fallidos|Falta configurar/.test(data.error || '')){
+    cerrarSesion(data.error);
+    throw new Error(data.error);
+  }
+  return data;
+}
 
-/* ---------- carga inicial ---------- */
+/* ---------- login ---------- */
+async function intentarLogin(){
+  const val = $('loginPassword').value;
+  const err = $('loginError');
+  if(!val) return;
+  $('loginBtn').disabled = true;
+  err.style.display = 'none';
+  try{
+    const data = await apiRaw({ action: 'login' }, val);
+    if(data.ok){
+      PASS = val;
+      try{ sessionStorage.setItem('pv_pass', val); }catch(e){}
+      iniciarPanel();
+    }else{
+      err.textContent = data.error || 'No se pudo entrar.';
+      err.style.display = 'block';
+    }
+  }catch(e){
+    err.textContent = 'No se pudo conectar. Revisá tu internet y probá de nuevo.';
+    err.style.display = 'block';
+  }
+  $('loginBtn').disabled = false;
+}
+$('loginPassword').addEventListener('keydown', e => { if(e.key === 'Enter') intentarLogin(); });
+
+function cerrarSesion(mensaje){
+  PASS = "";
+  try{ sessionStorage.removeItem('pv_pass'); }catch(e){}
+  $('panelScreen').classList.add('hidden');
+  $('loginScreen').classList.remove('hidden');
+  $('loginPassword').value = '';
+  const err = $('loginError');
+  if(mensaje){ err.textContent = mensaje; err.style.display = 'block'; } else { err.style.display = 'none'; }
+}
+
+(async function autoLogin(){
+  let guardada = '';
+  try{ guardada = sessionStorage.getItem('pv_pass') || ''; }catch(e){}
+  if(!guardada) return;
+  try{
+    const data = await apiRaw({ action: 'login' }, guardada);
+    if(data.ok){ PASS = guardada; iniciarPanel(); }
+  }catch(e){}
+})();
+
+function iniciarPanel(){
+  $('loginScreen').classList.add('hidden');
+  $('panelScreen').classList.remove('hidden');
+  $('gastoFecha').value = hoyLocalISO();
+  $('gastoFecha').max = hoyLocalISO();
+  cargarLibros(); cargarCombos(); cargarCampanas();
+  cargarResumen(); cargarUltimasVentas();
+  mostrarTab('ventas');
+}
+
+/* ---------- pestañas principales ---------- */
+function mostrarTab(tab){
+  tabPrincipal = tab;
+  ['ventas','metricas','stock'].forEach(t => {
+    $('tab-' + t).classList.toggle('hidden', t !== tab);
+    $('mainTab-' + t).classList.toggle('active', t === tab);
+  });
+  if(tab === 'metricas'){ cargarMetricas(); cargarGastos(); }
+  if(tab === 'stock'){ renderStockTab(); }
+  if(tab === 'ventas'){ cargarResumen(); cargarUltimasVentas(); }
+}
+
+/* ============================================================
+   CARGA DE DATOS
+   ============================================================ */
 async function cargarLibros(){
   try{
     const data = await llamarApi({ action: 'listarLibros' });
-    if(data.ok){ LIBROS_DISPONIBLES = data.libros; renderStockBajo(); }
+    if(data.ok){ LIBROS_DISPONIBLES = data.libros; if(tabPrincipal === 'stock') renderStockTab(); }
   }catch(e){ console.error(e); }
 }
 async function cargarCombos(){
+  try{ const data = await llamarApi({ action: 'listarCombos' }); if(data.ok) COMBOS_DISPONIBLES = data.combos; }catch(e){ console.error(e); }
+}
+async function cargarCampanas(){
   try{
-    const data = await llamarApi({ action: 'listarCombos' });
-    if(data.ok) COMBOS_DISPONIBLES = data.combos;
+    const data = await llamarApi({ action: 'listarCampanas' });
+    if(data.ok){ CAMPANAS = data.campanas; renderCampanas(); }
   }catch(e){ console.error(e); }
 }
+
 async function cargarResumen(){
-  const boxHoy = document.getElementById('resumenHoy');
-  const boxSemana = document.getElementById('resumenSemanal');
+  const hoy = $('resumenHoy'), semana = $('resumenSemanal');
   try{
     const data = await llamarApi({ action: 'resumen' });
-    if(data.ok){
-      boxHoy.innerHTML = `
-        <div class="summary-box"><b>${gs(data.hoy.ganancia)}</b><span>Ganancia hoy</span></div>
-        <div class="summary-box"><b>${gs(data.hoy.totalCobrado)}</b><span>Cobrado hoy</span></div>
-        <div class="summary-box"><b>${data.hoy.cantidadVentas}</b><span>Ventas hoy</span></div>
-      `;
-      boxSemana.innerHTML = `
-        <div class="summary-box"><b>${gs(data.semana.ganancia)}</b><span>Ganancia semana</span></div>
-        <div class="summary-box"><b>${gs(data.semana.totalCobrado)}</b><span>Cobrado semana</span></div>
-        <div class="summary-box"><b>${data.semana.cantidadVentas}</b><span>Ventas semana</span></div>
-      `;
-    }
+    if(!data.ok) return;
+    const caja = r => `
+      <div class="summary-box"><b>${num(r.cobrado)}</b><span>Cobrado (Gs.)</span></div>
+      <div class="summary-box"><b>${num(r.neta)}</b><span>Ganancia neta (Gs.)</span></div>
+      <div class="summary-box"><b>${r.ventas}</b><span>Ventas</span></div>`;
+    hoy.innerHTML = caja(data.hoy);
+    semana.innerHTML = caja(data.semana);
   }catch(e){
-    boxHoy.innerHTML = `<div class="summary-box"><b>—</b><span>No se pudo cargar</span></div>`;
+    hoy.innerHTML = `<div class="summary-box"><b>—</b><span>No se pudo cargar</span></div>`;
   }
 }
-async function cargarTopVendidos(){
-  const box = document.getElementById('topVendidosList');
-  try{
-    const data = await llamarApi({ action: 'topVendidos', dias: 30 });
-    if(data.ok && data.top.length > 0){
-      box.innerHTML = data.top.map((t,i) => `
-        <div class="top-item"><span><span class="rank">#${i+1}</span>${t.titulo}</span><span>${t.cantidad} vendidos</span></div>
-      `).join('');
-    }else{
-      box.innerHTML = `<p style="margin:0;">Todavía no hay suficientes ventas registradas para armar el ranking.</p>`;
-    }
-  }catch(e){
-    box.innerHTML = `<p style="margin:0;">No se pudo cargar.</p>`;
-  }
-}
+
 async function cargarUltimasVentas(){
-  const box = document.getElementById('ultimasVentasList');
+  const box = $('ultimasVentasList');
   try{
     const data = await llamarApi({ action: 'listarUltimasVentas', cantidad: 10 });
     if(data.ok && data.ventas.length > 0){
       box.innerHTML = data.ventas.map(v => {
-        const fecha = new Date(v.fecha);
-        const fechaStr = fecha.toLocaleDateString('es-PY') + ' ' + fecha.toLocaleTimeString('es-PY', {hour:'2-digit', minute:'2-digit'});
+        const f = new Date(v.fecha);
+        const fechaStr = f.toLocaleDateString('es-PY') + ' ' + f.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' });
+        const origen = v.origen ? `<span class="origin-tag">${h(v.origen)}${v.campana ? ' · ' + h(v.campana) : ''}</span>` : '';
         return `
-        <div class="recent-sale-item">
-          <div class="recent-sale-head">
-            <span class="fecha">${fechaStr}${v.cliente ? ' · '+v.cliente : ''}</span>
-            <button class="small outline-danger" onclick="eliminarVenta(${v.fila})">Eliminar</button>
+        <div class="list-item">
+          <div class="list-head">
+            <span class="fecha">${h(fechaStr)}${v.cliente ? ' · ' + h(v.cliente) : ''}</span>
+            <button class="small outline-danger" data-act="eliminar-venta" data-fila="${v.fila}" data-ms="${v.fechaMs}">Eliminar</button>
           </div>
-          <div class="recent-sale-detalle">${v.detalle}</div>
-          <div class="recent-sale-nums">
-            <span>Cobrado: ${gs(v.totalCobrado)}</span>
-            <span>Ganancia: ${gs(v.ganancia)}</span>
-          </div>
+          <div class="list-detalle">${h(v.detalle)}</div>
+          <div class="list-nums"><span>Cobrado: ${gs(v.totalCobrado)}</span><span>Ganancia: ${gs(v.ganancia)}</span>${origen}</div>
         </div>`;
       }).join('');
     }else{
-      box.innerHTML = `<p style="margin:0;">Todavía no registraste ninguna venta.</p>`;
+      box.innerHTML = `<p class="muted">Todavía no registraste ninguna venta.</p>`;
     }
-  }catch(e){
-    box.innerHTML = `<p style="margin:0;">No se pudo cargar.</p>`;
-  }
+  }catch(e){ box.innerHTML = `<p class="muted">No se pudo cargar.</p>`; }
 }
-
-async function eliminarVenta(fila){
-  if(!confirm('¿Eliminar esta venta? Se va a reponer el stock correspondiente.')) return;
+$('ultimasVentasList').addEventListener('click', async e => {
+  const btn = e.target.closest('[data-act="eliminar-venta"]');
+  if(!btn) return;
+  if(!confirm('¿Eliminar esta venta? Se repone el stock y se descuenta de las métricas.')) return;
+  btn.disabled = true;
   try{
-    const data = await llamarApi({ action: 'eliminarVentaPorFila', fila });
-    if(data.ok){
-      cargarUltimasVentas();
-      cargarResumen();
-      cargarLibros();
-      cargarTopVendidos();
-    }else{
-      alert('Error: ' + data.error);
-    }
-  }catch(e){ alert('Error de conexión: ' + e.message); }
-}
+    const data = await llamarApi({ action: 'eliminarVentaPorFila', fila: Number(btn.dataset.fila), fechaMs: Number(btn.dataset.ms) });
+    if(data.ok){ cargarUltimasVentas(); cargarResumen(); cargarLibros(); }
+    else{ alert('Error: ' + data.error); btn.disabled = false; cargarUltimasVentas(); }
+  }catch(err){ alert('Error de conexión: ' + err.message); btn.disabled = false; }
+});
 
-/* ---------- pestañas libro / combo ---------- */
+/* ============================================================
+   PESTAÑA VENTAS: formulario
+   ============================================================ */
 function cambiarTab(tab){
   tabActivo = tab;
-  document.getElementById('tabLibro').classList.toggle('active', tab==='libro');
-  document.getElementById('tabCombo').classList.toggle('active', tab==='combo');
-  document.getElementById('buscadorLibro').classList.toggle('hidden', tab!=='libro');
-  document.getElementById('buscadorCombo').classList.toggle('hidden', tab!=='combo');
+  $('tabLibro').classList.toggle('active', tab === 'libro');
+  $('tabCombo').classList.toggle('active', tab === 'combo');
+  $('buscadorLibro').classList.toggle('hidden', tab !== 'libro');
+  $('buscadorCombo').classList.toggle('hidden', tab !== 'combo');
 }
 
-function renderStockBajo(){
-  const bajos = LIBROS_DISPONIBLES.filter(l => l.stock <= STOCK_BAJO_UMBRAL).sort((a,b) => a.stock - b.stock);
-  const card = document.getElementById('lowStockCard');
-  const list = document.getElementById('lowStockList');
-  if(bajos.length === 0){ card.classList.remove('show'); return; }
-  card.classList.add('show');
-  list.innerHTML = bajos.map(l => `
-    <div class="low-stock-item">
-      <span>${l.titulo}</span>
-      <span class="cant ${l.stock<=0?'cero':''}">${l.stock<=0?'Sin stock':l.stock+' unid.'}</span>
-    </div>
-  `).join('');
+function onOrigenChange(){
+  const o = $('origenSelect').value;
+  $('campanaVentaSelect').classList.toggle('hidden', !(o === 'Publicidad' || o === 'Seguimiento de anuncio'));
 }
 
-/* ---------- buscador de LIBROS para la venta ---------- */
-const searchInput = document.getElementById('searchInput');
-const dropdown = document.getElementById('searchDropdown');
-searchInput.addEventListener('input', () => {
-  const term = searchInput.value.trim();
-  if(term.length < 1){ dropdown.classList.remove('open'); return; }
+/* buscador de libros */
+$('searchInput').addEventListener('input', () => {
+  const dd = $('searchDropdown');
+  const term = $('searchInput').value.trim();
+  if(!term){ dd.classList.remove('open'); return; }
   const t = normalizarTexto(term);
-  const resultados = LIBROS_DISPONIBLES.filter(l => normalizarTexto(l.titulo).includes(t)).slice(0, 8);
-  dropdown.innerHTML = resultados.length === 0
+  resultadosLibros = LIBROS_DISPONIBLES.filter(l => normalizarTexto(l.titulo).includes(t)).slice(0, 8);
+  dd.innerHTML = resultadosLibros.length === 0
     ? `<div class="dropdown-empty">No se encontró ningún libro con ese nombre.</div>`
-    : resultados.map(l => {
-      const precioMostrar = (l.promo!==''&&!isNaN(l.promo)&&Number(l.promo)<l.precio) ? l.promo : l.precio;
-      const claseStock = l.stock<=0 ? 'agotado' : (l.stock<=STOCK_BAJO_UMBRAL ? 'bajo' : '');
-      return `<div class="dropdown-item" onclick="agregarLibro('${esc(l.titulo)}')">
-        <span>${l.titulo}</span>
-        <span class="stock-tag ${claseStock}">${l.stock<=0?'Sin stock':'Stock: '+l.stock+' · '+gs(precioMostrar)}</span>
-      </div>`;
-    }).join('');
-  dropdown.classList.add('open');
+    : resultadosLibros.map((l, i) => {
+        const clase = l.stock <= 0 ? 'agotado' : (l.stock <= STOCK_BAJO_UMBRAL ? 'bajo' : '');
+        return `<div class="dropdown-item" data-i="${i}"><span>${h(l.titulo)}</span><span class="stock-tag ${clase}">${l.stock <= 0 ? 'Sin stock' : 'Stock: ' + l.stock + ' · ' + gs(precioVigente(l))}</span></div>`;
+      }).join('');
+  dd.classList.add('open');
+});
+$('searchDropdown').addEventListener('click', e => {
+  const it = e.target.closest('.dropdown-item'); if(!it) return;
+  agregarLibro(resultadosLibros[Number(it.dataset.i)]);
 });
 
-/* ---------- buscador de COMBOS para la venta ---------- */
-const comboSearchInput = document.getElementById('comboSearchInput');
-const comboDropdown = document.getElementById('comboDropdown');
-comboSearchInput.addEventListener('input', () => {
-  const term = comboSearchInput.value.trim();
-  if(term.length < 1){ comboDropdown.classList.remove('open'); return; }
+/* buscador de combos */
+$('comboSearchInput').addEventListener('input', () => {
+  const dd = $('comboDropdown');
+  const term = $('comboSearchInput').value.trim();
+  if(!term){ dd.classList.remove('open'); return; }
   const t = normalizarTexto(term);
-  const resultados = COMBOS_DISPONIBLES.filter(c => normalizarTexto(c.nombre).includes(t)).slice(0, 8);
-  comboDropdown.innerHTML = resultados.length === 0
+  resultadosCombos = COMBOS_DISPONIBLES.filter(c => normalizarTexto(c.nombre).includes(t)).slice(0, 8);
+  dd.innerHTML = resultadosCombos.length === 0
     ? `<div class="dropdown-empty">No se encontró ningún combo con ese nombre.</div>`
-    : resultados.map(c => `<div class="dropdown-item" onclick="agregarCombo('${esc(c.nombre)}')">
-        <span>${c.nombre}</span>
-        <span class="stock-tag">${gs(c.precio)}</span>
-      </div>`).join('');
-  comboDropdown.classList.add('open');
+    : resultadosCombos.map((c, i) => `<div class="dropdown-item" data-i="${i}"><span>${h(c.nombre)}</span><span class="stock-tag">${gs(c.precio)}</span></div>`).join('');
+  dd.classList.add('open');
+});
+$('comboDropdown').addEventListener('click', e => {
+  const it = e.target.closest('.dropdown-item'); if(!it) return;
+  agregarCombo(resultadosCombos[Number(it.dataset.i)]);
 });
 
-document.addEventListener('click', (e) => {
-  if(!e.target.closest('#searchInput') && !e.target.closest('#searchDropdown')) dropdown.classList.remove('open');
-  if(!e.target.closest('#comboSearchInput') && !e.target.closest('#comboDropdown')) comboDropdown.classList.remove('open');
-  if(!e.target.closest('#restockSearchInput') && !e.target.closest('#restockDropdown')) document.getElementById('restockDropdown').classList.remove('open');
+function agregarLibro(l){
+  if(!l) return;
+  const ex = VENTA_ACTUAL.find(v => v.tipo === 'libro' && v.titulo === l.titulo);
+  if(ex) ex.cantidad++;
+  else VENTA_ACTUAL.push({ tipo: 'libro', titulo: l.titulo, cantidad: 1, precio: precioVigente(l), stock: l.stock });
+  $('searchInput').value = ''; $('searchDropdown').classList.remove('open');
+  renderVenta();
+}
+function agregarCombo(c){
+  if(!c) return;
+  const ex = VENTA_ACTUAL.find(v => v.tipo === 'combo' && v.titulo === c.nombre);
+  if(ex) ex.cantidad++;
+  else VENTA_ACTUAL.push({ tipo: 'combo', titulo: c.nombre, cantidad: 1, precio: c.precio });
+  $('comboSearchInput').value = ''; $('comboDropdown').classList.remove('open');
+  renderVenta();
+}
+
+$('saleLines').addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if(!b) return;
+  const i = Number(b.dataset.i);
+  const item = VENTA_ACTUAL[i]; if(!item) return;
+  if(b.dataset.act === 'mas') item.cantidad++;
+  if(b.dataset.act === 'menos') item.cantidad--;
+  if(b.dataset.act === 'quitar' || item.cantidad <= 0) VENTA_ACTUAL.splice(i, 1);
+  renderVenta();
 });
-
-function agregarLibro(titulo){
-  const libro = LIBROS_DISPONIBLES.find(l => l.titulo === titulo);
-  if(!libro) return;
-  const existente = VENTA_ACTUAL.find(v => v.tipo==='libro' && v.titulo === titulo);
-  if(existente){ existente.cantidad++; }
-  else{
-    const precioUnit = (libro.promo!==''&&!isNaN(libro.promo)&&Number(libro.promo)<libro.precio) ? Number(libro.promo) : libro.precio;
-    VENTA_ACTUAL.push({ tipo:'libro', titulo: libro.titulo, cantidad: 1, precio: precioUnit, stock: libro.stock });
-  }
-  searchInput.value = ''; dropdown.classList.remove('open'); renderVenta();
-}
-
-function agregarCombo(nombre){
-  const combo = COMBOS_DISPONIBLES.find(c => c.nombre === nombre);
-  if(!combo) return;
-  const existente = VENTA_ACTUAL.find(v => v.tipo==='combo' && v.titulo === nombre);
-  if(existente){ existente.cantidad++; }
-  else{ VENTA_ACTUAL.push({ tipo:'combo', titulo: combo.nombre, cantidad: 1, precio: combo.precio }); }
-  comboSearchInput.value = ''; comboDropdown.classList.remove('open'); renderVenta();
-}
-
-function cambiarCantidad(titulo, delta){
-  const item = VENTA_ACTUAL.find(v => v.titulo === titulo);
-  if(!item) return;
-  item.cantidad += delta;
-  if(item.cantidad <= 0) VENTA_ACTUAL = VENTA_ACTUAL.filter(v => v.titulo !== titulo);
-  renderVenta();
-}
-function quitarLibro(titulo){
-  VENTA_ACTUAL = VENTA_ACTUAL.filter(v => v.titulo !== titulo);
-  renderVenta();
-}
 
 function calcular3x2(){
-  let unidades = [];
-  VENTA_ACTUAL.filter(v => v.tipo==='libro').forEach(item => {
-    for(let i=0; i<item.cantidad; i++) unidades.push({ titulo: item.titulo, precio: item.precio });
+  const unidades = [];
+  VENTA_ACTUAL.filter(v => v.tipo === 'libro').forEach((item, idx) => {
+    for(let k = 0; k < item.cantidad; k++) unidades.push({ titulo: item.titulo, precio: item.precio });
   });
-  unidades.sort((a,b) => b.precio - a.precio);
-  unidades.forEach((u,i) => { u.gratis = (i+1) % 3 === 0; });
-  const subtotal = unidades.reduce((s,u) => s + u.precio, 0);
-  const descuento = unidades.filter(u => u.gratis).reduce((s,u) => s + u.precio, 0);
+  unidades.sort((a, b) => b.precio - a.precio);
+  unidades.forEach((u, i) => { u.gratis = (i + 1) % 3 === 0; });
+  const subtotal = unidades.reduce((s, u) => s + u.precio, 0);
+  const descuento = unidades.filter(u => u.gratis).reduce((s, u) => s + u.precio, 0);
   return { unidades, subtotal, descuento, total: subtotal - descuento };
 }
 
 function renderVenta(){
-  const container = document.getElementById('saleLines');
-  const emptyMsg = document.getElementById('emptyCartMsg');
-  const totalsBox = document.getElementById('previewTotals');
-
-  if(VENTA_ACTUAL.length === 0){
-    container.innerHTML = ''; emptyMsg.style.display = 'block'; totalsBox.style.display = 'none';
-    return;
-  }
-  emptyMsg.style.display = 'none'; totalsBox.style.display = 'block';
+  const cont = $('saleLines'), vacio = $('emptyCartMsg'), tot = $('previewTotals');
+  if(VENTA_ACTUAL.length === 0){ cont.innerHTML = ''; vacio.style.display = 'block'; tot.style.display = 'none'; return; }
+  vacio.style.display = 'none'; tot.style.display = 'block';
 
   const calc = calcular3x2();
-  const totalCombos = VENTA_ACTUAL.filter(v=>v.tipo==='combo').reduce((s,v) => s + v.precio*v.cantidad, 0);
+  const totalCombos = VENTA_ACTUAL.filter(v => v.tipo === 'combo').reduce((s, v) => s + v.precio * v.cantidad, 0);
 
-  container.innerHTML = VENTA_ACTUAL.map(item => {
+  cont.innerHTML = VENTA_ACTUAL.map((item, i) => {
+    const controles = `
+      <div class="qty-controls">
+        <button class="qty-btn" data-act="menos" data-i="${i}">−</button><span>${item.cantidad}</span><button class="qty-btn" data-act="mas" data-i="${i}">+</button>
+      </div>
+      <button class="remove-btn" data-act="quitar" data-i="${i}">✕</button>`;
     if(item.tipo === 'combo'){
-      return `
-      <div class="sale-line">
-        <div class="titulo">${item.titulo} <span class="combo-tag">COMBO</span><small>${gs(item.precio)} c/u (precio fijo)</small></div>
-        <div class="qty-controls">
-          <button class="qty-btn" onclick="cambiarCantidad('${esc(item.titulo)}',-1)">−</button>
-          <span>${item.cantidad}</span>
-          <button class="qty-btn" onclick="cambiarCantidad('${esc(item.titulo)}',1)">+</button>
-        </div>
-        <button class="remove-btn" onclick="quitarLibro('${esc(item.titulo)}')">✕</button>
-      </div>`;
+      return `<div class="sale-line"><div class="titulo">${h(item.titulo)} <span class="combo-tag">COMBO</span><small>${gs(item.precio)} c/u (precio fijo)</small></div>${controles}</div>`;
     }
-    const unidadesDeEste = calc.unidades.filter(u => u.titulo === item.titulo);
-    const gratisDeEste = unidadesDeEste.filter(u => u.gratis).length;
-    return `
-      <div class="sale-line">
-        <div class="titulo">${item.titulo}<small>${gs(item.precio)} c/u · Stock: ${item.stock}${gratisDeEste>0?` · <span class="free-tag">${gratisDeEste} GRATIS</span>`:''}</small></div>
-        <div class="qty-controls">
-          <button class="qty-btn" onclick="cambiarCantidad('${esc(item.titulo)}',-1)">−</button>
-          <span>${item.cantidad}</span>
-          <button class="qty-btn" onclick="cambiarCantidad('${esc(item.titulo)}',1)">+</button>
-        </div>
-        <button class="remove-btn" onclick="quitarLibro('${esc(item.titulo)}')">✕</button>
-      </div>`;
+    const gratis = calc.unidades.filter(u => u.titulo === item.titulo && u.gratis).length;
+    return `<div class="sale-line"><div class="titulo">${h(item.titulo)}<small>${gs(item.precio)} c/u · Stock: ${item.stock}${gratis > 0 ? ` · <span class="free-tag">${gratis} GRATIS</span>` : ''}</small></div>${controles}</div>`;
   }).join('');
 
-  const esManual = document.getElementById('precioManualCheck').checked;
+  const manual = $('precioManualCheck').checked;
+  const montoManual = parseFloat($('montoManualInput').value) || 0;
   let filas = '';
-  if(esManual){
-    const montoManual = parseFloat(document.getElementById('montoManualInput').value) || 0;
-    filas += `<div class="preview-row"><span>Libros (precio de lista, referencia)</span><span>${gs(calc.subtotal)}</span></div>`;
-    filas += `<div class="preview-row"><span>Libros (precio especial)</span><span>${gs(montoManual)}</span></div>`;
-  }else{
-    filas += `<div class="preview-row"><span>Libros — Subtotal</span><span>${gs(calc.subtotal)}</span></div>`;
-    filas += calc.descuento > 0
-      ? `<div class="preview-row"><span>Descuento 3x2</span><span>-${gs(calc.descuento)}</span></div>`
-      : (calc.unidades.length > 0 ? `<div class="preview-row">Agregá ${3 - (calc.unidades.length % 3 || 3)} libro(s) más para activar el 3x2</div>` : '');
+  if(calc.unidades.length > 0){
+    if(manual){
+      filas += `<div class="preview-row"><span>Libros (precio de lista, referencia)</span><span>${gs(calc.subtotal)}</span></div>`;
+      filas += `<div class="preview-row"><span>Libros (precio especial)</span><span>${gs(montoManual)}</span></div>`;
+    }else{
+      filas += `<div class="preview-row"><span>Libros — Subtotal</span><span>${gs(calc.subtotal)}</span></div>`;
+      filas += calc.descuento > 0
+        ? `<div class="preview-row"><span>Descuento 3x2</span><span>-${gs(calc.descuento)}</span></div>`
+        : `<div class="preview-row">Agregá ${3 - (calc.unidades.length % 3 || 3)} libro(s) más para activar el 3x2</div>`;
+    }
   }
   if(totalCombos > 0) filas += `<div class="preview-row"><span>Combos</span><span>${gs(totalCombos)}</span></div>`;
-
-  const totalFinal = (esManual ? parseFloat(document.getElementById('montoManualInput').value)||0 : calc.total) + totalCombos;
+  const totalFinal = (manual ? montoManual : calc.total) + totalCombos;
   filas += `<div class="preview-row total"><span>Total a cobrar</span><span>${gs(totalFinal)}</span></div>`;
-  totalsBox.innerHTML = filas;
+  tot.innerHTML = filas;
 }
-
-document.getElementById('montoManualInput').addEventListener('input', renderVenta);
+$('montoManualInput').addEventListener('input', renderVenta);
 
 function toggleMontoManual(){
-  const check = document.getElementById('precioManualCheck').checked;
-  document.getElementById('montoManualInput').style.display = check ? 'block' : 'none';
-  if(!check) document.getElementById('montoManualInput').value = '';
+  const on = $('precioManualCheck').checked;
+  $('montoManualInput').classList.toggle('hidden', !on);
+  if(!on) $('montoManualInput').value = '';
   renderVenta();
 }
 
 async function registrarVenta(){
-  const resultBox = document.getElementById('resultBox');
-  if(VENTA_ACTUAL.length === 0){
-    resultBox.className = 'result error show';
-    resultBox.textContent = 'Agregá al menos un libro o combo antes de registrar.';
-    return;
-  }
-  const esManual = document.getElementById('precioManualCheck').checked;
-  const montoManual = esManual ? parseFloat(document.getElementById('montoManualInput').value) : null;
-  if(esManual && (!montoManual || montoManual < 0)){
-    resultBox.className = 'result error show';
-    resultBox.textContent = 'Ingresá el monto especial que cobraste por los libros sueltos.';
-    return;
-  }
+  const box = $('resultBox');
+  if(VENTA_ACTUAL.length === 0){ mostrarResultado(box, false, 'Agregá al menos un libro o combo antes de registrar.'); return; }
+  const origen = $('origenSelect').value;
+  if(!origen){ mostrarResultado(box, false, 'Elegí de dónde vino la venta (Publicidad, Seguimiento, Recompra u Orgánico).'); return; }
 
-  const btn = document.getElementById('submitBtn');
+  const manual = $('precioManualCheck').checked;
+  const montoManual = manual ? parseFloat($('montoManualInput').value) : null;
+  if(manual && (isNaN(montoManual) || montoManual < 0)){ mostrarResultado(box, false, 'Ingresá el monto especial que cobraste por los libros sueltos.'); return; }
+
+  const esAnuncio = origen === 'Publicidad' || origen === 'Seguimiento de anuncio';
+  const campana = esAnuncio ? ($('campanaVentaSelect').value || 'Sin asignar') : '';
+
+  const btn = $('submitBtn');
   btn.disabled = true;
-  resultBox.className = 'result show';
-  resultBox.textContent = 'Registrando...';
+  mostrarResultado(box, true, 'Registrando...');
 
   const items = VENTA_ACTUAL.map(v => v.tipo === 'combo'
     ? { tipo: 'combo', nombre: v.titulo, cantidad: v.cantidad }
-    : { tipo: 'libro', titulo: v.titulo, cantidad: v.cantidad }
-  );
-  const cliente = document.getElementById('clienteInput').value.trim();
+    : { tipo: 'libro', titulo: v.titulo, cantidad: v.cantidad });
 
   try{
-    const data = await llamarApi({ action: 'registrarVenta', items, montoManual: esManual ? montoManual : null, cliente });
+    const data = await llamarApi({
+      action: 'registrarVenta', items, montoManual: manual ? montoManual : null,
+      cliente: $('clienteInput').value.trim(), origen, campana
+    });
     if(data.ok){
-      const porcentaje = data.totalCobrado > 0 ? Math.round((data.ganancia / data.totalCobrado) * 1000) / 10 : 0;
-      resultBox.className = 'result show';
-      resultBox.innerHTML = `
+      const pct = data.totalCobrado > 0 ? Math.round((data.ganancia / data.totalCobrado) * 1000) / 10 : 0;
+      mostrarResultado(box, true, `
         ✅ Venta registrada. Te mandamos un email con el detalle.
         <div class="confirm-detail">
-          <div class="confirm-row"><span>Costo</span><b>${gs(data.totalCosto)}</b></div>
           <div class="confirm-row"><span>Precio de venta</span><b>${gs(data.totalCobrado)}</b></div>
-          <div class="confirm-row"><span>Ganancia</span><b>${gs(data.ganancia)}</b></div>
-          <div class="confirm-row pct"><span>% de ganancia</span><span>${porcentaje}%</span></div>
-        </div>
-      `;
+          <div class="confirm-row sep"><span>Costo de los libros</span><b>${gs(data.costoLibros)}</b></div>
+          <div class="confirm-row"><span>Packaging y regalos</span><b>${gs(data.costoPackaging)}</b></div>
+          <div class="confirm-row"><span>Costo total</span><b>${gs(data.totalCosto)}</b></div>
+          <div class="confirm-row sep"><span>Ganancia</span><b>${gs(data.ganancia)}</b></div>
+          <div class="confirm-row pct"><span>% de ganancia</span><span>${pct}%</span></div>
+        </div>`);
       VENTA_ACTUAL = [];
-      document.getElementById('clienteInput').value = '';
-      document.getElementById('precioManualCheck').checked = false;
-      document.getElementById('montoManualInput').value = '';
-      document.getElementById('montoManualInput').style.display = 'none';
+      $('clienteInput').value = '';
+      $('origenSelect').value = '';
+      onOrigenChange();
+      $('precioManualCheck').checked = false;
+      $('montoManualInput').value = ''; $('montoManualInput').classList.add('hidden');
       renderVenta();
-      cargarResumen();
-      cargarLibros();
-      cargarTopVendidos();
-      cargarUltimasVentas();
+      cargarResumen(); cargarLibros(); cargarUltimasVentas();
     }else{
-      resultBox.className = 'result error show';
-      resultBox.textContent = '❌ ' + data.error;
+      mostrarResultado(box, false, '❌ ' + h(data.error));
     }
   }catch(e){
-    resultBox.className = 'result error show';
-    resultBox.textContent = '❌ Error de conexión: ' + e.message;
+    mostrarResultado(box, false, '❌ Error de conexión: ' + h(e.message));
   }
   btn.disabled = false;
 }
 
-/* ---------- STOCK: reponer / ajustar ---------- */
-function cambiarTabStock(modo){
-  modoStock = modo;
-  document.getElementById('tabReponer').classList.toggle('active', modo==='reponer');
-  document.getElementById('tabAjustar').classList.toggle('active', modo==='ajustar');
-  document.getElementById('restockCantidad').style.display = modo==='reponer' ? 'block' : 'none';
-  document.getElementById('ajustarCantidad').style.display = modo==='ajustar' ? 'block' : 'none';
-  document.getElementById('stockSubmitBtn').textContent = modo==='reponer' ? 'Reponer stock' : 'Ajustar stock';
+/* ============================================================
+   CAMPAÑAS Y GASTO PUBLICITARIO (pestaña Métricas)
+   ============================================================ */
+function renderCampanas(){
+  const activas = CAMPANAS.filter(c => c.activa);
+
+  $('campanaVentaSelect').innerHTML = `<option value="Sin asignar">No sé / sin asignar</option>` +
+    activas.map(c => `<option value="${h(c.nombre)}">${h(c.nombre)}</option>`).join('');
+
+  $('gastoCampana').innerHTML = `<option value="General">General (sin campaña específica)</option>` +
+    activas.map(c => `<option value="${h(c.nombre)}">${h(c.nombre)}</option>`).join('');
+
+  $('campanasList').innerHTML = CAMPANAS.length === 0
+    ? `<p class="muted">Todavía no creaste ninguna campaña.</p>`
+    : CAMPANAS.map(c => `
+      <div class="list-item">
+        <div class="list-head">
+          <span>${h(c.nombre)} ${c.activa ? '' : '<span class="origin-tag">desactivada</span>'}</span>
+          <button class="small secondary" data-act="toggle-campana" data-nombre="${h(c.nombre)}" data-activa="${c.activa ? '1' : '0'}">${c.activa ? 'Desactivar' : 'Activar'}</button>
+        </div>
+      </div>`).join('');
+}
+$('campanasList').addEventListener('click', async e => {
+  const b = e.target.closest('[data-act="toggle-campana"]'); if(!b) return;
+  b.disabled = true;
+  try{
+    await llamarApi({ action: 'cambiarEstadoCampana', nombre: b.dataset.nombre, activa: b.dataset.activa !== '1' });
+    await cargarCampanas();
+  }catch(err){ alert('Error: ' + err.message); b.disabled = false; }
+});
+
+async function crearCampana(){
+  const input = $('nuevaCampanaInput'), box = $('campanaResult');
+  const nombre = input.value.trim();
+  if(!nombre){ mostrarResultado(box, false, 'Escribí un nombre para la campaña.'); return; }
+  try{
+    const data = await llamarApi({ action: 'crearCampana', nombre });
+    if(data.ok){ input.value = ''; box.className = 'result'; await cargarCampanas(); }
+    else mostrarResultado(box, false, '❌ ' + h(data.error));
+  }catch(e){ mostrarResultado(box, false, '❌ ' + h(e.message)); }
 }
 
-const restockSearchInput = document.getElementById('restockSearchInput');
-const restockDropdown = document.getElementById('restockDropdown');
-restockSearchInput.addEventListener('input', () => {
-  const term = restockSearchInput.value.trim();
-  if(term.length < 1){ restockDropdown.classList.remove('open'); return; }
-  const t = normalizarTexto(term);
-  const resultados = LIBROS_DISPONIBLES.filter(l => normalizarTexto(l.titulo).includes(t)).slice(0, 8);
-  restockDropdown.innerHTML = resultados.length === 0
-    ? `<div class="dropdown-empty">No se encontró ningún libro con ese nombre.</div>`
-    : resultados.map(l => `<div class="dropdown-item" onclick="seleccionarParaReponer('${esc(l.titulo)}')">
-        <span>${l.titulo}</span><span class="stock-tag">Stock actual: ${l.stock}</span>
+async function cargarGastos(){
+  const box = $('gastosList');
+  try{
+    const data = await llamarApi({ action: 'listarGastos', cantidad: 10 });
+    if(data.ok && data.gastos.length > 0){
+      box.innerHTML = data.gastos.map(g => `
+        <div class="list-item">
+          <div class="list-head">
+            <span>${h(fechaCorta(g.fecha))} · <b>${gs(g.monto)}</b> · <span class="origin-tag">${h(g.campana || 'General')}</span></span>
+            <button class="small outline-danger" data-act="eliminar-gasto" data-fila="${g.fila}" data-fecha="${h(g.fecha)}" data-monto="${g.monto}">Eliminar</button>
+          </div>
+        </div>`).join('');
+    }else{
+      box.innerHTML = `<p class="muted">Todavía no cargaste ningún gasto publicitario.</p>`;
+    }
+  }catch(e){ box.innerHTML = `<p class="muted">No se pudo cargar.</p>`; }
+}
+$('gastosList').addEventListener('click', async e => {
+  const b = e.target.closest('[data-act="eliminar-gasto"]'); if(!b) return;
+  if(!confirm('¿Eliminar este gasto?')) return;
+  b.disabled = true;
+  try{
+    const data = await llamarApi({ action: 'eliminarGasto', fila: Number(b.dataset.fila), fecha: b.dataset.fecha, monto: Number(b.dataset.monto) });
+    if(!data.ok) alert('Error: ' + data.error);
+    cargarGastos(); cargarMetricas(); cargarResumen();
+  }catch(err){ alert('Error de conexión: ' + err.message); b.disabled = false; }
+});
+
+async function registrarGasto(){
+  const box = $('gastoResult'), btn = $('gastoBtn');
+  const fecha = $('gastoFecha').value, monto = parseFloat($('gastoMonto').value);
+  if(!fecha){ mostrarResultado(box, false, 'Elegí la fecha del gasto.'); return; }
+  if(!monto || monto <= 0){ mostrarResultado(box, false, 'Ingresá el monto gastado.'); return; }
+  btn.disabled = true;
+  try{
+    const data = await llamarApi({ action: 'registrarGasto', fecha, monto, campana: $('gastoCampana').value });
+    if(data.ok){
+      mostrarResultado(box, true, '✅ Gasto cargado.');
+      $('gastoMonto').value = '';
+      cargarGastos(); cargarMetricas(); cargarResumen();
+    }else mostrarResultado(box, false, '❌ ' + h(data.error));
+  }catch(e){ mostrarResultado(box, false, '❌ ' + h(e.message)); }
+  btn.disabled = false;
+}
+
+/* ============================================================
+   MÉTRICAS Y GRÁFICOS
+   ============================================================ */
+function cambiarPeriodo(d){
+  periodoDias = d;
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.toggle('active', Number(b.dataset.dias) === d));
+  cargarMetricas();
+}
+
+const KPIS = [
+  { key: 'cobrado', label: 'Cobrado', fmt: gs, mejorSiSube: true },
+  { key: 'ganancia', label: 'Ganancia (antes de publicidad)', fmt: gs, mejorSiSube: true },
+  { key: 'gasto', label: 'Gasto publicitario', fmt: gs, mejorSiSube: null },
+  { key: 'gananciaNeta', label: 'Ganancia neta', fmt: gs, mejorSiSube: true, destacado: true },
+  { key: 'roas', label: 'ROAS', fmt: v => v == null ? '—' : v.toFixed(2) + 'x', mejorSiSube: true },
+  { key: 'costoPorVenta', label: 'Costo por venta (anuncios)', fmt: v => v == null ? '—' : gs(v), mejorSiSube: false },
+  { key: 'ticketPromedio', label: 'Ticket promedio', fmt: gs, mejorSiSube: true },
+  { key: 'margenNeto', label: 'Margen neto', fmt: v => (Number(v) || 0).toFixed(1) + '%', mejorSiSube: true }
+];
+
+function deltaHtml(act, prev, mejorSiSube){
+  if(act == null || prev == null) return `<div class="kpi-delta">&nbsp;</div>`;
+  if(prev === 0){
+    return act === 0 ? `<div class="kpi-delta">&nbsp;</div>` : `<div class="kpi-delta">sin datos del período anterior</div>`;
+  }
+  const pct = (act - prev) / Math.abs(prev) * 100;
+  if(Math.abs(pct) < 0.05) return `<div class="kpi-delta">= igual que antes</div>`;
+  const sube = pct > 0;
+  const clase = mejorSiSube === null ? '' : (sube === mejorSiSube ? 'good' : 'bad');
+  return `<div class="kpi-delta ${clase}">${sube ? '▲' : '▼'} ${Math.abs(pct).toFixed(1)}% vs. período anterior</div>`;
+}
+
+async function cargarMetricas(){
+  $('periodoLabel').textContent = `Últimos ${periodoDias} días, comparados con los ${periodoDias} días anteriores.`;
+  try{
+    const data = await llamarApi({ action: 'metricas', dias: periodoDias });
+    if(!data.ok){ $('kpiGrid').innerHTML = `<p class="muted">${h(data.error)}</p>`; return; }
+    $('kpiGrid').innerHTML = KPIS.map(k => `
+      <div class="kpi ${k.destacado ? 'destacado' : ''}">
+        <div class="kpi-label">${k.label}</div>
+        <div class="kpi-value">${k.fmt(data.actual[k.key])}</div>
+        ${deltaHtml(data.actual[k.key], data.previo[k.key], k.mejorSiSube)}
       </div>`).join('');
-  restockDropdown.classList.add('open');
+    renderTablaCampanas(data.porCampana);
+    renderGraficos(data);
+  }catch(e){ console.error(e); }
+}
+
+function renderTablaCampanas(lista){
+  const box = $('tablaCampanas');
+  if(!lista || lista.length === 0){ box.innerHTML = `<p class="muted">Todavía no hay gasto ni ventas de anuncios en este período.</p>`; return; }
+  box.innerHTML = `
+    <table>
+      <thead><tr><th>Campaña</th><th>Gasto</th><th>Ventas</th><th>Cobrado</th><th>ROAS</th><th>Costo/venta</th><th>Neta</th></tr></thead>
+      <tbody>${lista.map(c => `
+        <tr>
+          <td>${h(c.campana)}</td><td>${gs(c.gasto)}</td><td>${c.ventas}</td><td>${gs(c.cobrado)}</td>
+          <td>${c.roas == null ? '—' : c.roas.toFixed(2) + 'x'}</td>
+          <td>${c.costoPorVenta == null ? '—' : gs(c.costoPorVenta)}</td>
+          <td class="${c.neta >= 0 ? 'pos' : 'neg'}">${gs(c.neta)}</td>
+        </tr>`).join('')}</tbody>
+    </table>`;
+}
+
+const COLORES = { oro: '#f0a93c', oroSuave: 'rgba(240,169,60,0.18)', rojo: '#c0392b', verde: '#3fbf5f', azul: '#5b8def', coral: '#e07a5f', gris: '#6b6458' };
+const COLOR_ORIGEN = { 'Publicidad': COLORES.oro, 'Seguimiento de anuncio': COLORES.coral, 'Recompra': COLORES.verde, 'Orgánico': COLORES.azul, 'Sin dato': COLORES.gris };
+
+function crearGrafico(canvasId, config, hayDatos){
+  const canvas = $(canvasId);
+  const card = canvas.closest('.chart-card');
+  const box = canvas.closest('.chart-box');
+  const vacio = card.querySelector('.chart-empty');
+  if(charts[canvasId]){ charts[canvasId].destroy(); delete charts[canvasId]; }
+  box.classList.toggle('hidden', !hayDatos);
+  vacio.classList.toggle('hidden', hayDatos);
+  if(!hayDatos) return;
+  charts[canvasId] = new Chart(canvas, config);
+}
+
+function renderGraficos(data){
+  if(typeof Chart === 'undefined'){
+    document.querySelectorAll('.chart-card').forEach(c => {
+      c.querySelector('.chart-box').classList.add('hidden');
+      const v = c.querySelector('.chart-empty');
+      v.textContent = 'No se pudo cargar la librería de gráficos. Revisá tu conexión y recargá la página.';
+      v.classList.remove('hidden');
+    });
+    return;
+  }
+  Chart.defaults.color = '#b7ada0';
+  Chart.defaults.borderColor = '#33302a';
+  Chart.defaults.font.family = 'system-ui, sans-serif';
+
+  const dias = data.porDia;
+  const etiquetas = dias.map(d => fechaCorta(d.fecha));
+  const puntos = dias.length > 31 ? 0 : 3;
+  const ejeMoneda = { ticks: { callback: v => abreviar(v) }, grid: { color: '#2a2722' } };
+  const tooltipMoneda = { callbacks: { label: c => ` ${c.dataset.label}: ${gs(c.parsed.y != null ? c.parsed.y : c.parsed.x)}` } };
+  const hayActividad = dias.some(d => d.cobrado || d.gasto || d.ganancia);
+
+  // 1) Evolución diaria
+  crearGrafico('chartEvolucion', {
+    type: 'line',
+    data: { labels: etiquetas, datasets: [
+      { label: 'Cobrado', data: dias.map(d => d.cobrado), borderColor: COLORES.oro, backgroundColor: COLORES.oroSuave, fill: true, tension: 0.3, pointRadius: puntos },
+      { label: 'Gasto publicitario', data: dias.map(d => d.gasto), borderColor: COLORES.rojo, tension: 0.3, pointRadius: puntos },
+      { label: 'Ganancia neta', data: dias.map(d => d.neta), borderColor: COLORES.verde, tension: 0.3, pointRadius: puntos }
+    ]},
+    options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { position: 'bottom' }, tooltip: tooltipMoneda }, scales: { y: ejeMoneda, x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } } } }
+  }, hayActividad);
+
+  // 2) Ganancia neta por día
+  crearGrafico('chartNeta', {
+    type: 'bar',
+    data: { labels: etiquetas, datasets: [{ label: 'Ganancia neta', data: dias.map(d => d.neta), backgroundColor: dias.map(d => d.neta >= 0 ? COLORES.verde : COLORES.rojo), borderRadius: 4 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: tooltipMoneda },
+      scales: { y: ejeMoneda, x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } } } }
+  }, hayActividad);
+
+  // 3) Origen de las ventas
+  const origenes = data.porOrigen;
+  crearGrafico('chartOrigen', {
+    type: 'doughnut',
+    data: { labels: origenes.map(o => o.origen), datasets: [{ data: origenes.map(o => o.ventas), backgroundColor: origenes.map(o => COLOR_ORIGEN[o.origen] || COLORES.gris), borderColor: '#1c1a16', borderWidth: 2 }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '62%',
+      plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: c => { const o = origenes[c.dataIndex]; return ` ${o.ventas} venta${o.ventas === 1 ? '' : 's'} · ${gs(o.cobrado)}`; } } } } }
+  }, origenes.length > 0);
+
+  // 4) ROAS por campaña
+  const conRoas = data.porCampana.filter(c => c.roas != null);
+  crearGrafico('chartCampanas', {
+    type: 'bar',
+    data: { labels: conRoas.map(c => c.campana), datasets: [{ label: 'ROAS', data: conRoas.map(c => Number(c.roas.toFixed(2))), backgroundColor: COLORES.oro, borderRadius: 4 }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ` ROAS: ${c.parsed.x}x` } } },
+      scales: { x: { grid: { color: '#2a2722' }, ticks: { callback: v => v + 'x' } }, y: { grid: { display: false } } } }
+  }, conRoas.length > 0);
+
+  // 5) Libros más vendidos
+  crearGrafico('chartTop', {
+    type: 'bar',
+    data: { labels: data.topLibros.map(t => t.titulo.length > 28 ? t.titulo.slice(0, 27) + '…' : t.titulo), datasets: [{ label: 'Unidades', data: data.topLibros.map(t => t.cantidad), backgroundColor: COLORES.oro, borderRadius: 4 }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ` ${c.parsed.x} unidad${c.parsed.x === 1 ? '' : 'es'}` } } },
+      scales: { x: { grid: { color: '#2a2722' }, ticks: { precision: 0 } }, y: { grid: { display: false } } } }
+  }, data.topLibros.length > 0);
+
+  // 6) Qué días se vende más
+  crearGrafico('chartSemana', {
+    type: 'bar',
+    data: { labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'], datasets: [{ label: 'Ventas', data: data.porDiaSemana, backgroundColor: COLORES.oro, borderRadius: 4 }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ` ${c.parsed.y} venta${c.parsed.y === 1 ? '' : 's'}` } } },
+      scales: { y: { grid: { color: '#2a2722' }, ticks: { precision: 0 } }, x: { grid: { display: false } } } }
+  }, data.porDiaSemana.some(n => n > 0));
+}
+
+/* ============================================================
+   PESTAÑA STOCK
+   ============================================================ */
+function renderStockTab(){
+  const libros = LIBROS_DISPONIBLES;
+  const sin = libros.filter(l => l.stock <= 0).length;
+  const poco = libros.filter(l => l.stock > 0 && l.stock <= STOCK_BAJO_UMBRAL).length;
+  const unidades = libros.reduce((s, l) => s + l.stock, 0);
+  $('stockResumen').innerHTML = `
+    <div class="summary-box"><b>${libros.length}</b><span>Títulos</span></div>
+    <div class="summary-box"><b>${unidades}</b><span>Unidades en stock</span></div>
+    <div class="summary-box"><b>${poco}</b><span>Con poco stock</span></div>
+    <div class="summary-box"><b>${sin}</b><span>Sin stock</span></div>`;
+
+  const aReponer = libros.filter(l => l.stock <= STOCK_BAJO_UMBRAL).sort((a, b) => a.stock - b.stock);
+  $('lowStockCard').classList.toggle('hidden', aReponer.length === 0);
+  $('lowStockList').innerHTML = aReponer.slice(0, 15).map(l => `
+    <div class="stock-row" style="cursor:default;"><span>${h(l.titulo)}</span><span class="stock-num ${l.stock <= 0 ? 'cero' : 'bajo'}">${l.stock <= 0 ? 'Sin stock' : l.stock + ' unid.'}</span></div>`).join('')
+    + (aReponer.length > 15 ? `<p class="nota">…y ${aReponer.length - 15} más. Usá el filtro de abajo para verlos todos.</p>` : '');
+
+  renderListaStock();
+}
+
+function setFiltroStock(f){
+  stockFiltro = f;
+  document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c.dataset.f === f));
+  renderListaStock();
+}
+$('stockBuscar').addEventListener('input', renderListaStock);
+
+function renderListaStock(){
+  const t = normalizarTexto($('stockBuscar').value.trim());
+  let lista = LIBROS_DISPONIBLES.filter(l => !t || normalizarTexto(l.titulo).includes(t));
+  if(stockFiltro === 'poco') lista = lista.filter(l => l.stock > 0 && l.stock <= STOCK_BAJO_UMBRAL);
+  if(stockFiltro === 'sin') lista = lista.filter(l => l.stock <= 0);
+  lista.sort((a, b) => a.stock - b.stock || a.titulo.localeCompare(b.titulo));
+  filasStockVisibles = lista.slice(0, MAX_FILAS_STOCK);
+  $('stockContador').textContent = `Mostrando ${filasStockVisibles.length} de ${lista.length}` + (lista.length > MAX_FILAS_STOCK ? ' (usá el buscador para ver el resto)' : '');
+  $('stockLista').innerHTML = filasStockVisibles.length === 0
+    ? `<p class="muted">No hay libros que coincidan.</p>`
+    : filasStockVisibles.map((l, i) => `
+      <div class="stock-row" data-i="${i}"><span>${h(l.titulo)}</span><span class="stock-num ${l.stock <= 0 ? 'cero' : (l.stock <= STOCK_BAJO_UMBRAL ? 'bajo' : '')}">${l.stock}</span></div>`).join('');
+}
+$('stockLista').addEventListener('click', e => {
+  const row = e.target.closest('.stock-row'); if(!row) return;
+  const l = filasStockVisibles[Number(row.dataset.i)]; if(!l) return;
+  seleccionarParaReponer(l.titulo);
+  $('cardReponer').scrollIntoView({ behavior: 'smooth' });
+});
+
+/* reponer / ajustar */
+function cambiarTabStock(modo){
+  modoStock = modo;
+  $('tabReponer').classList.toggle('active', modo === 'reponer');
+  $('tabAjustar').classList.toggle('active', modo === 'ajustar');
+  $('restockCantidad').classList.toggle('hidden', modo !== 'reponer');
+  $('ajustarCantidad').classList.toggle('hidden', modo !== 'ajustar');
+  $('stockSubmitBtn').textContent = modo === 'reponer' ? 'Reponer stock' : 'Ajustar stock';
+}
+
+$('restockSearchInput').addEventListener('input', () => {
+  const dd = $('restockDropdown');
+  const term = $('restockSearchInput').value.trim();
+  if(!term){ dd.classList.remove('open'); return; }
+  const t = normalizarTexto(term);
+  resultadosRestock = LIBROS_DISPONIBLES.filter(l => normalizarTexto(l.titulo).includes(t)).slice(0, 8);
+  dd.innerHTML = resultadosRestock.length === 0
+    ? `<div class="dropdown-empty">No se encontró ningún libro con ese nombre.</div>`
+    : resultadosRestock.map((l, i) => `<div class="dropdown-item" data-i="${i}"><span>${h(l.titulo)}</span><span class="stock-tag">Stock actual: ${l.stock}</span></div>`).join('');
+  dd.classList.add('open');
+});
+$('restockDropdown').addEventListener('click', e => {
+  const it = e.target.closest('.dropdown-item'); if(!it) return;
+  const l = resultadosRestock[Number(it.dataset.i)]; if(l) seleccionarParaReponer(l.titulo);
 });
 
 function seleccionarParaReponer(titulo){
   LIBRO_A_REPONER = titulo;
-  restockSearchInput.value = titulo;
-  restockDropdown.classList.remove('open');
-  const libro = LIBROS_DISPONIBLES.find(l => l.titulo === titulo);
-  document.getElementById('restockSelected').textContent = libro ? `Stock actual: ${libro.stock} unidades` : '';
+  $('restockSearchInput').value = titulo;
+  $('restockDropdown').classList.remove('open');
+  const l = LIBROS_DISPONIBLES.find(x => x.titulo === titulo);
+  $('restockSelected').textContent = l ? `Stock actual: ${l.stock} unidades` : '';
 }
 
 async function confirmarStock(){
-  const resultBox = document.getElementById('restockResultBox');
-  const undoRow = document.getElementById('undoStockRow');
-  undoRow.classList.add('hidden');
-
-  if(!LIBRO_A_REPONER){
-    resultBox.className = 'result error show';
-    resultBox.textContent = 'Elegí un libro de la lista primero.';
-    return;
-  }
+  const box = $('restockResultBox');
+  $('undoStockRow').classList.add('hidden');
+  if(!LIBRO_A_REPONER){ mostrarResultado(box, false, 'Elegí un libro de la lista primero.'); return; }
 
   let payload;
   if(modoStock === 'reponer'){
-    const cantidad = parseInt(document.getElementById('restockCantidad').value, 10);
-    if(!cantidad || cantidad <= 0){
-      resultBox.className = 'result error show';
-      resultBox.textContent = 'Ingresá una cantidad válida.';
-      return;
-    }
+    const cantidad = parseInt($('restockCantidad').value, 10);
+    if(!cantidad || cantidad <= 0){ mostrarResultado(box, false, 'Ingresá una cantidad válida.'); return; }
     payload = { action: 'reponerStock', titulo: LIBRO_A_REPONER, cantidad };
   }else{
-    const nuevoStock = parseInt(document.getElementById('ajustarCantidad').value, 10);
-    if(nuevoStock === undefined || nuevoStock === null || isNaN(nuevoStock) || nuevoStock < 0){
-      resultBox.className = 'result error show';
-      resultBox.textContent = 'Ingresá el número real de stock.';
-      return;
-    }
+    const nuevoStock = parseInt($('ajustarCantidad').value, 10);
+    if(isNaN(nuevoStock) || nuevoStock < 0){ mostrarResultado(box, false, 'Ingresá el número real de stock.'); return; }
     payload = { action: 'ajustarStock', titulo: LIBRO_A_REPONER, nuevoStock };
   }
 
-  resultBox.className = 'result show';
-  resultBox.textContent = 'Guardando...';
-
+  mostrarResultado(box, true, 'Guardando...');
   try{
     const data = await llamarApi(payload);
     if(data.ok){
-      resultBox.className = 'result show';
-      resultBox.innerHTML = `✅ Listo. Nuevo stock: <b>${data.nuevoStock}</b> unidades.`;
-      undoRow.classList.remove('hidden');
-      document.getElementById('restockCantidad').value = '';
-      document.getElementById('ajustarCantidad').value = '';
-      restockSearchInput.value = '';
-      document.getElementById('restockSelected').textContent = '';
+      mostrarResultado(box, true, `✅ Listo. Nuevo stock: <b>${data.nuevoStock}</b> unidades.`);
+      $('undoStockRow').classList.remove('hidden');
+      $('restockCantidad').value = ''; $('ajustarCantidad').value = '';
+      $('restockSearchInput').value = ''; $('restockSelected').textContent = '';
       LIBRO_A_REPONER = null;
       cargarLibros();
-    }else{
-      resultBox.className = 'result error show';
-      resultBox.textContent = '❌ ' + data.error;
-    }
-  }catch(e){
-    resultBox.className = 'result error show';
-    resultBox.textContent = '❌ Error de conexión: ' + e.message;
-  }
+    }else mostrarResultado(box, false, '❌ ' + h(data.error));
+  }catch(e){ mostrarResultado(box, false, '❌ Error de conexión: ' + h(e.message)); }
 }
 
 async function deshacerReposicion(){
   if(!confirm('¿Deshacer el último cambio de stock (reposición o ajuste)?')) return;
-  const resultBox = document.getElementById('restockResultBox');
+  const box = $('restockResultBox');
   try{
     const data = await llamarApi({ action: 'deshacerUltimaReposicion' });
     if(data.ok){
-      resultBox.className = 'result show';
-      resultBox.textContent = '↩️ ' + data.mensaje;
-      document.getElementById('undoStockRow').classList.add('hidden');
+      mostrarResultado(box, true, '↩️ ' + h(data.mensaje));
+      $('undoStockRow').classList.add('hidden');
       cargarLibros();
-    }else{
-      resultBox.className = 'result error show';
-      resultBox.textContent = '❌ ' + data.error;
-    }
-  }catch(e){
-    resultBox.className = 'result error show';
-    resultBox.textContent = '❌ Error de conexión: ' + e.message;
-  }
+    }else mostrarResultado(box, false, '❌ ' + h(data.error));
+  }catch(e){ mostrarResultado(box, false, '❌ Error de conexión: ' + h(e.message)); }
 }
+
+/* cerrar desplegables al hacer clic afuera */
+document.addEventListener('click', e => {
+  [['searchInput','searchDropdown'], ['comboSearchInput','comboDropdown'], ['restockSearchInput','restockDropdown']].forEach(([i, d]) => {
+    if(!e.target.closest('#' + i) && !e.target.closest('#' + d)) $(d).classList.remove('open');
+  });
+});
 </script>
 </body>
 </html>
