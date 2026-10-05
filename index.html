@@ -299,6 +299,15 @@
     border-radius:8px; padding:11px; font-weight:600; font-size:0.88rem; cursor:pointer; margin-bottom:14px;
   }
   .continue-shopping-btn:hover{border-color:var(--gold); color:var(--gold);}
+
+  .toast{
+    position:fixed; left:50%; bottom:96px; transform:translateX(-50%) translateY(16px);
+    background:var(--bg-elevated); color:var(--paper); border:1px solid var(--gold-dim);
+    border-radius:10px; padding:11px 16px; font-size:0.86rem; z-index:120;
+    opacity:0; pointer-events:none; transition:opacity .2s, transform .2s;
+    max-width:min(92vw,420px); text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.45);
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
   .checkout-btn{
     width:100%; background:var(--whatsapp); color:#0c1f10; border:none; border-radius:8px;
     padding:13px; font-weight:700; font-size:0.95rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
@@ -1250,9 +1259,72 @@ document.addEventListener('keydown', (e) => {
 /* ============================================================
    CARRITO + LÓGICA 3x2
    ============================================================ */
+/* ---------- límite por stock real ----------
+   Un libro sin número de stock en la planilla se considera "sin límite"
+   (no podemos limitar algo que no sabemos cuánto es). */
+function stockDe(b){
+  return (typeof b.stock === 'number' && !isNaN(b.stock)) ? b.stock : Infinity;
+}
+
+// Unidades de un libro que ya están reservadas en el carrito,
+// sueltas o dentro de combos.
+function enCarritoDe(titulo){
+  const t = normalizeText(titulo);
+  let total = 0;
+  CART.forEach(ci => {
+    const b = findBook(ci.id);
+    if(b && normalizeText(b.titulo) === t) total += ci.cantidad;
+  });
+  COMBO_CART.forEach(cc => {
+    const c = ALL_COMBOS.find(x => x.id === cc.id);
+    if(c && c.librosIncluidos.some(l => normalizeText(l) === t)) total += cc.cantidad;
+  });
+  return total;
+}
+
+function disponibleDe(b){
+  return stockDe(b) - enCarritoDe(b.titulo);
+}
+
+// Devuelve el título del primer libro del combo que no alcanza, o null si alcanza.
+function libroFaltanteParaCombo(c, cantidadExtra){
+  for(const titulo of c.librosIncluidos){
+    const b = ALL_BOOKS.find(x => normalizeText(x.titulo) === normalizeText(titulo));
+    if(!b) continue;
+    if(disponibleDe(b) < cantidadExtra) return b.titulo;
+  }
+  return null;
+}
+
+function mostrarAviso(msg){
+  let t = document.getElementById('toast');
+  if(!t){
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.className = 'toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
 function addToCart(id, qty){
   const b = findBook(id);
-  if(!b || b.stock <= 0) return;
+  if(!b) return;
+  qty = Math.max(1, parseInt(qty, 10) || 1);
+  const disponible = disponibleDe(b);
+  if(disponible <= 0){
+    mostrarAviso(stockDe(b) <= 0
+      ? 'Este libro está agotado por el momento.'
+      : 'Ya tenés en el carrito todas las unidades disponibles de este libro.');
+    return;
+  }
+  if(qty > disponible){
+    mostrarAviso('Solo hay ' + stockDe(b) + ' unidad' + (stockDe(b) === 1 ? '' : 'es') + ' en stock. Agregamos ' + disponible + '.');
+    qty = disponible;
+  }
   const existing = CART.find(ci => ci.id === id);
   if(existing) existing.cantidad += qty;
   else CART.push({ id, cantidad: qty });
@@ -1268,6 +1340,13 @@ function removeFromCart(id){
 function changeQty(id, delta){
   const item = CART.find(ci => ci.id === id);
   if(!item) return;
+  if(delta > 0){
+    const b = findBook(id);
+    if(b && disponibleDe(b) < delta){
+      mostrarAviso('No hay más unidades disponibles de este libro (stock: ' + stockDe(b) + ').');
+      return;
+    }
+  }
   item.cantidad += delta;
   if(item.cantidad <= 0) removeFromCart(id);
   else updateCartUI();
@@ -1276,6 +1355,11 @@ function changeQty(id, delta){
 function addComboToCart(id){
   const c = ALL_COMBOS.find(x => x.id === id);
   if(!c) return;
+  const falta = libroFaltanteParaCombo(c, 1);
+  if(falta){
+    mostrarAviso('No hay stock suficiente de "' + falta + '" para sumar este combo.');
+    return;
+  }
   const existing = COMBO_CART.find(ci => ci.id === id);
   if(existing) existing.cantidad += 1;
   else COMBO_CART.push({ id, cantidad: 1 });
@@ -1291,6 +1375,14 @@ function removeCombo(id){
 function changeComboQty(id, delta){
   const item = COMBO_CART.find(ci => ci.id === id);
   if(!item) return;
+  if(delta > 0){
+    const c = ALL_COMBOS.find(x => x.id === id);
+    const falta = c ? libroFaltanteParaCombo(c, delta) : null;
+    if(falta){
+      mostrarAviso('No hay stock suficiente de "' + falta + '" para otro combo.');
+      return;
+    }
+  }
   item.cantidad += delta;
   if(item.cantidad <= 0) removeCombo(id);
   else updateCartUI();
@@ -1512,11 +1604,25 @@ function routeFromURL(){
 }
 window.addEventListener('popstate', routeFromURL);
 
+function pdpQtyClamp(){
+  const input = document.getElementById('pdpQtyInput');
+  const b = findBook(input.dataset.book);
+  let val = parseInt(input.value || '1', 10);
+  if(isNaN(val) || val < 1) val = 1;
+  if(b){
+    const max = Math.max(1, disponibleDe(b));
+    if(val > max){
+      val = max;
+      mostrarAviso('Solo hay ' + stockDe(b) + ' unidad' + (stockDe(b) === 1 ? '' : 'es') + ' en stock.');
+    }
+  }
+  input.value = val;
+}
+
 function pdpQtyChange(delta){
   const input = document.getElementById('pdpQtyInput');
-  let val = parseInt(input.value || '1', 10) + delta;
-  if(val < 1) val = 1;
-  input.value = val;
+  input.value = (parseInt(input.value || '1', 10) || 1) + delta;
+  pdpQtyClamp();
 }
 
 function showProduct(id){
@@ -1579,7 +1685,7 @@ function showProduct(id){
 
         <div class="qty-selector">
           <button class="qty-btn" onclick="pdpQtyChange(-1)">−</button>
-          <input id="pdpQtyInput" type="number" value="1" min="1">
+          <input id="pdpQtyInput" type="number" value="1" min="1" data-book="${b.id}" onchange="pdpQtyClamp()">
           <button class="qty-btn" onclick="pdpQtyChange(1)">+</button>
         </div>
 
