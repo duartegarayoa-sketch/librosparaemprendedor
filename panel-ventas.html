@@ -131,6 +131,8 @@
   th:first-child, td:first-child{text-align:left; white-space:normal;}
   th{color:var(--paper-dim); font-weight:600; font-size:0.72rem;}
   .pos{color:var(--green);} .neg{color:#e5675a;}
+  .warn-box{background:rgba(240,169,60,0.12); border:1px solid var(--gold); border-radius:8px; padding:10px 12px; margin-top:12px; font-size:0.86rem; line-height:1.45;}
+  .list-aviso{color:var(--gold); font-size:0.78rem; margin-bottom:6px;}
   .nota{font-size:0.78rem; color:var(--paper-dim); margin-top:10px; line-height:1.5;}
 
   .filter-chips{display:flex; gap:8px; margin:12px 0;}
@@ -207,15 +209,17 @@
       <div class="preview-totals" id="previewTotals" style="display:none;"></div>
 
       <label class="field-label" for="origenSelect">¿De dónde vino esta venta? *</label>
-      <div class="grid-2">
-        <select id="origenSelect" onchange="onOrigenChange()">
-          <option value="">Elegí el origen...</option>
-          <option value="Publicidad">Publicidad</option>
-          <option value="Seguimiento de anuncio">Seguimiento de anuncio</option>
-          <option value="Recompra">Recompra</option>
-          <option value="Orgánico">Orgánico</option>
-        </select>
-        <select id="campanaVentaSelect" class="hidden"></select>
+      <select id="origenSelect" onchange="onOrigenChange()">
+        <option value="">Elegí el origen...</option>
+        <option value="Publicidad">Publicidad</option>
+        <option value="Seguimiento de anuncio">Seguimiento de anuncio</option>
+        <option value="Recompra">Recompra</option>
+        <option value="Orgánico">Orgánico</option>
+      </select>
+      <div id="campanaVentaWrap" class="hidden">
+        <label class="field-label" for="campanaVentaSelect">¿De qué anuncio o campaña vino?</label>
+        <select id="campanaVentaSelect" onchange="onCampanaChange('venta')"></select>
+        <input type="text" id="campanaVentaNueva" class="hidden" maxlength="60" placeholder="Escribí el nombre del anuncio o campaña" style="margin-top:10px;">
       </div>
       <p class="nota" style="margin-top:8px;"><b>Publicidad:</b> compró en la primera charla · <b>Seguimiento de anuncio:</b> llegó por un anuncio y cerraste después · <b>Recompra:</b> ya era cliente · <b>Orgánico:</b> llegó sin anuncio.</p>
 
@@ -256,7 +260,8 @@
         <input type="date" id="gastoFecha">
         <input type="number" id="gastoMonto" placeholder="Monto gastado (Gs.)" min="1">
       </div>
-      <select id="gastoCampana" style="margin-top:10px;"></select>
+      <select id="gastoCampana" onchange="onCampanaChange('gasto')" style="margin-top:10px;"></select>
+      <input type="text" id="gastoCampanaNueva" class="hidden" maxlength="60" placeholder="Escribí el nombre del anuncio o campaña" style="margin-top:10px;">
       <button onclick="registrarGasto()" id="gastoBtn" style="margin-top:10px;">Cargar gasto</button>
       <div class="result" id="gastoResult"></div>
       <div class="row-label" style="margin-top:18px;">Últimos gastos cargados</div>
@@ -265,7 +270,7 @@
 
     <div class="card">
       <h3>🎯 Campañas</h3>
-      <p class="muted" style="margin-bottom:12px;">Creá una campaña por cada anuncio o promo que pautes, para saber cuál rinde mejor.</p>
+      <p class="muted" style="margin-bottom:12px;">Una campaña por cada anuncio o promo que pautes, para saber cuál rinde mejor. También se crean solas cuando escribís un nombre nuevo al cargar una venta o un gasto, así que acá solo hace falta si querés prepararla de antes.</p>
       <div class="grid-2">
         <input type="text" id="nuevaCampanaInput" placeholder="Ej: Promo 3x2 - Octubre" maxlength="60">
         <button onclick="crearCampana()">Crear campaña</button>
@@ -401,7 +406,8 @@ function abreviar(n){
   return String(Math.round(n));
 }
 function fechaCorta(iso){ const p = iso.split('-'); return p[2] + '/' + p[1]; }
-function hoyLocalISO(){ return new Date().toLocaleDateString('en-CA'); }
+// La fecha de "hoy" siempre en la hora de Asunción (la misma que usa el servidor), sin importar la zona horaria del dispositivo.
+function hoyLocalISO(){ return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Asuncion' }); }
 function mostrarResultado(box, ok, html){ box.className = 'result show' + (ok ? '' : ' error'); box.innerHTML = html; }
 
 /* ---------- conexión con el servidor ---------- */
@@ -536,6 +542,7 @@ async function cargarUltimasVentas(){
             <button class="small outline-danger" data-act="eliminar-venta" data-fila="${v.fila}" data-ms="${v.fechaMs}">Eliminar</button>
           </div>
           <div class="list-detalle">${h(v.detalle)}</div>
+          ${v.aviso ? `<div class="list-aviso">⚠️ ${h(v.aviso)}</div>` : ''}
           <div class="list-nums"><span>Cobrado: ${gs(v.totalCobrado)}</span><span>Ganancia: ${gs(v.ganancia)}</span>${origen}</div>
         </div>`;
       }).join('');
@@ -569,7 +576,25 @@ function cambiarTab(tab){
 
 function onOrigenChange(){
   const o = $('origenSelect').value;
-  $('campanaVentaSelect').classList.toggle('hidden', !(o === 'Publicidad' || o === 'Seguimiento de anuncio'));
+  $('campanaVentaWrap').classList.toggle('hidden', !(o === 'Publicidad' || o === 'Seguimiento de anuncio'));
+}
+
+// Muestra el cuadro para escribir el nombre cuando se elige "Otro (escribir el nombre)".
+function onCampanaChange(cual){
+  const sel = $(cual === 'venta' ? 'campanaVentaSelect' : 'gastoCampana');
+  const inp = $(cual === 'venta' ? 'campanaVentaNueva' : 'gastoCampanaNueva');
+  const otra = sel.value === '__otra__';
+  inp.classList.toggle('hidden', !otra);
+  if(otra) inp.focus();
+}
+
+// Devuelve el nombre de campaña elegido o escrito. Si eligió "Otro" y no escribió nada, devuelve null.
+function leerCampana(cual){
+  const sel = $(cual === 'venta' ? 'campanaVentaSelect' : 'gastoCampana');
+  const inp = $(cual === 'venta' ? 'campanaVentaNueva' : 'gastoCampanaNueva');
+  if(sel.value !== '__otra__') return sel.value;
+  const escrito = inp.value.trim();
+  return escrito ? escrito : null;
 }
 
 /* buscador de libros */
@@ -708,7 +733,11 @@ async function registrarVenta(){
   if(manual && (isNaN(montoManual) || montoManual < 0)){ mostrarResultado(box, false, 'Ingresá el monto especial que cobraste por los libros sueltos.'); return; }
 
   const esAnuncio = origen === 'Publicidad' || origen === 'Seguimiento de anuncio';
-  const campana = esAnuncio ? ($('campanaVentaSelect').value || 'Sin asignar') : '';
+  let campana = '';
+  if(esAnuncio){
+    campana = leerCampana('venta') || '';
+    if(!campana){ mostrarResultado(box, false, 'Escribí el nombre del anuncio o campaña, o elegí "No sé / sin asignar".'); return; }
+  }
 
   const btn = $('submitBtn');
   btn.disabled = true;
@@ -727,6 +756,7 @@ async function registrarVenta(){
       const pct = data.totalCobrado > 0 ? Math.round((data.ganancia / data.totalCobrado) * 1000) / 10 : 0;
       mostrarResultado(box, true, `
         ✅ Venta registrada. Te mandamos un email con el detalle.
+        ${(data.avisos || []).map(a => `<div class="warn-box">⚠️ <b>Ojo:</b> ${h(a)} Si la venta quedó con una ganancia que no es real, tocá Eliminar en "Últimas ventas", corregí el costo en tu planilla y volvé a cargarla.</div>`).join('')}
         <div class="confirm-detail">
           <div class="confirm-row"><span>Precio de venta</span><b>${gs(data.totalCobrado)}</b></div>
           <div class="confirm-row sep"><span>Costo de los libros</span><b>${gs(data.costoLibros)}</b></div>
@@ -739,6 +769,10 @@ async function registrarVenta(){
       $('clienteInput').value = '';
       $('origenSelect').value = '';
       onOrigenChange();
+      $('campanaVentaSelect').value = 'Sin asignar';
+      onCampanaChange('venta');
+      $('campanaVentaNueva').value = '';
+      cargarCampanas(); // por si se creó una campaña nueva con el nombre escrito
       $('precioManualCheck').checked = false;
       $('montoManualInput').value = ''; $('montoManualInput').classList.add('hidden');
       renderVenta();
@@ -757,12 +791,18 @@ async function registrarVenta(){
    ============================================================ */
 function renderCampanas(){
   const activas = CAMPANAS.filter(c => c.activa);
+  const opciones = activas.map(c => `<option value="${h(c.nombre)}">${h(c.nombre)}</option>`).join('')
+    + `<option value="__otra__">✏️ Otro (escribir el nombre)</option>`;
 
-  $('campanaVentaSelect').innerHTML = `<option value="Sin asignar">No sé / sin asignar</option>` +
-    activas.map(c => `<option value="${h(c.nombre)}">${h(c.nombre)}</option>`).join('');
-
-  $('gastoCampana').innerHTML = `<option value="General">General (sin campaña específica)</option>` +
-    activas.map(c => `<option value="${h(c.nombre)}">${h(c.nombre)}</option>`).join('');
+  // Se conserva lo que la persona ya había elegido, si sigue disponible.
+  const rellenar = (selId, primera) => {
+    const sel = $(selId);
+    const previo = sel.value;
+    sel.innerHTML = primera + opciones;
+    if(previo && Array.from(sel.options).some(o => o.value === previo)) sel.value = previo;
+  };
+  rellenar('campanaVentaSelect', `<option value="Sin asignar">No sé / sin asignar</option>`);
+  rellenar('gastoCampana', `<option value="General">General (sin campaña específica)</option>`);
 
   $('campanasList').innerHTML = CAMPANAS.length === 0
     ? `<p class="muted">Todavía no creaste ninguna campaña.</p>`
@@ -827,12 +867,19 @@ async function registrarGasto(){
   const fecha = $('gastoFecha').value, monto = parseFloat($('gastoMonto').value);
   if(!fecha){ mostrarResultado(box, false, 'Elegí la fecha del gasto.'); return; }
   if(!monto || monto <= 0){ mostrarResultado(box, false, 'Ingresá el monto gastado.'); return; }
+  const campana = leerCampana('gasto');
+  if(!campana){ mostrarResultado(box, false, 'Escribí el nombre de la campaña, o elegí "General".'); return; }
   btn.disabled = true;
   try{
-    const data = await llamarApi({ action: 'registrarGasto', fecha, monto, campana: $('gastoCampana').value });
+    const data = await llamarApi({ action: 'registrarGasto', fecha, monto, campana });
     if(data.ok){
-      mostrarResultado(box, true, '✅ Gasto cargado.');
+      mostrarResultado(box, true, '✅ Gasto cargado en "' + h(data.campana) + '".');
       $('gastoMonto').value = '';
+      $('gastoCampanaNueva').value = '';
+      await cargarCampanas();
+      // Si se creó una campaña nueva, queda elegida para el próximo gasto del mismo anuncio.
+      if(Array.from($('gastoCampana').options).some(o => o.value === data.campana)) $('gastoCampana').value = data.campana;
+      onCampanaChange('gasto');
       cargarGastos(); cargarMetricas(); cargarResumen();
     }else mostrarResultado(box, false, '❌ ' + h(data.error));
   }catch(e){ mostrarResultado(box, false, '❌ ' + h(e.message)); }
