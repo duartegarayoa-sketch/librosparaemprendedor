@@ -208,6 +208,10 @@
       <div class="empty-cart" id="emptyCartMsg">Todavía no agregaste ningún libro o combo.</div>
       <div class="preview-totals" id="previewTotals" style="display:none;"></div>
 
+      <label class="field-label" for="ventaFecha">Fecha de la venta</label>
+      <input type="date" id="ventaFecha" onchange="onFechaVentaChange()">
+      <div class="warn-box hidden" id="fechaAviso" style="margin-top:8px;"></div>
+
       <label class="field-label" for="origenSelect">¿De dónde vino esta venta? *</label>
       <select id="origenSelect" onchange="onOrigenChange()">
         <option value="">Elegí el origen...</option>
@@ -238,7 +242,13 @@
 
     <div class="card">
       <h3>Últimas ventas</h3>
-      <div id="ultimasVentasList"><p class="muted">Cargando...</p></div>
+      <label class="field-label" for="filtroVentaDia" style="margin-top:0;">Ver las ventas de un día específico</label>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input type="date" id="filtroVentaDia" onchange="aplicarFiltroVentas()" style="flex:1;">
+        <button class="small" id="filtroVentaLimpiar" onclick="limpiarFiltroVentas()" style="display:none;">Ver últimas</button>
+      </div>
+      <div id="filtroVentaResumen" class="hidden" style="margin:12px 0;"></div>
+      <div id="ultimasVentasList" style="margin-top:12px;"><p class="muted">Cargando...</p></div>
     </div>
   </div>
 
@@ -249,10 +259,24 @@
       <button class="period-btn" data-dias="7" onclick="cambiarPeriodo(7)">7 días</button>
       <button class="period-btn active" data-dias="30" onclick="cambiarPeriodo(30)">30 días</button>
       <button class="period-btn" data-dias="90" onclick="cambiarPeriodo(90)">90 días</button>
+      <button class="period-btn" id="btnRango" data-dias="0" onclick="abrirRango()">📅 Fecha</button>
     </div>
+    <div id="rangoBox" style="display:none; gap:8px; margin:8px 0; align-items:flex-end;">
+      <div style="flex:1;"><label class="field-label" for="rangoDesde" style="margin-top:0;">Desde</label><input type="date" id="rangoDesde" onchange="aplicarRango()"></div>
+      <div style="flex:1;"><label class="field-label" for="rangoHasta" style="margin-top:0;">Hasta</label><input type="date" id="rangoHasta" onchange="aplicarRango()"></div>
+    </div>
+    <p class="nota" id="rangoNota" style="display:none; margin:0 0 8px;">Para ver un solo día, poné la misma fecha en "Desde" y "Hasta" (o dejá "Hasta" vacío).</p>
     <p class="muted" id="periodoLabel"></p>
 
     <div class="kpi-grid" id="kpiGrid"></div>
+
+    <div class="card" id="metaCard">
+      <h3>🔗 Gasto de Meta (automático)</h3>
+      <p class="muted" id="metaEstado">Verificando conexión...</p>
+      <button onclick="sincronizarMeta(3)" id="metaBtn" class="hidden" style="margin-top:10px;">🔄 Actualizar ahora</button>
+      <button onclick="sincronizarMeta(30)" id="metaBtn30" class="small hidden" style="margin-top:8px;">Traer últimos 30 días</button>
+      <div class="result" id="metaResult"></div>
+    </div>
 
     <div class="card">
       <h3>💸 Cargar gasto publicitario</h3>
@@ -386,6 +410,8 @@ let VENTA_ACTUAL = []; // [{tipo, titulo, cantidad, precio, stock}]
 let tabActivo = 'libro';
 let tabPrincipal = 'ventas';
 let periodoDias = 30;
+let periodoRango = null; // {desde, hasta} cuando se elige una fecha específica
+let FILTRO_VENTAS_DIA = '';
 let modoStock = 'reponer';
 let LIBRO_A_REPONER = null;
 let stockFiltro = 'todos';
@@ -472,6 +498,8 @@ function cerrarSesion(mensaje){
 function iniciarPanel(){
   $('loginScreen').classList.add('hidden');
   $('panelScreen').classList.remove('hidden');
+  $('ventaFecha').value = hoyLocalISO();
+  $('ventaFecha').max = hoyLocalISO();
   $('gastoFecha').value = hoyLocalISO();
   $('gastoFecha').max = hoyLocalISO();
   cargarLibros(); cargarCombos(); cargarCampanas();
@@ -486,7 +514,7 @@ function mostrarTab(tab){
     $('tab-' + t).classList.toggle('hidden', t !== tab);
     $('mainTab-' + t).classList.toggle('active', t === tab);
   });
-  if(tab === 'metricas'){ cargarMetricas(); cargarGastos(); }
+  if(tab === 'metricas'){ cargarMetricas(); cargarGastos(); cargarEstadoMeta(); }
   if(tab === 'stock'){ renderStockTab(); }
   if(tab === 'ventas'){ cargarResumen(); cargarUltimasVentas(); }
 }
@@ -526,10 +554,35 @@ async function cargarResumen(){
   }
 }
 
+function aplicarFiltroVentas(){
+  FILTRO_VENTAS_DIA = $('filtroVentaDia').value || '';
+  cargarUltimasVentas();
+}
+function limpiarFiltroVentas(){
+  $('filtroVentaDia').value = '';
+  aplicarFiltroVentas();
+}
+
 async function cargarUltimasVentas(){
   const box = $('ultimasVentasList');
+  const dia = FILTRO_VENTAS_DIA;
+  $('filtroVentaLimpiar').style.display = dia ? '' : 'none';
+  const resBox = $('filtroVentaResumen');
   try{
-    const data = await llamarApi({ action: 'listarUltimasVentas', cantidad: 10 });
+    const data = dia
+      ? await llamarApi({ action: 'listarVentasPorDia', fecha: dia })
+      : await llamarApi({ action: 'listarUltimasVentas', cantidad: 10 });
+    if(dia !== FILTRO_VENTAS_DIA) return; // se cambió el filtro mientras cargaba
+    if(dia && data.ok){
+      const r = data.resumen;
+      resBox.classList.remove('hidden');
+      resBox.innerHTML = `<p class="muted" style="margin:0 0 8px;">Día ${h(dia.split('-').reverse().join('/'))}</p><div class="summary-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">
+        <div class="summary-box"><b>${num(r.cobrado)}</b><span>Cobrado (Gs.)</span></div>
+        <div class="summary-box"><b>${num(r.neta)}</b><span>Ganancia neta (Gs.)</span></div>
+        <div class="summary-box"><b>${r.ventas}</b><span>Ventas</span></div></div>`;
+    }else{
+      resBox.classList.add('hidden'); resBox.innerHTML = '';
+    }
     if(data.ok && data.ventas.length > 0){
       box.innerHTML = data.ventas.map(v => {
         const f = new Date(v.fecha);
@@ -547,7 +600,7 @@ async function cargarUltimasVentas(){
         </div>`;
       }).join('');
     }else{
-      box.innerHTML = `<p class="muted">Todavía no registraste ninguna venta.</p>`;
+      box.innerHTML = dia ? `<p class="muted">No hay ventas cargadas ese día.</p>` : `<p class="muted">Todavía no registraste ninguna venta.</p>`;
     }
   }catch(e){ box.innerHTML = `<p class="muted">No se pudo cargar.</p>`; }
 }
@@ -722,11 +775,22 @@ function toggleMontoManual(){
   renderVenta();
 }
 
+function onFechaVentaChange(){
+  const f = $('ventaFecha').value, av = $('fechaAviso');
+  if(!f || f === hoyLocalISO()){ av.classList.add('hidden'); av.innerHTML = ''; return; }
+  const [y,m,d] = f.split('-');
+  av.innerHTML = `📅 Estás cargando ventas con fecha <b>${d}/${m}/${y}</b> (no es hoy). La fecha se mantiene para las próximas ventas hasta que la cambies.`;
+  av.classList.remove('hidden');
+}
+
 async function registrarVenta(){
   const box = $('resultBox');
   if(VENTA_ACTUAL.length === 0){ mostrarResultado(box, false, 'Agregá al menos un libro o combo antes de registrar.'); return; }
   const origen = $('origenSelect').value;
   if(!origen){ mostrarResultado(box, false, 'Elegí de dónde vino la venta (Publicidad, Seguimiento, Recompra u Orgánico).'); return; }
+
+  const fechaVenta = $('ventaFecha').value || hoyLocalISO();
+  if(fechaVenta > hoyLocalISO()){ mostrarResultado(box, false, 'La fecha de la venta no puede ser futura.'); return; }
 
   const manual = $('precioManualCheck').checked;
   const montoManual = manual ? parseFloat($('montoManualInput').value) : null;
@@ -750,12 +814,12 @@ async function registrarVenta(){
   try{
     const data = await llamarApi({
       action: 'registrarVenta', items, montoManual: manual ? montoManual : null,
-      cliente: $('clienteInput').value.trim(), origen, campana
+      cliente: $('clienteInput').value.trim(), origen, campana, fecha: fechaVenta
     });
     if(data.ok){
       const pct = data.totalCobrado > 0 ? Math.round((data.ganancia / data.totalCobrado) * 1000) / 10 : 0;
       mostrarResultado(box, true, `
-        ✅ Venta registrada. Te mandamos un email con el detalle.
+        ✅ Venta registrada con fecha ${data.fecha ? data.fecha.split('-').reverse().join('/') : 'de hoy'}. Te mandamos un email con el detalle.
         ${(data.avisos || []).map(a => `<div class="warn-box">⚠️ <b>Ojo:</b> ${h(a)} Si la venta quedó con una ganancia que no es real, tocá Eliminar en "Últimas ventas", corregí el costo en tu planilla y volvé a cargarla.</div>`).join('')}
         <div class="confirm-detail">
           <div class="confirm-row"><span>Precio de venta</span><b>${gs(data.totalCobrado)}</b></div>
@@ -834,6 +898,39 @@ async function crearCampana(){
   }catch(e){ mostrarResultado(box, false, '❌ ' + h(e.message)); }
 }
 
+async function cargarEstadoMeta(){
+  const est = $('metaEstado');
+  try{
+    const d = await llamarApi({ action: 'estadoMeta' });
+    if(!d.ok) return;
+    if(!d.configurado){
+      est.textContent = 'Todavía no está conectado. Mientras tanto cargás el gasto a mano acá abajo.';
+      $('metaBtn').classList.add('hidden'); $('metaBtn30').classList.add('hidden');
+      return;
+    }
+    $('metaBtn').classList.remove('hidden'); $('metaBtn30').classList.remove('hidden');
+    const cuando = d.ultimaSync ? new Date(d.ultimaSync).toLocaleString('es-PY', { dateStyle: 'short', timeStyle: 'short' }) : 'todavía no sincronizó';
+    est.innerHTML = `${d.automatica ? '✅ Actualización automática cada 30 minutos.' : '⚠️ Conectado, pero falta activar la actualización automática.'} Última vez: <b>${h(cuando)}</b>.`
+      + (d.ultimoError ? `<br><span style="color:var(--danger, #e57373);">⚠️ Último error: ${h(d.ultimoError)}</span>` : '');
+  }catch(e){ est.textContent = 'No se pudo verificar la conexión.'; }
+}
+
+async function sincronizarMeta(dias){
+  const box = $('metaResult'), b1 = $('metaBtn'), b2 = $('metaBtn30');
+  b1.disabled = b2.disabled = true;
+  mostrarResultado(box, true, 'Trayendo el gasto desde Meta...');
+  try{
+    const d = await llamarApi({ action: 'sincronizarGastoMeta', dias });
+    if(d.ok){
+      mostrarResultado(box, true, `✅ Listo. ${d.nuevos} gastos nuevos y ${d.actualizados} actualizados (${gs(d.totalGs)} entre ${h(d.desde)} y ${h(d.hasta)}).`
+        + (d.avisos || []).map(a => `<div class="warn-box">⚠️ ${h(a)}</div>`).join(''));
+      cargarGastos(); cargarMetricas(); cargarResumen();
+    }else mostrarResultado(box, false, '❌ ' + h(d.error));
+  }catch(e){ mostrarResultado(box, false, '❌ Error de conexión: ' + h(e.message)); }
+  b1.disabled = b2.disabled = false;
+  cargarEstadoMeta();
+}
+
 async function cargarGastos(){
   const box = $('gastosList');
   try{
@@ -842,7 +939,7 @@ async function cargarGastos(){
       box.innerHTML = data.gastos.map(g => `
         <div class="list-item">
           <div class="list-head">
-            <span>${h(fechaCorta(g.fecha))} · <b>${gs(g.monto)}</b> · <span class="origin-tag">${h(g.campana || 'General')}</span></span>
+            <span>${h(fechaCorta(g.fecha))} · <b>${gs(g.monto)}</b> · <span class="origin-tag">${h(g.campana || 'General')}</span>${g.fuente === 'Meta' ? ' <span class="origin-tag">Meta</span>' : ''}</span>
             <button class="small outline-danger" data-act="eliminar-gasto" data-fila="${g.fila}" data-fecha="${h(g.fecha)}" data-monto="${g.monto}">Eliminar</button>
           </div>
         </div>`).join('');
@@ -891,7 +988,27 @@ async function registrarGasto(){
    ============================================================ */
 function cambiarPeriodo(d){
   periodoDias = d;
+  periodoRango = null;
+  $('rangoBox').style.display = 'none'; $('rangoNota').style.display = 'none';
   document.querySelectorAll('.period-btn').forEach(b => b.classList.toggle('active', Number(b.dataset.dias) === d));
+  cargarMetricas();
+}
+
+function abrirRango(){
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.toggle('active', b.id === 'btnRango'));
+  $('rangoBox').style.display = 'flex'; $('rangoNota').style.display = '';
+  const hoy = hoyLocalISO();
+  $('rangoDesde').max = hoy; $('rangoHasta').max = hoy;
+  if(!$('rangoDesde').value){ $('rangoDesde').value = hoy; $('rangoHasta').value = hoy; }
+  aplicarRango();
+}
+
+function aplicarRango(){
+  const desde = $('rangoDesde').value;
+  let hasta = $('rangoHasta').value || desde;
+  if(!desde) return;
+  if(hasta < desde){ hasta = desde; $('rangoHasta').value = desde; }
+  periodoRango = { desde, hasta };
   cargarMetricas();
 }
 
@@ -919,9 +1036,21 @@ function deltaHtml(act, prev, mejorSiSube){
 }
 
 async function cargarMetricas(){
-  $('periodoLabel').textContent = `Últimos ${periodoDias} días, comparados con los ${periodoDias} días anteriores.`;
+  const fmtF = s => s.split('-').reverse().join('/');
+  if(periodoRango){
+    const { desde, hasta } = periodoRango;
+    $('periodoLabel').textContent = desde === hasta
+      ? `Día ${fmtF(desde)}, comparado con el día anterior.`
+      : `Del ${fmtF(desde)} al ${fmtF(hasta)}, comparado con los días anteriores del mismo largo.`;
+  }else{
+    $('periodoLabel').textContent = `Últimos ${periodoDias} días, comparados con los ${periodoDias} días anteriores.`;
+  }
+  const rangoPedido = periodoRango ? periodoRango.desde + '|' + periodoRango.hasta : '';
   try{
-    const data = await llamarApi({ action: 'metricas', dias: periodoDias });
+    const data = await llamarApi(periodoRango
+      ? { action: 'metricas', desde: periodoRango.desde, hasta: periodoRango.hasta }
+      : { action: 'metricas', dias: periodoDias });
+    if((periodoRango ? periodoRango.desde + '|' + periodoRango.hasta : '') !== rangoPedido) return;
     if(!data.ok){ $('kpiGrid').innerHTML = `<p class="muted">${h(data.error)}</p>`; return; }
     $('kpiGrid').innerHTML = KPIS.map(k => `
       <div class="kpi ${k.destacado ? 'destacado' : ''}">
