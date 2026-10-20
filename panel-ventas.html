@@ -288,7 +288,12 @@
       <input type="text" id="gastoCampanaNueva" class="hidden" maxlength="60" placeholder="Escribí el nombre del anuncio o campaña" style="margin-top:10px;">
       <button onclick="registrarGasto()" id="gastoBtn" style="margin-top:10px;">Cargar gasto</button>
       <div class="result" id="gastoResult"></div>
-      <div class="row-label" style="margin-top:18px;">Últimos gastos cargados</div>
+      <div class="row-label" style="margin-top:18px;">Gastos cargados</div>
+      <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
+        <input type="date" id="filtroGastoDia" onchange="aplicarFiltroGastos()" style="flex:1;">
+        <button class="small" id="filtroGastoLimpiar" onclick="limpiarFiltroGastos()" style="display:none;">Ver últimos</button>
+      </div>
+      <p class="muted hidden" id="filtroGastoTotal" style="margin:0 0 8px;"></p>
       <div id="gastosList"><p class="muted">Cargando...</p></div>
     </div>
 
@@ -931,10 +936,24 @@ async function sincronizarMeta(dias){
   cargarEstadoMeta();
 }
 
+let FILTRO_GASTOS_DIA = '';
+function aplicarFiltroGastos(){ FILTRO_GASTOS_DIA = $('filtroGastoDia').value || ''; cargarGastos(); }
+function limpiarFiltroGastos(){ $('filtroGastoDia').value = ''; aplicarFiltroGastos(); }
+
 async function cargarGastos(){
   const box = $('gastosList');
+  const dia = FILTRO_GASTOS_DIA;
+  $('filtroGastoLimpiar').style.display = dia ? '' : 'none';
+  const totBox = $('filtroGastoTotal');
   try{
-    const data = await llamarApi({ action: 'listarGastos', cantidad: 10 });
+    const data = dia
+      ? await llamarApi({ action: 'listarGastosPorDia', fecha: dia })
+      : await llamarApi({ action: 'listarGastos', cantidad: 10 });
+    if(dia !== FILTRO_GASTOS_DIA) return;
+    if(dia && data.ok){
+      totBox.classList.remove('hidden');
+      totBox.innerHTML = `Total del ${h(dia.split('-').reverse().join('/'))}: <b>${gs(data.total)}</b>`;
+    }else{ totBox.classList.add('hidden'); totBox.innerHTML = ''; }
     if(data.ok && data.gastos.length > 0){
       box.innerHTML = data.gastos.map(g => `
         <div class="list-item">
@@ -944,7 +963,7 @@ async function cargarGastos(){
           </div>
         </div>`).join('');
     }else{
-      box.innerHTML = `<p class="muted">Todavía no cargaste ningún gasto publicitario.</p>`;
+      box.innerHTML = dia ? `<p class="muted">No hay gastos ese día.</p>` : `<p class="muted">Todavía no cargaste ningún gasto publicitario.</p>`;
     }
   }catch(e){ box.innerHTML = `<p class="muted">No se pudo cargar.</p>`; }
 }
