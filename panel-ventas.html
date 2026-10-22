@@ -133,6 +133,15 @@
   .pos{color:var(--green);} .neg{color:#e5675a;}
   .warn-box{background:rgba(240,169,60,0.12); border:1px solid var(--gold); border-radius:8px; padding:10px 12px; margin-top:12px; font-size:0.86rem; line-height:1.45;}
   .list-aviso{color:var(--gold); font-size:0.78rem; margin-bottom:6px;}
+  .obj-bar{height:12px; background:var(--card); border:1px solid var(--line); border-radius:999px; overflow:hidden; margin:10px 0 6px;}
+  .obj-bar > div{height:100%; background:var(--gold); border-radius:999px; transition:width .4s;}
+  .obj-head{display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap;}
+  .obj-big{font-size:1.6rem; font-weight:800; color:var(--gold);}
+  .calc-row{display:flex; justify-content:space-between; gap:10px; padding:7px 0; border-bottom:1px solid var(--line); font-size:0.86rem;}
+  .calc-row:last-child{border-bottom:none;}
+  .calc-row b{color:var(--paper); text-align:right;}
+  .origen-chips{display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 4px;}
+  .union-row{display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:8px 0; border-bottom:1px solid var(--line); font-size:0.85rem;}
   .nota{font-size:0.78rem; color:var(--paper-dim); margin-top:10px; line-height:1.5;}
 
   .filter-chips{display:flex; gap:8px; margin:12px 0;}
@@ -185,6 +194,15 @@
       <div class="row-label">Esta semana (lunes a domingo)</div>
       <div class="summary-grid" id="resumenSemanal"></div>
       <p class="nota">Ganancia neta = lo cobrado, menos el costo de los libros, el packaging y el gasto publicitario.</p>
+
+      <div class="row-label" style="margin-top:18px;">📅 Ver otro día o período</div>
+      <div style="display:flex; gap:8px; align-items:flex-end; margin-top:8px;">
+        <div style="flex:1;"><label class="field-label" for="verDesde" style="margin-top:0;">Desde</label><input type="date" id="verDesde" onchange="aplicarVerPeriodo()"></div>
+        <div style="flex:1;"><label class="field-label" for="verHasta" style="margin-top:0;">Hasta</label><input type="date" id="verHasta" onchange="aplicarVerPeriodo()"></div>
+      </div>
+      <p class="nota" style="margin-top:6px;">Para ver un solo día, elegí solo "Desde" (o la misma fecha en los dos).</p>
+      <button class="small secondary" id="verLimpiar" onclick="limpiarVerPeriodo()" style="display:none; margin-top:4px;">Cerrar período</button>
+      <div id="verPeriodoBox" class="hidden"></div>
     </div>
 
     <div class="card">
@@ -242,18 +260,17 @@
 
     <div class="card">
       <h3>Últimas ventas</h3>
-      <label class="field-label" for="filtroVentaDia" style="margin-top:0;">Ver las ventas de un día específico</label>
-      <div style="display:flex; gap:8px; align-items:center;">
-        <input type="date" id="filtroVentaDia" onchange="aplicarFiltroVentas()" style="flex:1;">
-        <button class="small" id="filtroVentaLimpiar" onclick="limpiarFiltroVentas()" style="display:none;">Ver últimas</button>
-      </div>
-      <div id="filtroVentaResumen" class="hidden" style="margin:12px 0;"></div>
       <div id="ultimasVentasList" style="margin-top:12px;"><p class="muted">Cargando...</p></div>
     </div>
   </div>
 
   <!-- ===================== PESTAÑA MÉTRICAS ===================== -->
   <div id="tab-metricas" class="hidden">
+
+    <div class="card" id="objetivoCard">
+      <h3>🎯 Objetivo semanal</h3>
+      <div id="objetivoBox"><p class="muted">Cargando...</p></div>
+    </div>
 
     <div class="period-row">
       <button class="period-btn" data-dias="7" onclick="cambiarPeriodo(7)">7 días</button>
@@ -269,6 +286,7 @@
     <p class="muted" id="periodoLabel"></p>
 
     <div class="kpi-grid" id="kpiGrid"></div>
+    <p class="nota" id="kpiNota" style="margin-top:-8px;"></p>
 
     <div class="card" id="metaCard">
       <h3>🔗 Gasto de Meta (automático)</h3>
@@ -306,6 +324,16 @@
       </div>
       <div class="result" id="campanaResult"></div>
       <div id="campanasList" style="margin-top:12px;"></div>
+
+      <div class="row-label" style="margin-top:22px;">🔀 Unir campañas</div>
+      <p class="muted" style="margin:8px 0 12px;">Pasa todas las ventas y gastos de una campaña vieja a otra (por ejemplo, al nombre exacto del anuncio en Meta) y desactiva la vieja. Así los números no quedan partidos en dos.</p>
+      <div id="unionesSugeridas"></div>
+      <label class="field-label">Campaña vieja (se vacía)</label>
+      <select id="unirOrigen"></select>
+      <label class="field-label">Se une a (queda esta)</label>
+      <select id="unirDestino"></select>
+      <button onclick="unirCampanasManual()" id="unirBtn" style="margin-top:10px;">Unir campañas</button>
+      <div class="result" id="unirResult"></div>
     </div>
 
     <div class="charts-grid">
@@ -344,7 +372,7 @@
     <div class="card" style="margin-top:20px;">
       <h3>Detalle por campaña</h3>
       <div class="table-scroll" id="tablaCampanas"></div>
-      <p class="nota">ROAS = cuánto cobrás por cada guaraní invertido. Cuenta las ventas de Publicidad y Seguimiento de anuncio. El gasto "General" es el que no se asignó a ninguna campaña.</p>
+      <p class="nota">Conv. = personas que te escribieron desde el anuncio (dato de Meta). Cierre = ventas ÷ conversaciones. ROAS = cuánto cobrás por cada guaraní invertido. Cuenta las ventas de Publicidad y Seguimiento de anuncio. El gasto "General" es el que no se asignó a ninguna campaña.</p>
     </div>
   </div>
 
@@ -416,7 +444,7 @@ let tabActivo = 'libro';
 let tabPrincipal = 'ventas';
 let periodoDias = 30;
 let periodoRango = null; // {desde, hasta} cuando se elige una fecha específica
-let FILTRO_VENTAS_DIA = '';
+let VER_PERIODO = null; // {desde, hasta} del selector de fechas de la pestaña Ventas
 let modoStock = 'reponer';
 let LIBRO_A_REPONER = null;
 let stockFiltro = 'todos';
@@ -519,7 +547,7 @@ function mostrarTab(tab){
     $('tab-' + t).classList.toggle('hidden', t !== tab);
     $('mainTab-' + t).classList.toggle('active', t === tab);
   });
-  if(tab === 'metricas'){ cargarMetricas(); cargarGastos(); cargarEstadoMeta(); }
+  if(tab === 'metricas'){ cargarMetricas(); cargarGastos(); cargarEstadoMeta(); cargarResumen(); cargarUnionesSugeridas(); }
   if(tab === 'stock'){ renderStockTab(); }
   if(tab === 'ventas'){ cargarResumen(); cargarUltimasVentas(); }
 }
@@ -543,6 +571,7 @@ async function cargarCampanas(){
   }catch(e){ console.error(e); }
 }
 
+let RESUMEN_DATOS = null;
 async function cargarResumen(){
   const hoy = $('resumenHoy'), semana = $('resumenSemanal');
   try{
@@ -554,72 +583,159 @@ async function cargarResumen(){
       <div class="summary-box"><b>${r.ventas}</b><span>Ventas</span></div>`;
     hoy.innerHTML = caja(data.hoy);
     semana.innerHTML = caja(data.semana);
+    RESUMEN_DATOS = data;
+    renderObjetivo();
   }catch(e){
     hoy.innerHTML = `<div class="summary-box"><b>—</b><span>No se pudo cargar</span></div>`;
   }
 }
 
-function aplicarFiltroVentas(){
-  FILTRO_VENTAS_DIA = $('filtroVentaDia').value || '';
-  cargarUltimasVentas();
+function ventaItemHTML(v){
+  const f = new Date(v.fecha);
+  const fechaStr = f.toLocaleDateString('es-PY') + ' ' + f.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' });
+  const origen = v.origen ? `<span class="origin-tag">${h(v.origen)}${v.campana ? ' · ' + h(v.campana) : ''}</span>` : '';
+  return `
+  <div class="list-item">
+    <div class="list-head">
+      <span class="fecha">${h(fechaStr)}${v.cliente ? ' · ' + h(v.cliente) : ''}</span>
+      <button class="small outline-danger" data-act="eliminar-venta" data-fila="${v.fila}" data-ms="${v.fechaMs}">Eliminar</button>
+    </div>
+    <div class="list-detalle">${h(v.detalle)}</div>
+    ${v.aviso ? `<div class="list-aviso">⚠️ ${h(v.aviso)}</div>` : ''}
+    <div class="list-nums"><span>Cobrado: ${gs(v.totalCobrado)}</span><span>Ganancia: ${gs(v.ganancia)}</span>${origen}</div>
+  </div>`;
 }
-function limpiarFiltroVentas(){
-  $('filtroVentaDia').value = '';
-  aplicarFiltroVentas();
+
+/* ---------- Objetivo semanal ---------- */
+function objetivoGuardado(){
+  try{ const n = Number(localStorage.getItem('objetivoSemanal')); return n > 0 ? n : 50; }catch(e){ return 50; }
+}
+function cambiarObjetivo(){
+  const actual = objetivoGuardado();
+  const v = prompt('¿Cuántas ventas querés lograr por semana?', String(actual));
+  if(v === null) return;
+  const n = Math.round(Number(v));
+  if(!(n > 0 && n < 100000)){ alert('Escribí un número mayor a 0.'); return; }
+  try{ localStorage.setItem('objetivoSemanal', String(n)); }catch(e){}
+  renderObjetivo();
+}
+
+function renderObjetivo(){
+  const box = $('objetivoBox');
+  if(!box) return;
+  const d = RESUMEN_DATOS;
+  if(!d){ box.innerHTML = `<p class="muted">Cargando...</p>`; return; }
+  const meta = objetivoGuardado();
+  const hechas = d.semana.ventas;
+  const dia = Math.max(1, Math.min(7, Number(d.diaSemana) || 1));
+  const pct = Math.min(100, Math.round(hechas / meta * 100));
+  const ideal = Math.round(meta * dia / 7);
+  const faltan = Math.max(0, meta - hechas);
+  const diasRestantes = 7 - dia + 1; // incluye hoy
+  let ritmo;
+  if(faltan === 0) ritmo = `🏆 ¡Objetivo cumplido esta semana!`;
+  else if(hechas >= ideal) ritmo = `✅ Vas bien: a esta altura de la semana lo ideal serían ${ideal} y llevás ${hechas}.`;
+  else ritmo = `⏳ Vas atrasado: a esta altura lo ideal serían ${ideal} y llevás ${hechas}.`;
+
+  const b = d.base || {};
+  let calc = '';
+  if(faltan > 0){
+    const tasa = b.tasaCierre, cpc = b.costoPorConversacion, gpv = b.gananciaPorVenta, cpv = b.costoPorVenta;
+    if(tasa != null && tasa > 0 && cpc != null){
+      const conv = Math.ceil(faltan / (tasa / 100));
+      const presupuesto = conv * cpc;
+      const netaPorVenta = (gpv != null && cpv != null) ? gpv - cpv : null;
+      calc = `
+        <div class="row-label" style="margin-top:16px;">🧮 Calculadora: ¿qué hace falta para llegar?</div>
+        <div class="calc-row"><span>Ventas que faltan</span><b>${faltan}</b></div>
+        <div class="calc-row"><span>Por día (${diasRestantes} ${diasRestantes === 1 ? 'día' : 'días'} contando hoy)</span><b>${(faltan / diasRestantes).toFixed(1)}</b></div>
+        <div class="calc-row"><span>Conversaciones necesarias (cierre ${tasa.toFixed(1)}%)</span><b>${num(conv)}</b></div>
+        <div class="calc-row"><span>Presupuesto estimado (${gs(cpc)} por conversación)</span><b>${gs(presupuesto)}</b></div>
+        ${netaPorVenta != null ? `<div class="calc-row"><span>Ganancia por venta (${gs(gpv)}) menos costo por venta de anuncio (${gs(cpv)})</span><b class="${netaPorVenta >= 0 ? 'pos' : 'neg'}">${gs(netaPorVenta)}</b></div>
+        <div class="calc-row"><span>Ganancia neta estimada si todo viene de anuncios</span><b class="${netaPorVenta >= 0 ? 'pos' : 'neg'}">${gs(netaPorVenta * faltan)}</b></div>` : ''}
+        <p class="nota">Estimación con los números de los últimos ${b.dias || 14} días. Si parte de las ventas vienen de recompra u orgánico, hace falta menos presupuesto.</p>`;
+    }else{
+      calc = `<p class="nota" style="margin-top:14px;">La calculadora aparece cuando ya hay conversaciones traídas de Meta y ventas de anuncios de los últimos ${b.dias || 14} días. Actualizá Meta desde la tarjeta "Gasto de Meta" (botón "Traer últimos 30 días").</p>`;
+    }
+  }
+
+  box.innerHTML = `
+    <div class="obj-head"><span class="obj-big">${hechas} / ${meta}</span><span class="muted">ventas esta semana (lunes a domingo)</span></div>
+    <div class="obj-bar"><div style="width:${pct}%;"></div></div>
+    <p class="muted" style="margin:0;">${ritmo}</p>
+    <button class="small secondary" onclick="cambiarObjetivo()" style="margin-top:10px;">Cambiar objetivo</button>
+    ${calc}`;
+}
+
+function aplicarVerPeriodo(){
+  const desde = $('verDesde').value;
+  let hasta = $('verHasta').value || desde;
+  if(!desde){ limpiarVerPeriodo(); return; }
+  if(hasta < desde){ hasta = desde; $('verHasta').value = desde; }
+  VER_PERIODO = { desde, hasta };
+  $('verLimpiar').style.display = '';
+  cargarVerPeriodo();
+}
+function limpiarVerPeriodo(){
+  VER_PERIODO = null;
+  $('verDesde').value = ''; $('verHasta').value = '';
+  $('verLimpiar').style.display = 'none';
+  $('verPeriodoBox').classList.add('hidden'); $('verPeriodoBox').innerHTML = '';
+}
+
+async function cargarVerPeriodo(){
+  const per = VER_PERIODO;
+  if(!per) return;
+  const box = $('verPeriodoBox');
+  box.classList.remove('hidden');
+  box.innerHTML = `<p class="muted" style="margin-top:12px;">Cargando...</p>`;
+  try{
+    const data = await llamarApi({ action: 'listarVentasPorDia', fecha: per.desde, hasta: per.hasta });
+    if(VER_PERIODO !== per) return; // cambió el selector mientras cargaba
+    if(!data.ok){ box.innerHTML = `<p class="muted" style="margin-top:12px;">${h(data.error)}</p>`; return; }
+    const r = data.resumen;
+    const fF = s => s.split('-').reverse().join('/');
+    const titulo = per.desde === per.hasta ? `Día ${fF(per.desde)}` : `Del ${fF(per.desde)} al ${fF(per.hasta)}`;
+    const chips = (data.porOrigen || []).map(o => `<span class="origin-tag">${h(o.origen)}: <b>${o.ventas}</b></span>`).join('');
+    box.innerHTML = `
+      <p class="muted" style="margin:14px 0 0;">${h(titulo)}</p>
+      <div class="summary-grid cols2" style="margin-top:8px;">
+        <div class="summary-box"><b>${r.ventas}</b><span>Ventas</span></div>
+        <div class="summary-box"><b>${num(r.cobrado)}</b><span>Cobrado (Gs.)</span></div>
+        <div class="summary-box"><b>${num(r.ganancia)}</b><span>Ganancia (Gs.)</span></div>
+        <div class="summary-box"><b>${num(r.gasto)}</b><span>Gasto publicitario (Gs.)</span></div>
+        <div class="summary-box" style="grid-column:1 / -1;"><b>${num(r.neta)}</b><span>Ganancia neta (Gs.)</span></div>
+      </div>
+      ${chips ? `<div class="origen-chips">${chips}</div>` : ''}
+      <div id="verPeriodoLista" style="margin-top:10px;">${data.ventas.length > 0
+        ? data.ventas.map(ventaItemHTML).join('') + (data.truncado ? `<p class="muted">Se muestran las 300 más recientes.</p>` : '')
+        : `<p class="muted">No hay ventas cargadas en ese período.</p>`}</div>`;
+  }catch(e){ box.innerHTML = `<p class="muted" style="margin-top:12px;">No se pudo cargar.</p>`; }
 }
 
 async function cargarUltimasVentas(){
   const box = $('ultimasVentasList');
-  const dia = FILTRO_VENTAS_DIA;
-  $('filtroVentaLimpiar').style.display = dia ? '' : 'none';
-  const resBox = $('filtroVentaResumen');
   try{
-    const data = dia
-      ? await llamarApi({ action: 'listarVentasPorDia', fecha: dia })
-      : await llamarApi({ action: 'listarUltimasVentas', cantidad: 10 });
-    if(dia !== FILTRO_VENTAS_DIA) return; // se cambió el filtro mientras cargaba
-    if(dia && data.ok){
-      const r = data.resumen;
-      resBox.classList.remove('hidden');
-      resBox.innerHTML = `<p class="muted" style="margin:0 0 8px;">Día ${h(dia.split('-').reverse().join('/'))}</p><div class="summary-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">
-        <div class="summary-box"><b>${num(r.cobrado)}</b><span>Cobrado (Gs.)</span></div>
-        <div class="summary-box"><b>${num(r.neta)}</b><span>Ganancia neta (Gs.)</span></div>
-        <div class="summary-box"><b>${r.ventas}</b><span>Ventas</span></div></div>`;
-    }else{
-      resBox.classList.add('hidden'); resBox.innerHTML = '';
-    }
-    if(data.ok && data.ventas.length > 0){
-      box.innerHTML = data.ventas.map(v => {
-        const f = new Date(v.fecha);
-        const fechaStr = f.toLocaleDateString('es-PY') + ' ' + f.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' });
-        const origen = v.origen ? `<span class="origin-tag">${h(v.origen)}${v.campana ? ' · ' + h(v.campana) : ''}</span>` : '';
-        return `
-        <div class="list-item">
-          <div class="list-head">
-            <span class="fecha">${h(fechaStr)}${v.cliente ? ' · ' + h(v.cliente) : ''}</span>
-            <button class="small outline-danger" data-act="eliminar-venta" data-fila="${v.fila}" data-ms="${v.fechaMs}">Eliminar</button>
-          </div>
-          <div class="list-detalle">${h(v.detalle)}</div>
-          ${v.aviso ? `<div class="list-aviso">⚠️ ${h(v.aviso)}</div>` : ''}
-          <div class="list-nums"><span>Cobrado: ${gs(v.totalCobrado)}</span><span>Ganancia: ${gs(v.ganancia)}</span>${origen}</div>
-        </div>`;
-      }).join('');
-    }else{
-      box.innerHTML = dia ? `<p class="muted">No hay ventas cargadas ese día.</p>` : `<p class="muted">Todavía no registraste ninguna venta.</p>`;
-    }
+    const data = await llamarApi({ action: 'listarUltimasVentas', cantidad: 10 });
+    box.innerHTML = (data.ok && data.ventas.length > 0)
+      ? data.ventas.map(ventaItemHTML).join('')
+      : `<p class="muted">Todavía no registraste ninguna venta.</p>`;
   }catch(e){ box.innerHTML = `<p class="muted">No se pudo cargar.</p>`; }
 }
-$('ultimasVentasList').addEventListener('click', async e => {
+
+async function eliminarVentaDesdeLista(e){
   const btn = e.target.closest('[data-act="eliminar-venta"]');
   if(!btn) return;
   if(!confirm('¿Eliminar esta venta? Se repone el stock y se descuenta de las métricas.')) return;
   btn.disabled = true;
   try{
     const data = await llamarApi({ action: 'eliminarVentaPorFila', fila: Number(btn.dataset.fila), fechaMs: Number(btn.dataset.ms) });
-    if(data.ok){ cargarUltimasVentas(); cargarResumen(); cargarLibros(); }
-    else{ alert('Error: ' + data.error); btn.disabled = false; cargarUltimasVentas(); }
+    if(data.ok){ cargarUltimasVentas(); cargarVerPeriodo(); cargarResumen(); cargarLibros(); }
+    else{ alert('Error: ' + data.error); btn.disabled = false; cargarUltimasVentas(); cargarVerPeriodo(); }
   }catch(err){ alert('Error de conexión: ' + err.message); btn.disabled = false; }
-});
+}
+$('ultimasVentasList').addEventListener('click', eliminarVentaDesdeLista);
+$('verPeriodoBox').addEventListener('click', eliminarVentaDesdeLista);
 
 /* ============================================================
    PESTAÑA VENTAS: formulario
@@ -845,7 +961,7 @@ async function registrarVenta(){
       $('precioManualCheck').checked = false;
       $('montoManualInput').value = ''; $('montoManualInput').classList.add('hidden');
       renderVenta();
-      cargarResumen(); cargarLibros(); cargarUltimasVentas();
+      cargarResumen(); cargarLibros(); cargarUltimasVentas(); cargarVerPeriodo();
     }else{
       mostrarResultado(box, false, '❌ ' + h(data.error));
     }
@@ -873,6 +989,14 @@ function renderCampanas(){
   rellenar('campanaVentaSelect', `<option value="Sin asignar">No sé / sin asignar</option>`);
   rellenar('gastoCampana', `<option value="General">General (sin campaña específica)</option>`);
 
+  const todas = CAMPANAS.map(c => `<option value="${h(c.nombre)}">${h(c.nombre)}${c.activa ? '' : ' (desactivada)'}</option>`).join('');
+  const selO = $('unirOrigen'), selD = $('unirDestino');
+  const prevO = selO.value, prevD = selD.value;
+  selO.innerHTML = `<option value="">Elegí la campaña vieja</option>` + todas;
+  selD.innerHTML = `<option value="">Elegí la campaña que queda</option>` + todas;
+  if(prevO && Array.from(selO.options).some(o => o.value === prevO)) selO.value = prevO;
+  if(prevD && Array.from(selD.options).some(o => o.value === prevD)) selD.value = prevD;
+
   $('campanasList').innerHTML = CAMPANAS.length === 0
     ? `<p class="muted">Todavía no creaste ninguna campaña.</p>`
     : CAMPANAS.map(c => `
@@ -891,6 +1015,45 @@ $('campanasList').addEventListener('click', async e => {
     await cargarCampanas();
   }catch(err){ alert('Error: ' + err.message); b.disabled = false; }
 });
+
+async function cargarUnionesSugeridas(){
+  const box = $('unionesSugeridas');
+  try{
+    const d = await llamarApi({ action: 'sugerirUniones' });
+    if(!d.ok || !d.sugeridas || d.sugeridas.length === 0){ box.innerHTML = ''; return; }
+    box.innerHTML = `<div class="warn-box" style="margin-top:0; margin-bottom:12px;"><b>Uniones sugeridas</b> (el nombre viejo pasa al nombre del anuncio en Meta):
+      ${d.sugeridas.map(s => `
+        <div class="union-row">
+          <span style="flex:1; min-width:200px;">${h(s.origen)} → <b>${h(s.destino)}</b><br><small class="muted">${s.ventas} venta(s) y ${s.gastos} gasto(s)</small></span>
+          <button class="small" data-act="union-sug" data-o="${h(s.origen)}" data-d="${h(s.destino)}">Unir</button>
+        </div>`).join('')}
+    </div>`;
+  }catch(e){ box.innerHTML = ''; }
+}
+$('unionesSugeridas').addEventListener('click', e => {
+  const b = e.target.closest('[data-act="union-sug"]'); if(!b) return;
+  ejecutarUnion(b.dataset.o, b.dataset.d, b);
+});
+function unirCampanasManual(){
+  ejecutarUnion($('unirOrigen').value, $('unirDestino').value, $('unirBtn'));
+}
+async function ejecutarUnion(origen, destino, btn){
+  const box = $('unirResult');
+  if(!origen || !destino){ mostrarResultado(box, false, 'Elegí las dos campañas.'); return; }
+  if(origen === destino){ mostrarResultado(box, false, 'Elegí dos campañas distintas.'); return; }
+  if(!confirm(`¿Unir "${origen}" dentro de "${destino}"?\n\nTodas las ventas y gastos pasan a "${destino}" y "${origen}" queda desactivada. Esto no se puede deshacer fácilmente.`)) return;
+  btn.disabled = true;
+  mostrarResultado(box, true, 'Uniendo...');
+  try{
+    const d = await llamarApi({ action: 'unirCampanas', origen, destino });
+    if(d.ok){
+      mostrarResultado(box, true, `✅ Listo. "${h(d.origen)}" se unió a "${h(d.destino)}": ${d.ventas} venta(s) y ${d.gastos} gasto(s) movidos` +
+        (d.duplicados ? `, y ${d.duplicados} gasto(s) de Meta repetidos descartados (era el mismo anuncio contado dos veces).` : '.'));
+      await cargarCampanas(); cargarUnionesSugeridas(); cargarMetricas(); cargarGastos(); cargarResumen();
+    }else mostrarResultado(box, false, '❌ ' + h(d.error));
+  }catch(e){ mostrarResultado(box, false, '❌ Error de conexión: ' + h(e.message)); }
+  btn.disabled = false;
+}
 
 async function crearCampana(){
   const input = $('nuevaCampanaInput'), box = $('campanaResult');
@@ -958,7 +1121,7 @@ async function cargarGastos(){
       box.innerHTML = data.gastos.map(g => `
         <div class="list-item">
           <div class="list-head">
-            <span>${h(fechaCorta(g.fecha))} · <b>${gs(g.monto)}</b> · <span class="origin-tag">${h(g.campana || 'General')}</span>${g.fuente === 'Meta' ? ' <span class="origin-tag">Meta</span>' : ''}</span>
+            <span>${h(fechaCorta(g.fecha))} · <b>${gs(g.monto)}</b> · <span class="origin-tag">${h(g.campana || 'General')}</span>${g.fuente === 'Meta' ? ' <span class="origin-tag">Meta' + (g.conversaciones ? ' · ' + g.conversaciones + ' conv.' : '') + '</span>' : ''}</span>
             <button class="small outline-danger" data-act="eliminar-gasto" data-fila="${g.fila}" data-fecha="${h(g.fecha)}" data-monto="${g.monto}">Eliminar</button>
           </div>
         </div>`).join('');
@@ -1031,14 +1194,22 @@ function aplicarRango(){
   cargarMetricas();
 }
 
+const pctFmt = v => v == null ? '—' : v.toFixed(1) + '%';
 const KPIS = [
+  { key: 'ventas', label: 'Ventas', fmt: v => String(v), mejorSiSube: true, destacado: true },
   { key: 'cobrado', label: 'Cobrado', fmt: gs, mejorSiSube: true },
   { key: 'ganancia', label: 'Ganancia (antes de publicidad)', fmt: gs, mejorSiSube: true },
   { key: 'gasto', label: 'Gasto publicitario', fmt: gs, mejorSiSube: null },
   { key: 'gananciaNeta', label: 'Ganancia neta', fmt: gs, mejorSiSube: true, destacado: true },
   { key: 'roas', label: 'ROAS', fmt: v => v == null ? '—' : v.toFixed(2) + 'x', mejorSiSube: true },
+  { key: 'roasEquilibrio', label: 'ROAS de equilibrio (mínimo para no perder)', fmt: v => v == null ? '—' : v.toFixed(2) + 'x', mejorSiSube: false },
   { key: 'costoPorVenta', label: 'Costo por venta (anuncios)', fmt: v => v == null ? '—' : gs(v), mejorSiSube: false },
+  { key: 'conversaciones', label: 'Conversaciones (Meta)', fmt: v => String(v || 0), mejorSiSube: true },
+  { key: 'costoPorConversacion', label: 'Costo por conversación', fmt: v => v == null ? '—' : gs(v), mejorSiSube: false },
+  { key: 'tasaCierre', label: 'Tasa de cierre (ventas de anuncio ÷ conversaciones)', fmt: pctFmt, mejorSiSube: true },
+  { key: 'gananciaPorVenta', label: 'Ganancia por venta (promedio)', fmt: gs, mejorSiSube: true },
   { key: 'ticketPromedio', label: 'Ticket promedio', fmt: gs, mejorSiSube: true },
+  { key: 'pctRecompra', label: '% de recompra', fmt: pctFmt, mejorSiSube: true },
   { key: 'margenNeto', label: 'Margen neto', fmt: v => (Number(v) || 0).toFixed(1) + '%', mejorSiSube: true }
 ];
 
@@ -1077,6 +1248,9 @@ async function cargarMetricas(){
         <div class="kpi-value">${k.fmt(data.actual[k.key])}</div>
         ${deltaHtml(data.actual[k.key], data.previo[k.key], k.mejorSiSube)}
       </div>`).join('');
+    const c7 = data.cierre7d;
+    $('kpiNota').innerHTML = `La tasa de cierre del período puede verse baja si muchas conversaciones todavía no cerraron (la gente suele comprar días después de escribir). Tasa de cierre de los últimos 7 días: <b>${c7 && c7.tasaCierre != null ? c7.tasaCierre.toFixed(1) + '%' : '—'}</b>. ` +
+      `El ROAS de equilibrio es el ROAS mínimo para que los anuncios no den pérdida: si tu ROAS está por debajo, estás perdiendo plata.`;
     renderTablaCampanas(data.porCampana);
     renderGraficos(data);
   }catch(e){ console.error(e); }
@@ -1087,10 +1261,10 @@ function renderTablaCampanas(lista){
   if(!lista || lista.length === 0){ box.innerHTML = `<p class="muted">Todavía no hay gasto ni ventas de anuncios en este período.</p>`; return; }
   box.innerHTML = `
     <table>
-      <thead><tr><th>Campaña</th><th>Gasto</th><th>Ventas</th><th>Cobrado</th><th>ROAS</th><th>Costo/venta</th><th>Neta</th></tr></thead>
+      <thead><tr><th>Campaña</th><th>Gasto</th><th>Conv.</th><th>Costo/conv.</th><th>Ventas</th><th>Cierre</th><th>Cobrado</th><th>ROAS</th><th>Costo/venta</th><th>Neta</th></tr></thead>
       <tbody>${lista.map(c => `
         <tr>
-          <td>${h(c.campana)}</td><td>${gs(c.gasto)}</td><td>${c.ventas}</td><td>${gs(c.cobrado)}</td>
+          <td>${h(c.campana)}</td><td>${gs(c.gasto)}</td><td>${c.conversaciones || 0}</td><td>${c.costoPorConversacion == null ? '—' : gs(c.costoPorConversacion)}</td><td>${c.ventas}</td><td>${c.tasaCierre == null ? '—' : c.tasaCierre.toFixed(1) + '%'}</td><td>${gs(c.cobrado)}</td>
           <td>${c.roas == null ? '—' : c.roas.toFixed(2) + 'x'}</td>
           <td>${c.costoPorVenta == null ? '—' : gs(c.costoPorVenta)}</td>
           <td class="${c.neta >= 0 ? 'pos' : 'neg'}">${gs(c.neta)}</td>
