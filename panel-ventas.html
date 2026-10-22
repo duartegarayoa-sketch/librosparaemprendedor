@@ -1090,7 +1090,7 @@ async function sincronizarMeta(dias){
   try{
     const d = await llamarApi({ action: 'sincronizarGastoMeta', dias });
     if(d.ok){
-      mostrarResultado(box, true, `✅ Listo. ${d.nuevos} gastos nuevos y ${d.actualizados} actualizados (${gs(d.totalGs)} entre ${h(d.desde)} y ${h(d.hasta)}).`
+      mostrarResultado(box, true, `✅ Listo. ${d.nuevos} gastos nuevos y ${d.actualizados} actualizados (${gs(d.totalGs)} entre ${h(d.desde)} y ${h(d.hasta)}). Conversaciones traídas: <b>${d.conversaciones || 0}</b>.`
         + (d.avisos || []).map(a => `<div class="warn-box">⚠️ ${h(a)}</div>`).join(''));
       cargarGastos(); cargarMetricas(); cargarResumen();
     }else mostrarResultado(box, false, '❌ ' + h(d.error));
