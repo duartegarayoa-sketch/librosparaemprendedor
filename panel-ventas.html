@@ -235,6 +235,7 @@
         <option value="">Elegí el origen...</option>
         <option value="Publicidad">Publicidad</option>
         <option value="Seguimiento de anuncio">Seguimiento de anuncio</option>
+        <option value="Seguimiento orgánico">Seguimiento orgánico</option>
         <option value="Recompra">Recompra</option>
         <option value="Orgánico">Orgánico</option>
       </select>
@@ -243,7 +244,7 @@
         <select id="campanaVentaSelect" onchange="onCampanaChange('venta')"></select>
         <input type="text" id="campanaVentaNueva" class="hidden" maxlength="60" placeholder="Escribí el nombre del anuncio o campaña" style="margin-top:10px;">
       </div>
-      <p class="nota" style="margin-top:8px;"><b>Publicidad:</b> compró en la primera charla · <b>Seguimiento de anuncio:</b> llegó por un anuncio y cerraste después · <b>Recompra:</b> ya era cliente · <b>Orgánico:</b> llegó sin anuncio.</p>
+      <p class="nota" style="margin-top:8px;"><b>Publicidad:</b> compró en la primera charla · <b>Seguimiento de anuncio:</b> llegó por un anuncio y cerraste después · <b>Seguimiento orgánico:</b> te escribió sin anuncio y cerraste después · <b>Recompra:</b> ya era cliente · <b>Orgánico:</b> llegó sin anuncio.</p>
 
       <input type="text" id="clienteInput" placeholder="Cliente (opcional, para pedirle reseña después)" style="margin-top:14px;">
 
@@ -324,6 +325,9 @@
       </div>
       <div class="result" id="campanaResult"></div>
       <div id="campanasList" style="margin-top:12px;"></div>
+      <p class="nota">Al cargar una venta solo aparecen las campañas <b>activas</b>. Cuando Meta está conectado, quedan activas solas las que están corriendo en Meta y se desactivan las pausadas. Si querés limpiar ya mismo:</p>
+      <button class="small secondary" onclick="limpiarCampanasSinMovimiento()" id="limpiarBtn">🧹 Desactivar campañas sin movimiento (7 días)</button>
+      <div class="result" id="limpiarResult"></div>
 
       <div class="row-label" style="margin-top:22px;">🔀 Unir campañas</div>
       <p class="muted" style="margin:8px 0 12px;">Pasa todas las ventas y gastos de una campaña vieja a otra (por ejemplo, al nombre exacto del anuncio en Meta) y desactiva la vieja. Así los números no quedan partidos en dos.</p>
@@ -908,7 +912,7 @@ async function registrarVenta(){
   const box = $('resultBox');
   if(VENTA_ACTUAL.length === 0){ mostrarResultado(box, false, 'Agregá al menos un libro o combo antes de registrar.'); return; }
   const origen = $('origenSelect').value;
-  if(!origen){ mostrarResultado(box, false, 'Elegí de dónde vino la venta (Publicidad, Seguimiento, Recompra u Orgánico).'); return; }
+  if(!origen){ mostrarResultado(box, false, 'Elegí de dónde vino la venta (Publicidad, Seguimiento de anuncio, Seguimiento orgánico, Recompra u Orgánico).'); return; }
 
   const fechaVenta = $('ventaFecha').value || hoyLocalISO();
   if(fechaVenta > hoyLocalISO()){ mostrarResultado(box, false, 'La fecha de la venta no puede ser futura.'); return; }
@@ -1016,6 +1020,22 @@ $('campanasList').addEventListener('click', async e => {
   }catch(err){ alert('Error: ' + err.message); b.disabled = false; }
 });
 
+async function limpiarCampanasSinMovimiento(){
+  const box = $('limpiarResult'), btn = $('limpiarBtn');
+  btn.disabled = true;
+  try{
+    const v = await llamarApi({ action: 'limpiarCampanasInactivas', dias: 7, soloVer: true });
+    if(!v.ok){ mostrarResultado(box, false, '❌ ' + h(v.error)); btn.disabled = false; return; }
+    if(v.campanas.length === 0){ mostrarResultado(box, true, '✅ No hay campañas activas sin movimiento: ya está limpio.'); btn.disabled = false; return; }
+    const lista = v.campanas.slice(0, 15).join('\n• ');
+    if(!confirm(`Se van a desactivar ${v.campanas.length} campaña(s) sin ventas ni gasto en los últimos 7 días:\n\n• ${lista}${v.campanas.length > 15 ? '\n• ...' : ''}\n\nPodés volver a activarlas cuando quieras. ¿Seguir?`)){ btn.disabled = false; return; }
+    const r = await llamarApi({ action: 'limpiarCampanasInactivas', dias: 7, soloVer: false });
+    if(r.ok){ mostrarResultado(box, true, `✅ Listo. Se desactivaron ${r.campanas.length} campaña(s).`); await cargarCampanas(); }
+    else mostrarResultado(box, false, '❌ ' + h(r.error));
+  }catch(e){ mostrarResultado(box, false, '❌ Error de conexión: ' + h(e.message)); }
+  btn.disabled = false;
+}
+
 async function cargarUnionesSugeridas(){
   const box = $('unionesSugeridas');
   try{
@@ -1090,7 +1110,7 @@ async function sincronizarMeta(dias){
   try{
     const d = await llamarApi({ action: 'sincronizarGastoMeta', dias });
     if(d.ok){
-      mostrarResultado(box, true, `✅ Listo. ${d.nuevos} gastos nuevos y ${d.actualizados} actualizados (${gs(d.totalGs)} entre ${h(d.desde)} y ${h(d.hasta)}). Conversaciones traídas: <b>${d.conversaciones || 0}</b>.`
+      mostrarResultado(box, true, `✅ Listo. ${d.nuevos} gastos nuevos y ${d.actualizados} actualizados (${gs(d.totalGs)} entre ${h(d.desde)} y ${h(d.hasta)}). Conversaciones traídas: <b>${d.conversaciones || 0}</b>.${d.anuncios ? ` Anuncios activos en Meta: <b>${d.anuncios.activas}</b>.` : ''}`
         + (d.avisos || []).map(a => `<div class="warn-box">⚠️ ${h(a)}</div>`).join(''));
       cargarGastos(); cargarMetricas(); cargarResumen();
     }else mostrarResultado(box, false, '❌ ' + h(d.error));
@@ -1273,7 +1293,7 @@ function renderTablaCampanas(lista){
 }
 
 const COLORES = { oro: '#f0a93c', oroSuave: 'rgba(240,169,60,0.18)', rojo: '#c0392b', verde: '#3fbf5f', azul: '#5b8def', coral: '#e07a5f', gris: '#6b6458' };
-const COLOR_ORIGEN = { 'Publicidad': COLORES.oro, 'Seguimiento de anuncio': COLORES.coral, 'Recompra': COLORES.verde, 'Orgánico': COLORES.azul, 'Sin dato': COLORES.gris };
+const COLOR_ORIGEN = { 'Publicidad': COLORES.oro, 'Seguimiento de anuncio': COLORES.coral, 'Seguimiento orgánico': '#b07dd6', 'Recompra': COLORES.verde, 'Orgánico': COLORES.azul, 'Sin dato': COLORES.gris };
 
 function crearGrafico(canvasId, config, hayDatos){
   const canvas = $(canvasId);
