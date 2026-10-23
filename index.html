@@ -348,6 +348,8 @@
   .pdp-price-block{margin-bottom:18px;}
   .pdp-price-row{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;}
   .pdp-price{font-size:2rem; font-weight:700; font-family:'Space Grotesk',sans-serif;}
+  .off-pill{background:var(--red-tag); color:#fff; font-size:0.68rem; font-weight:700; padding:2px 6px; border-radius:5px; margin-left:4px;}
+  .pdp-ref-note{color:var(--paper-dim); font-size:0.82rem; margin-top:6px;}
   .pdp-price-old{color:var(--paper-dim); text-decoration:line-through; font-size:1.1rem;}
   .pdp-discount-badge{background:var(--red-tag); color:#fff; font-size:0.75rem; font-weight:700; padding:3px 9px; border-radius:5px;}
   .pdp-transfer-note{font-size:0.82rem; color:var(--paper-dim); margin-top:4px;}
@@ -944,6 +946,7 @@ function normalize(book, rowIndex){
     imagen: book.imagen || book.Imagen || "",
     masVendido: isTruthy(book.masVendido || book.MasVendido),
     ultimoIngreso: isTruthy(book.ultimoIngreso || book.UltimoIngreso),
+    precioReferencia: (book.PrecioReferencia || book.precioReferencia || "") === "" ? "" : toNumber(book.PrecioReferencia || book.precioReferencia),
     ordenMasVendido: ordenNumero(book.masVendido || book.MasVendido),
     ordenUltimoIngreso: ordenNumero(book.ultimoIngreso || book.UltimoIngreso),
     // columnas opcionales para la ficha de producto — se muestran solo si están completas
@@ -1092,6 +1095,21 @@ function unitPrice(b){
   return hasPromo(b) ? b.promo : b.precio;
 }
 
+// Precio "habitual" (tachado): el de referencia si está cargado y es mayor al precio que se cobra;
+// si no, el precio de lista cuando hay promo. Si no hay nada, no se muestra tachado.
+function precioTachado(b){
+  const ref = b.precioReferencia;
+  if(ref !== "" && !isNaN(ref) && ref > unitPrice(b)) return ref;
+  return hasPromo(b) ? b.precio : "";
+}
+function porcentajeOff(b){
+  const t = precioTachado(b);
+  return t ? Math.round((1 - unitPrice(b) / t) * 100) : 0;
+}
+function usaReferencia(b){
+  return b.precioReferencia !== "" && !isNaN(b.precioReferencia) && b.precioReferencia > unitPrice(b);
+}
+
 /* ---------- filtros de categoría ---------- */
 function buildFilters(){
   const cats = Array.from(new Set(ALL_BOOKS.map(b => b.categoria).filter(Boolean)));
@@ -1140,7 +1158,7 @@ function cardHTML(b){
         <span class="card-author">${b.autor}</span>
         <div class="price-row">
           <span class="price">${gs(unitPrice(b))}</span>
-          ${promo ? `<span class="price-old">${gs(b.precio)}</span>` : ''}
+          ${precioTachado(b) ? `<span class="price-old">${gs(precioTachado(b))}</span><span class="off-pill">-${porcentajeOff(b)}%</span>` : ''}
         </div>
         <button class="buy-btn ${agotado?'disabled':''}" ${agotado?'disabled':''} onclick="addToCart('${b.id}',1); event.stopPropagation();">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
@@ -1724,8 +1742,8 @@ function showProduct(id){
   document.getElementById('pdpView').classList.add('open');
   document.title = `${b.titulo} | Libros para Emprendedor`;
 
-  const promo = hasPromo(b);
-  const discountPct = promo ? Math.round((1 - b.promo / b.precio) * 100) : 0;
+  const promo = !!precioTachado(b);
+  const discountPct = porcentajeOff(b);
   const agotado = b.stock <= 0;
 
   const fichaRows = [
@@ -1767,8 +1785,9 @@ function showProduct(id){
         <div class="pdp-price-block">
           <div class="pdp-price-row">
             <span class="pdp-price">${gs(unitPrice(b))}</span>
-            ${promo ? `<span class="pdp-price-old">${gs(b.precio)}</span><span class="pdp-discount-badge">-${discountPct}%</span>` : ''}
+            ${promo ? `<span class="pdp-price-old">${gs(precioTachado(b))}</span><span class="pdp-discount-badge">-${discountPct}% OFF</span>` : ''}
           </div>
+          ${usaReferencia(b) ? `<div class="pdp-ref-note">Precio habitual en librerías: ${gs(b.precioReferencia)} · Ahorrás ${gs(b.precioReferencia - unitPrice(b))}</div>` : ''}
           <div class="pdp-transfer-note">Coordinamos el pago por transferencia bancaria o depósito, directamente por WhatsApp.</div>
         </div>
 
