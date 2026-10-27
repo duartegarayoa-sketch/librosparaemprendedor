@@ -1178,8 +1178,7 @@ function comboCardHTML(c){
       <div class="card-body">
         <span class="card-cat">Combo especial</span>
         <button class="card-title" onclick="navigateToCombo('${c.id}')">${c.nombre}</button>
-        <span class="card-author">${c.librosIncluidos.join(' + ')}</span>
-        ${c.descripcion ? `<span class="card-author">${c.descripcion}</span>` : ''}
+        <span class="card-author">${c.librosIncluidos.length} libro${c.librosIncluidos.length === 1 ? '' : 's'} + Kit de regalo 🎁</span>
         <div class="price-row">
           <span class="price">${gs(c.precio)}</span>
           ${c.valorTotal !== "" && !isNaN(c.valorTotal) && c.valorTotal > c.precio ? `<span class="price-old">${gs(c.valorTotal)}</span>` : ''}
