@@ -155,6 +155,10 @@
   .alerta-grupo{margin-top:12px;}
   .alerta-grupo > .grupo-titulo{font-size:0.78rem; font-weight:700; color:var(--paper-dim); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px;}
   .alerta-item{border:1px solid var(--line); border-left-width:4px; border-radius:8px; padding:10px 12px; margin-bottom:8px; font-size:0.86rem;}
+  .alerta-item.fuga{border:2px solid var(--red); border-left-width:8px; background:rgba(192,57,43,0.16);}
+  .alerta-item.fuga .a-titulo{color:#ff8b7e;}
+  .alerta-item.ganador{border-left-color:var(--green);}
+  .etiqueta-sin-atender{display:inline-block; background:var(--red); color:#fff; font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:5px; margin-top:6px;}
   .alerta-item.apagar{border-left-color:var(--red);} .alerta-item.renovar{border-left-color:#e8883a;} .alerta-item.escalar{border-left-color:var(--green);}
   .alerta-item.atencion{border-left-color:var(--gold);} .alerta-item.esperar{border-left-color:var(--gris, #6b6458);} .alerta-item.suspendida{border-left-color:#6b6458; opacity:0.75;}
   .alerta-item .a-titulo{display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; font-weight:700;}
@@ -407,7 +411,7 @@
     <div class="card" style="margin-top:20px;">
       <h3>Detalle por campaña</h3>
       <div class="table-scroll" id="tablaCampanas"></div>
-      <p class="nota">Solo aparecen los anuncios que tuvieron gasto en el período; las ventas de seguimiento de base van en la última fila. Estado = lo que dicen las alertas hoy. Conv. = personas que te escribieron desde el anuncio (dato de Meta). Cierre = ventas ÷ conversaciones. ROAS = cuánto cobrás por cada guaraní invertido. Cuenta las ventas de Anuncio directo y de Seguimiento de anuncio activo (el anuncio tuvo gasto en el período). El gasto "General" es el que no se asignó a ninguna campaña.</p>
+      <p class="nota">Solo aparecen los anuncios que tuvieron gasto en el período; las ventas de seguimiento de base van en la última fila. Estado y "Últimos 7 días" = lo que dicen las alertas hoy (los 7 días no cambian con el período elegido; cuentan solo ventas de Anuncio directo y Seguimiento de anuncio activo). Conv. = personas que te escribieron desde el anuncio (dato de Meta). Cierre = ventas ÷ conversaciones. ROAS = cuánto cobrás por cada guaraní invertido. Cuenta las ventas de Anuncio directo y de Seguimiento de anuncio activo (el anuncio tuvo gasto en el período). El gasto "General" es el que no se asignó a ninguna campaña.</p>
     </div>
 
     <div class="card">
@@ -1351,6 +1355,12 @@ function estadoDeAnuncio(nombre){
   const e = ESTADOS_ANUNCIOS[normalizarTexto(nombre).trim()];
   return e ? `<span class="estado-tag">${e.icono} ${h(e.estado)}</span>` : '—';
 }
+function ultimos7Html(nombre){
+  const e = ESTADOS_ANUNCIOS[normalizarTexto(nombre).trim()];
+  const u = e && e.u7;
+  if(!u) return '—';
+  return `${gs(u.gasto)} · ${u.ventas} v.<br><span class="muted">${u.costoPorVenta != null ? gs(u.costoPorVenta) + '/venta' : 'sin ventas'} · cierre ${u.cierre != null ? u.cierre.toFixed(1).replace('.', ',') + '%' : '—'}</span>`;
+}
 function renderTablaCampanas(lista, base){
   if(lista !== undefined){ ULTIMA_TABLA = { lista, base }; } else { lista = ULTIMA_TABLA.lista; base = ULTIMA_TABLA.base; }
   const box = $('tablaCampanas');
@@ -1359,15 +1369,15 @@ function renderTablaCampanas(lista, base){
   lista = lista || [];
   box.innerHTML = `
     <table>
-      <thead><tr><th>Campaña</th><th>Estado</th><th>Gasto</th><th>Conv.</th><th>Costo/conv.</th><th>Ventas</th><th>Cierre</th><th>Cobrado</th><th>ROAS</th><th>Costo/venta</th><th>Neta</th></tr></thead>
+      <thead><tr><th>Campaña</th><th>Estado</th><th>Últimos 7 días (gasto · ventas · costo/venta · cierre)</th><th>Gasto</th><th>Conv.</th><th>Costo/conv.</th><th>Ventas</th><th>Cierre</th><th>Cobrado</th><th>ROAS</th><th>Costo/venta</th><th>Neta</th></tr></thead>
       <tbody>${lista.map(c => `
         <tr>
-          <td>${h(c.campana)}</td><td>${estadoDeAnuncio(c.campana)}</td><td>${gs(c.gasto)}</td><td>${c.conversaciones || 0}</td><td>${c.costoPorConversacion == null ? '—' : gs(c.costoPorConversacion)}</td><td>${c.ventas}</td><td>${c.tasaCierre == null ? '—' : c.tasaCierre.toFixed(1) + '%'}</td><td>${gs(c.cobrado)}</td>
+          <td>${h(c.campana)}</td><td>${estadoDeAnuncio(c.campana)}</td><td>${ultimos7Html(c.campana)}</td><td>${gs(c.gasto)}</td><td>${c.conversaciones || 0}</td><td>${c.costoPorConversacion == null ? '—' : gs(c.costoPorConversacion)}</td><td>${c.ventas}</td><td>${c.tasaCierre == null ? '—' : c.tasaCierre.toFixed(1) + '%'}</td><td>${gs(c.cobrado)}</td>
           <td>${c.roas == null ? '—' : c.roas.toFixed(2) + 'x'}</td>
           <td>${c.costoPorVenta == null ? '—' : gs(c.costoPorVenta)}</td>
           <td class="${c.neta >= 0 ? 'pos' : 'neg'}">${gs(c.neta)}</td>
         </tr>`).join('')}
-        ${hayBase ? `<tr class="fila-base"><td>Seguimiento de base (sin gasto)</td><td>—</td><td>—</td><td>—</td><td>—</td><td>${base.ventas}</td><td>—</td><td>${gs(base.cobrado)}</td><td>—</td><td>—</td><td>${gs(base.ganancia)}</td></tr>` : ''}
+        ${hayBase ? `<tr class="fila-base"><td>Seguimiento de base (sin gasto)</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>${base.ventas}</td><td>—</td><td>${gs(base.cobrado)}</td><td>—</td><td>—</td><td>${gs(base.ganancia)}</td></tr>` : ''}
       </tbody>
     </table>`;
 }
@@ -1383,14 +1393,26 @@ function renderBaseCard(data){
 
 /* ---------- alertas ---------- */
 const NIVELES_ALERTA = [
-  { k: 'apagar', t: '🔴 Apagar' }, { k: 'renovar', t: '🟠 Renovar' }, { k: 'escalar', t: '🟢 Escalar' },
+  { k: 'fuga', t: '🚨 Fuga de presupuesto' }, { k: 'apagar', t: '🔴 Apagar' }, { k: 'renovar', t: '🟠 Renovar' }, { k: 'escalar', t: '🟢 Escalar presupuesto (campañas)' }, { k: 'ganador', t: '🟢 Ganadores: mantener' },
   { k: 'atencion', t: '🟡 Atención' }, { k: 'esperar', t: '⚪ Esperar' }, { k: 'suspendida', t: '⏸️ Suspendidas por la pausa' }
 ];
+function lineaNumeros(n, etiqueta){
+  if(!n) return '';
+  const partes = [];
+  if(n.dias != null) partes.push(n.dias + ' días');
+  partes.push('gasto ' + gs(n.gasto));
+  if(n.conversaciones != null) partes.push(n.conversaciones + ' conv.');
+  partes.push(n.ventas + (n.ventas === 1 ? ' venta' : ' ventas'));
+  partes.push('costo/venta ' + (n.costoPorVenta != null ? gs(n.costoPorVenta) : '—'));
+  partes.push('cierre ' + (n.cierre != null ? n.cierre.toFixed(1).replace('.', ',') + '%' : '—'));
+  return `<p class="muted" style="font-size:0.76rem;"><b>${etiqueta}:</b> ${partes.join(' · ')}</p>`;
+}
 function alertaItemHTML(a){
-  const num = a.numeros ? `<p class="muted" style="font-size:0.76rem;">${a.numeros.dias} días · gasto ${gs(a.numeros.gasto)} · ${a.numeros.conversaciones} conv. · ${a.numeros.ventas} ventas${a.numeros.costoPorVenta != null ? ' · costo/venta ' + gs(a.numeros.costoPorVenta) : ''}</p>` : '';
+  const num = a.numeros ? lineaNumeros(a.numeros, 'Acumulado') + lineaNumeros(a.ultimos7, 'Últimos 7 días') : '';
   const extra = a.tipo === 'campana' ? `<div style="margin-top:8px;"><button class="small" data-act="cambie-presupuesto" data-id="${h(a.campanaId || '')}" data-nombre="${h(a.nombre)}">Cambié el presupuesto</button></div>` : '';
-  const etiqueta = a.tipo === 'campana' ? 'Campaña: ' : (a.tipo === 'estructura' ? 'Campaña: ' : '');
-  return `<div class="alerta-item ${a.nivel}"><div class="a-titulo"><span>${h(etiqueta + a.nombre)}</span><span class="a-accion">${a.icono} ${h(a.accion)}</span></div><p>${h(a.motivo)}</p>${num}${extra}</div>`;
+  const etiqueta = (a.tipo === 'campana' || a.tipo === 'estructura') ? 'Campaña: ' : '';
+  const sin = a.etiqueta ? `<div><span class="etiqueta-sin-atender">⏰ ${h(a.etiqueta)}</span></div>` : '';
+  return `<div class="alerta-item ${a.nivel}"><div class="a-titulo"><span>${h(etiqueta + a.nombre)}</span><span class="a-accion">${a.icono} ${h(a.accion)}</span></div><p>${h(a.motivo)}</p>${sin}${num}${extra}</div>`;
 }
 function renderAlertas(data){
   const box = $('alertasBox'), est = $('alertasEstado'), av = $('alertasPausaAviso');
@@ -1402,7 +1424,7 @@ function renderAlertas(data){
     av.innerHTML = `<div class="warn-box">⏸️ <b>Evaluación en pausa</b> (${f(data.pausa.desde)}${data.pausa.hasta ? ' al ' + f(data.pausa.hasta) : ''})${data.pausa.motivo ? ': ' + h(data.pausa.motivo) : ''}. Las alertas de apagar están suspendidas.</div>`;
   }
   if(data.sinDatos){ est.textContent = data.mensaje; box.innerHTML = ''; renderTablaCampanas(); return; }
-  (data.alertas || []).forEach(a => { if(a.tipo === 'anuncio') ESTADOS_ANUNCIOS[normalizarTexto(a.nombre).trim()] = { icono: a.icono, estado: a.estado }; });
+  (data.alertas || []).forEach(a => { if(a.tipo === 'anuncio') ESTADOS_ANUNCIOS[normalizarTexto(a.nombre).trim()] = { icono: a.icono, estado: a.estado, u7: a.ultimos7 }; });
   const lista = data.alertas || [];
   est.textContent = lista.length ? (data.actualizado ? 'Datos de Meta actualizados: ' + new Date(data.actualizado).toLocaleString('es-PY', { timeZone: 'America/Asuncion' }) : '') : 'No hay anuncios activos para evaluar.';
   const conteo = NIVELES_ALERTA.filter(n => lista.some(a => a.nivel === n.k)).map(n => `<span>${n.t}: <b>${lista.filter(a => a.nivel === n.k).length}</b></span>`).join('');
@@ -1719,4 +1741,3 @@ document.addEventListener('click', e => {
 </script>
 </body>
 </html>
-
