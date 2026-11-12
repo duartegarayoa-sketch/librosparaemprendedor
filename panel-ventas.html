@@ -152,6 +152,20 @@
   .stock-row:last-child{border-bottom:none;}
   .stock-num{font-weight:700; white-space:nowrap;}
   .stock-num.cero{color:var(--red);} .stock-num.bajo{color:var(--gold);}
+  .alerta-grupo{margin-top:12px;}
+  .alerta-grupo > .grupo-titulo{font-size:0.78rem; font-weight:700; color:var(--paper-dim); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px;}
+  .alerta-item{border:1px solid var(--line); border-left-width:4px; border-radius:8px; padding:10px 12px; margin-bottom:8px; font-size:0.86rem;}
+  .alerta-item.apagar{border-left-color:var(--red);} .alerta-item.renovar{border-left-color:#e8883a;} .alerta-item.escalar{border-left-color:var(--green);}
+  .alerta-item.atencion{border-left-color:var(--gold);} .alerta-item.esperar{border-left-color:var(--gris, #6b6458);} .alerta-item.suspendida{border-left-color:#6b6458; opacity:0.75;}
+  .alerta-item .a-titulo{display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; font-weight:700;}
+  .alerta-item .a-accion{font-size:0.74rem; font-weight:700; color:var(--paper-dim);}
+  .alerta-item p{margin:4px 0 0; color:var(--paper); line-height:1.4;}
+  .alerta-resumen{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; font-size:0.82rem;}
+  .alerta-resumen span{background:rgba(255,255,255,0.05); border-radius:999px; padding:3px 10px;}
+  .regla-fila{display:flex; justify-content:space-between; align-items:center; gap:10px; padding:6px 0; border-bottom:1px solid var(--line); font-size:0.82rem;}
+  .regla-fila input{width:110px; flex:none; margin:0; padding:6px 8px;}
+  .estado-tag{white-space:nowrap; font-weight:600;}
+  tr.fila-base td{border-top:2px solid var(--line); color:var(--paper-dim); font-style:italic;}
 </style>
 </head>
 <body>
@@ -176,6 +190,13 @@
       <p class="subtitle">Libros para Emprendedor Paraguay</p>
     </div>
     <button class="link-btn" onclick="cerrarSesion()">Salir</button>
+  </div>
+
+  <div class="card" id="alertasCard">
+    <h3>🚦 Alertas</h3>
+    <p class="muted" id="alertasEstado">Cargando alertas...</p>
+    <div id="alertasPausaAviso"></div>
+    <div id="alertasBox"></div>
   </div>
 
   <div class="main-tabs">
@@ -233,20 +254,24 @@
       <label class="field-label" for="origenSelect">¿De dónde vino esta venta? *</label>
       <select id="origenSelect" onchange="onOrigenChange()">
         <option value="">Elegí el origen...</option>
-        <option value="Publicidad">Publicidad</option>
+        <option value="Anuncio directo">Anuncio directo</option>
         <option value="Seguimiento de anuncio">Seguimiento de anuncio</option>
-        <option value="Seguimiento orgánico">Seguimiento orgánico</option>
-        <option value="Recompra">Recompra</option>
+        <option value="Seguimiento de base">Seguimiento de base</option>
         <option value="Orgánico">Orgánico</option>
+        <option value="Recompra">Recompra</option>
       </select>
       <div id="campanaVentaWrap" class="hidden">
         <label class="field-label" for="campanaVentaSelect">¿De qué anuncio o campaña vino?</label>
         <select id="campanaVentaSelect" onchange="onCampanaChange('venta')"></select>
         <input type="text" id="campanaVentaNueva" class="hidden" maxlength="60" placeholder="Escribí el nombre del anuncio o campaña" style="margin-top:10px;">
       </div>
-      <p class="nota" style="margin-top:8px;"><b>Publicidad:</b> compró en la primera charla · <b>Seguimiento de anuncio:</b> llegó por un anuncio y cerraste después · <b>Seguimiento orgánico:</b> te escribió sin anuncio y cerraste después · <b>Recompra:</b> ya era cliente · <b>Orgánico:</b> llegó sin anuncio.</p>
+      <p class="nota" style="margin-top:8px;"><b>Anuncio directo:</b> escribió por un anuncio activo y compró · <b>Seguimiento de anuncio:</b> compró después de un seguimiento de un anuncio (el panel ve solo si ese anuncio sigue activo) · <b>Seguimiento de base:</b> viene de un anuncio ya apagado o de un envío masivo de WhatsApp · <b>Orgánico:</b> llegó sin anuncio · <b>Recompra:</b> ya era cliente.</p>
 
       <input type="text" id="clienteInput" placeholder="Cliente (opcional, para pedirle reseña después)" style="margin-top:14px;">
+
+      <label class="field-label" for="primerMensajeFecha">Fecha del primer mensaje (opcional)</label>
+      <input type="date" id="primerMensajeFecha">
+      <p class="nota" style="margin-top:6px;">Si sabés cuándo te escribió por primera vez, cargala: sirve para medir cuántos días tarda en comprar y para saber si ese día su anuncio tenía gasto.</p>
 
       <label style="display:flex; align-items:center; gap:8px; font-size:0.86rem; color:var(--paper-dim); margin:14px 0 0; cursor:pointer;">
         <input type="checkbox" id="precioManualCheck" style="width:16px; height:16px;" onchange="toggleMontoManual()">
@@ -288,6 +313,12 @@
 
     <div class="kpi-grid" id="kpiGrid"></div>
     <p class="nota" id="kpiNota" style="margin-top:-8px;"></p>
+
+    <div class="card" id="baseCard">
+      <h3>🔁 Seguimiento de base</h3>
+      <div class="kpi-grid" id="baseGrid" style="margin-bottom:0;"></div>
+      <p class="nota" id="baseNota"></p>
+    </div>
 
     <div class="card" id="metaCard">
       <h3>🔗 Gasto de Meta (automático)</h3>
@@ -376,7 +407,39 @@
     <div class="card" style="margin-top:20px;">
       <h3>Detalle por campaña</h3>
       <div class="table-scroll" id="tablaCampanas"></div>
-      <p class="nota">Conv. = personas que te escribieron desde el anuncio (dato de Meta). Cierre = ventas ÷ conversaciones. ROAS = cuánto cobrás por cada guaraní invertido. Cuenta las ventas de Publicidad y Seguimiento de anuncio. El gasto "General" es el que no se asignó a ninguna campaña.</p>
+      <p class="nota">Solo aparecen los anuncios que tuvieron gasto en el período; las ventas de seguimiento de base van en la última fila. Estado = lo que dicen las alertas hoy. Conv. = personas que te escribieron desde el anuncio (dato de Meta). Cierre = ventas ÷ conversaciones. ROAS = cuánto cobrás por cada guaraní invertido. Cuenta las ventas de Anuncio directo y de Seguimiento de anuncio activo (el anuncio tuvo gasto en el período). El gasto "General" es el que no se asignó a ninguna campaña.</p>
+    </div>
+
+    <div class="card">
+      <h3>⏸️ Pausar evaluación</h3>
+      <p class="nota" style="margin-top:0;">Si pasa algo fuera de lo normal (WhatsApp caído, problema con el banco), pausá las alertas de apagar: se muestran como suspendidas y nada se apaga por error.</p>
+      <div id="pausaEstado" class="muted"></div>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <div style="flex:1;"><label class="field-label" for="pausaDesde" style="margin-top:0;">Desde</label><input type="date" id="pausaDesde"></div>
+        <div style="flex:1;"><label class="field-label" for="pausaHasta" style="margin-top:0;">Hasta</label><input type="date" id="pausaHasta"></div>
+      </div>
+      <input type="text" id="pausaMotivo" maxlength="200" placeholder="Motivo (ej: WhatsApp caído)" style="margin-top:10px;">
+      <button onclick="guardarPausaUI()" style="margin-top:10px;">Guardar pausa</button>
+      <button class="small" onclick="quitarPausaUI()" style="margin-top:8px;">Quitar pausa</button>
+      <div class="result" id="pausaResult"></div>
+    </div>
+
+    <div class="card">
+      <h3>⚙️ Ajustes de reglas</h3>
+      <p class="nota" style="margin-top:0;">Los números que usan las alertas. Cambialos cuando quieras; las alertas solo avisan, nunca apagan ni cambian nada en Meta.</p>
+      <details><summary style="cursor:pointer; color:var(--gold); font-weight:600;">Ver y editar reglas</summary>
+        <div id="ajustesBox" style="margin-top:10px;"><p class="muted">Cargando...</p></div>
+        <button onclick="guardarAjustesUI(false)" style="margin-top:12px;">Guardar ajustes</button>
+        <button class="small" onclick="guardarAjustesUI(true)" style="margin-top:8px;">Volver a los valores originales</button>
+        <div class="result" id="ajustesResult"></div>
+      </details>
+    </div>
+
+    <div class="card">
+      <h3>🧹 Reclasificar ventas anteriores</h3>
+      <p class="nota" style="margin-top:0;">Corrige el origen y la campaña de ventas ya cargadas (una sola vez). Primero mirás qué cambiaría; al aplicar se guarda antes una copia de la pestaña Ventas.</p>
+      <button class="small" onclick="reclasificar(false)">Ver qué cambiaría</button>
+      <div id="reclasBox" style="margin-top:10px;"></div>
     </div>
   </div>
 
@@ -540,7 +603,7 @@ function iniciarPanel(){
   $('gastoFecha').value = hoyLocalISO();
   $('gastoFecha').max = hoyLocalISO();
   cargarLibros(); cargarCombos(); cargarCampanas();
-  cargarResumen(); cargarUltimasVentas();
+  cargarResumen(); cargarUltimasVentas(); cargarAlertas();
   mostrarTab('ventas');
 }
 
@@ -551,7 +614,7 @@ function mostrarTab(tab){
     $('tab-' + t).classList.toggle('hidden', t !== tab);
     $('mainTab-' + t).classList.toggle('active', t === tab);
   });
-  if(tab === 'metricas'){ cargarMetricas(); cargarGastos(); cargarEstadoMeta(); cargarResumen(); cargarUnionesSugeridas(); }
+  if(tab === 'metricas'){ cargarAjustes(); cargarMetricas(); cargarGastos(); cargarEstadoMeta(); cargarResumen(); cargarUnionesSugeridas(); }
   if(tab === 'stock'){ renderStockTab(); }
   if(tab === 'ventas'){ cargarResumen(); cargarUltimasVentas(); }
 }
@@ -597,7 +660,7 @@ async function cargarResumen(){
 function ventaItemHTML(v){
   const f = new Date(v.fecha);
   const fechaStr = f.toLocaleDateString('es-PY') + ' ' + f.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' });
-  const origen = v.origen ? `<span class="origin-tag">${h(v.origen)}${v.campana ? ' · ' + h(v.campana) : ''}</span>` : '';
+  const origen = (v.categoria || v.origen) ? `<span class="origin-tag">${h(v.categoria || v.origen)}${v.campana ? ' · ' + h(v.campana) : ''}</span>` : '';
   return `
   <div class="list-item">
     <div class="list-head">
@@ -754,7 +817,7 @@ function cambiarTab(tab){
 
 function onOrigenChange(){
   const o = $('origenSelect').value;
-  $('campanaVentaWrap').classList.toggle('hidden', !(o === 'Publicidad' || o === 'Seguimiento de anuncio'));
+  $('campanaVentaWrap').classList.toggle('hidden', !(o === 'Anuncio directo' || o === 'Seguimiento de anuncio'));
 }
 
 // Muestra el cuadro para escribir el nombre cuando se elige "Otro (escribir el nombre)".
@@ -912,16 +975,18 @@ async function registrarVenta(){
   const box = $('resultBox');
   if(VENTA_ACTUAL.length === 0){ mostrarResultado(box, false, 'Agregá al menos un libro o combo antes de registrar.'); return; }
   const origen = $('origenSelect').value;
-  if(!origen){ mostrarResultado(box, false, 'Elegí de dónde vino la venta (Publicidad, Seguimiento de anuncio, Seguimiento orgánico, Recompra u Orgánico).'); return; }
+  if(!origen){ mostrarResultado(box, false, 'Elegí de dónde vino la venta (Anuncio directo, Seguimiento de anuncio, Seguimiento de base, Orgánico o Recompra).'); return; }
 
   const fechaVenta = $('ventaFecha').value || hoyLocalISO();
   if(fechaVenta > hoyLocalISO()){ mostrarResultado(box, false, 'La fecha de la venta no puede ser futura.'); return; }
+  const pm = $('primerMensajeFecha').value;
+  if(pm && pm > fechaVenta){ mostrarResultado(box, false, 'La fecha del primer mensaje no puede ser posterior a la venta.'); return; }
 
   const manual = $('precioManualCheck').checked;
   const montoManual = manual ? parseFloat($('montoManualInput').value) : null;
   if(manual && (isNaN(montoManual) || montoManual < 0)){ mostrarResultado(box, false, 'Ingresá el monto especial que cobraste por los libros sueltos.'); return; }
 
-  const esAnuncio = origen === 'Publicidad' || origen === 'Seguimiento de anuncio';
+  const esAnuncio = origen === 'Anuncio directo' || origen === 'Seguimiento de anuncio';
   let campana = '';
   if(esAnuncio){
     campana = leerCampana('venta') || '';
@@ -939,7 +1004,7 @@ async function registrarVenta(){
   try{
     const data = await llamarApi({
       action: 'registrarVenta', items, montoManual: manual ? montoManual : null,
-      cliente: $('clienteInput').value.trim(), origen, campana, fecha: fechaVenta
+      cliente: $('clienteInput').value.trim(), origen, campana, fecha: fechaVenta, fechaPrimerMensaje: $('primerMensajeFecha').value || ''
     });
     if(data.ok){
       const pct = data.totalCobrado > 0 ? Math.round((data.ganancia / data.totalCobrado) * 1000) / 10 : 0;
@@ -956,6 +1021,7 @@ async function registrarVenta(){
         </div>`);
       VENTA_ACTUAL = [];
       $('clienteInput').value = '';
+      $('primerMensajeFecha').value = '';
       $('origenSelect').value = '';
       onOrigenChange();
       $('campanaVentaSelect').value = 'Sin asignar';
@@ -1112,7 +1178,7 @@ async function sincronizarMeta(dias){
     if(d.ok){
       mostrarResultado(box, true, `✅ Listo. ${d.nuevos} gastos nuevos y ${d.actualizados} actualizados (${gs(d.totalGs)} entre ${h(d.desde)} y ${h(d.hasta)}). Conversaciones traídas: <b>${d.conversaciones || 0}</b>.${d.anuncios ? ` Anuncios activos en Meta: <b>${d.anuncios.activas}</b>.` : ''}`
         + (d.avisos || []).map(a => `<div class="warn-box">⚠️ ${h(a)}</div>`).join(''));
-      cargarGastos(); cargarMetricas(); cargarResumen();
+      cargarGastos(); cargarMetricas(); cargarResumen(); cargarAlertas();
     }else mostrarResultado(box, false, '❌ ' + h(d.error));
   }catch(e){ mostrarResultado(box, false, '❌ Error de conexión: ' + h(e.message)); }
   b1.disabled = b2.disabled = false;
@@ -1217,16 +1283,18 @@ function aplicarRango(){
 const pctFmt = v => v == null ? '—' : v.toFixed(1) + '%';
 const KPIS = [
   { key: 'ventas', label: 'Ventas', fmt: v => String(v), mejorSiSube: true, destacado: true },
+  { key: 'ventasAnuncio', label: 'Ventas de anuncios (directo + seguimiento activo)', fmt: v => String(v || 0), mejorSiSube: true },
+  { key: 'ventasBase', label: 'Ventas de base (seguimientos y envíos)', fmt: v => String(v || 0), mejorSiSube: true },
   { key: 'cobrado', label: 'Cobrado', fmt: gs, mejorSiSube: true },
   { key: 'ganancia', label: 'Ganancia (antes de publicidad)', fmt: gs, mejorSiSube: true },
   { key: 'gasto', label: 'Gasto publicitario', fmt: gs, mejorSiSube: null },
   { key: 'gananciaNeta', label: 'Ganancia neta', fmt: gs, mejorSiSube: true, destacado: true },
-  { key: 'roas', label: 'ROAS', fmt: v => v == null ? '—' : v.toFixed(2) + 'x', mejorSiSube: true },
+  { key: 'roas', label: 'ROAS (solo anuncios)', fmt: v => v == null ? '—' : v.toFixed(2) + 'x', mejorSiSube: true },
   { key: 'roasEquilibrio', label: 'ROAS de equilibrio (mínimo para no perder)', fmt: v => v == null ? '—' : v.toFixed(2) + 'x', mejorSiSube: false },
-  { key: 'costoPorVenta', label: 'Costo por venta (anuncios)', fmt: v => v == null ? '—' : gs(v), mejorSiSube: false },
+  { key: 'costoPorVenta', label: 'Costo por venta (solo anuncios)', fmt: v => v == null ? '—' : gs(v), mejorSiSube: false },
   { key: 'conversaciones', label: 'Conversaciones (Meta)', fmt: v => String(v || 0), mejorSiSube: true },
   { key: 'costoPorConversacion', label: 'Costo por conversación', fmt: v => v == null ? '—' : gs(v), mejorSiSube: false },
-  { key: 'tasaCierre', label: 'Tasa de cierre (ventas de anuncio ÷ conversaciones)', fmt: pctFmt, mejorSiSube: true },
+  { key: 'tasaCierre', label: 'Tasa de cierre (ventas de anuncios ÷ conversaciones)', fmt: pctFmt, mejorSiSube: true },
   { key: 'gananciaPorVenta', label: 'Ganancia por venta (promedio)', fmt: gs, mejorSiSube: true },
   { key: 'ticketPromedio', label: 'Ticket promedio', fmt: gs, mejorSiSube: true },
   { key: 'pctRecompra', label: '% de recompra', fmt: pctFmt, mejorSiSube: true },
@@ -1270,30 +1338,159 @@ async function cargarMetricas(){
       </div>`).join('');
     const c7 = data.cierre7d;
     $('kpiNota').innerHTML = `La tasa de cierre del período puede verse baja si muchas conversaciones todavía no cerraron (la gente suele comprar días después de escribir). Tasa de cierre de los últimos 7 días: <b>${c7 && c7.tasaCierre != null ? c7.tasaCierre.toFixed(1) + '%' : '—'}</b>. ` +
-      `El ROAS de equilibrio es el ROAS mínimo para que los anuncios no den pérdida: si tu ROAS está por debajo, estás perdiendo plata.`;
-    renderTablaCampanas(data.porCampana);
+      `Costo por venta, ROAS y tasa de cierre cuentan solo las ventas de anuncios (anuncio directo y seguimiento de anuncios con gasto en este período)${data.actual.ventasBase ? `: ${data.actual.ventasBase} venta(s) de base quedaron afuera` : ''}. El ROAS de equilibrio es el ROAS mínimo para que los anuncios no den pérdida: si tu ROAS está por debajo, estás perdiendo plata.`;
+    renderTablaCampanas(data.porCampana, data.base);
+    renderBaseCard(data);
     renderGraficos(data);
   }catch(e){ console.error(e); }
 }
 
-function renderTablaCampanas(lista){
+let ULTIMA_TABLA = { lista: null, base: null };
+let ESTADOS_ANUNCIOS = {};
+function estadoDeAnuncio(nombre){
+  const e = ESTADOS_ANUNCIOS[normalizarTexto(nombre).trim()];
+  return e ? `<span class="estado-tag">${e.icono} ${h(e.estado)}</span>` : '—';
+}
+function renderTablaCampanas(lista, base){
+  if(lista !== undefined){ ULTIMA_TABLA = { lista, base }; } else { lista = ULTIMA_TABLA.lista; base = ULTIMA_TABLA.base; }
   const box = $('tablaCampanas');
-  if(!lista || lista.length === 0){ box.innerHTML = `<p class="muted">Todavía no hay gasto ni ventas de anuncios en este período.</p>`; return; }
+  const hayBase = base && base.ventas > 0;
+  if((!lista || lista.length === 0) && !hayBase){ box.innerHTML = `<p class="muted">Todavía no hay gasto ni ventas de anuncios en este período.</p>`; return; }
+  lista = lista || [];
   box.innerHTML = `
     <table>
-      <thead><tr><th>Campaña</th><th>Gasto</th><th>Conv.</th><th>Costo/conv.</th><th>Ventas</th><th>Cierre</th><th>Cobrado</th><th>ROAS</th><th>Costo/venta</th><th>Neta</th></tr></thead>
+      <thead><tr><th>Campaña</th><th>Estado</th><th>Gasto</th><th>Conv.</th><th>Costo/conv.</th><th>Ventas</th><th>Cierre</th><th>Cobrado</th><th>ROAS</th><th>Costo/venta</th><th>Neta</th></tr></thead>
       <tbody>${lista.map(c => `
         <tr>
-          <td>${h(c.campana)}</td><td>${gs(c.gasto)}</td><td>${c.conversaciones || 0}</td><td>${c.costoPorConversacion == null ? '—' : gs(c.costoPorConversacion)}</td><td>${c.ventas}</td><td>${c.tasaCierre == null ? '—' : c.tasaCierre.toFixed(1) + '%'}</td><td>${gs(c.cobrado)}</td>
+          <td>${h(c.campana)}</td><td>${estadoDeAnuncio(c.campana)}</td><td>${gs(c.gasto)}</td><td>${c.conversaciones || 0}</td><td>${c.costoPorConversacion == null ? '—' : gs(c.costoPorConversacion)}</td><td>${c.ventas}</td><td>${c.tasaCierre == null ? '—' : c.tasaCierre.toFixed(1) + '%'}</td><td>${gs(c.cobrado)}</td>
           <td>${c.roas == null ? '—' : c.roas.toFixed(2) + 'x'}</td>
           <td>${c.costoPorVenta == null ? '—' : gs(c.costoPorVenta)}</td>
           <td class="${c.neta >= 0 ? 'pos' : 'neg'}">${gs(c.neta)}</td>
-        </tr>`).join('')}</tbody>
+        </tr>`).join('')}
+        ${hayBase ? `<tr class="fila-base"><td>Seguimiento de base (sin gasto)</td><td>—</td><td>—</td><td>—</td><td>—</td><td>${base.ventas}</td><td>—</td><td>${gs(base.cobrado)}</td><td>—</td><td>—</td><td>${gs(base.ganancia)}</td></tr>` : ''}
+      </tbody>
     </table>`;
 }
 
+function renderBaseCard(data){
+  const b = data.base || { ventas: 0, cobrado: 0, ganancia: 0, pctFacturacion: 0 };
+  const item = (l, v) => `<div class="kpi"><div class="kpi-label">${l}</div><div class="kpi-value">${v}</div><div class="kpi-delta">&nbsp;</div></div>`;
+  $('baseGrid').innerHTML = item('Ventas', String(b.ventas)) + item('Cobrado', gs(b.cobrado)) + item('Ganancia', gs(b.ganancia)) + item('% de la facturación total', (b.pctFacturacion || 0).toFixed(1) + '%');
+  const pm = data.primerMensaje;
+  $('baseNota').innerHTML = 'Ventas que vinieron de seguimientos de anuncios apagados o de envíos masivos de WhatsApp. No entran en costo por venta ni en ROAS de anuncios.'
+    + (pm && pm.cantidad ? ` Días promedio entre el primer mensaje y la compra: <b>${pm.diasPromedio.toFixed(1).replace('.', ',')}</b> (con ${pm.cantidad} venta${pm.cantidad === 1 ? '' : 's'} que tienen esa fecha).` : '');
+}
+
+/* ---------- alertas ---------- */
+const NIVELES_ALERTA = [
+  { k: 'apagar', t: '🔴 Apagar' }, { k: 'renovar', t: '🟠 Renovar' }, { k: 'escalar', t: '🟢 Escalar' },
+  { k: 'atencion', t: '🟡 Atención' }, { k: 'esperar', t: '⚪ Esperar' }, { k: 'suspendida', t: '⏸️ Suspendidas por la pausa' }
+];
+function alertaItemHTML(a){
+  const num = a.numeros ? `<p class="muted" style="font-size:0.76rem;">${a.numeros.dias} días · gasto ${gs(a.numeros.gasto)} · ${a.numeros.conversaciones} conv. · ${a.numeros.ventas} ventas${a.numeros.costoPorVenta != null ? ' · costo/venta ' + gs(a.numeros.costoPorVenta) : ''}</p>` : '';
+  const extra = a.tipo === 'campana' ? `<div style="margin-top:8px;"><button class="small" data-act="cambie-presupuesto" data-id="${h(a.campanaId || '')}" data-nombre="${h(a.nombre)}">Cambié el presupuesto</button></div>` : '';
+  const etiqueta = a.tipo === 'campana' ? 'Campaña: ' : (a.tipo === 'estructura' ? 'Campaña: ' : '');
+  return `<div class="alerta-item ${a.nivel}"><div class="a-titulo"><span>${h(etiqueta + a.nombre)}</span><span class="a-accion">${a.icono} ${h(a.accion)}</span></div><p>${h(a.motivo)}</p>${num}${extra}</div>`;
+}
+function renderAlertas(data){
+  const box = $('alertasBox'), est = $('alertasEstado'), av = $('alertasPausaAviso');
+  ESTADOS_ANUNCIOS = {};
+  av.innerHTML = '';
+  if(!data.ok){ est.textContent = data.error || 'No se pudieron cargar las alertas.'; box.innerHTML = ''; return; }
+  if(data.pausa && data.pausa.activa){
+    const f = s => s ? s.split('-').reverse().join('/') : '';
+    av.innerHTML = `<div class="warn-box">⏸️ <b>Evaluación en pausa</b> (${f(data.pausa.desde)}${data.pausa.hasta ? ' al ' + f(data.pausa.hasta) : ''})${data.pausa.motivo ? ': ' + h(data.pausa.motivo) : ''}. Las alertas de apagar están suspendidas.</div>`;
+  }
+  if(data.sinDatos){ est.textContent = data.mensaje; box.innerHTML = ''; renderTablaCampanas(); return; }
+  (data.alertas || []).forEach(a => { if(a.tipo === 'anuncio') ESTADOS_ANUNCIOS[normalizarTexto(a.nombre).trim()] = { icono: a.icono, estado: a.estado }; });
+  const lista = data.alertas || [];
+  est.textContent = lista.length ? (data.actualizado ? 'Datos de Meta actualizados: ' + new Date(data.actualizado).toLocaleString('es-PY', { timeZone: 'America/Asuncion' }) : '') : 'No hay anuncios activos para evaluar.';
+  const conteo = NIVELES_ALERTA.filter(n => lista.some(a => a.nivel === n.k)).map(n => `<span>${n.t}: <b>${lista.filter(a => a.nivel === n.k).length}</b></span>`).join('');
+  box.innerHTML = (conteo ? `<div class="alerta-resumen">${conteo}</div>` : '') + NIVELES_ALERTA.map(n => {
+    const items = lista.filter(a => a.nivel === n.k);
+    if(!items.length) return '';
+    const cuerpo = items.map(alertaItemHTML).join('');
+    if(n.k === 'esperar' || n.k === 'suspendida') return `<details class="alerta-grupo"><summary class="grupo-titulo" style="cursor:pointer;">${n.t} (${items.length})</summary>${cuerpo}</details>`;
+    return `<div class="alerta-grupo"><div class="grupo-titulo">${n.t} (${items.length})</div>${cuerpo}</div>`;
+  }).join('');
+  renderTablaCampanas();
+}
+async function cargarAlertas(){
+  try{ renderAlertas(await llamarApi({ action: 'alertas' })); }
+  catch(e){ $('alertasEstado').textContent = 'No se pudieron cargar las alertas.'; }
+}
+$('alertasBox').addEventListener('click', async e => {
+  const b = e.target.closest('[data-act="cambie-presupuesto"]'); if(!b) return;
+  const monto = prompt('¿Cuál es el nuevo presupuesto diario de "' + b.dataset.nombre + '" en Gs.? (podés dejarlo vacío)');
+  if(monto === null) return;
+  b.disabled = true;
+  try{
+    const d = await llamarApi({ action: 'registrarCambioPresupuesto', campanaId: b.dataset.id, campana: b.dataset.nombre, monto: monto === '' ? 0 : Number(monto) });
+    if(!d.ok) alert('Error: ' + d.error);
+  }catch(err){ alert('Error de conexión.'); }
+  cargarAlertas();
+});
+
+/* ---------- ajustes de reglas y pausa ---------- */
+async function cargarAjustes(){
+  try{
+    const d = await llamarApi({ action: 'leerAjustes' });
+    if(!d.ok){ $('ajustesBox').innerHTML = `<p class="muted">${h(d.error)}</p>`; return; }
+    const grupos = {};
+    d.reglas.forEach(r => { (grupos[r.grupo] = grupos[r.grupo] || []).push(r); });
+    $('ajustesBox').innerHTML = Object.keys(grupos).map(g => `<div class="alerta-grupo"><div class="grupo-titulo">${h(g)}</div>${grupos[g].map(r => `
+      <div class="regla-fila"><label for="aj_${h(r.clave)}">${h(r.titulo)} <span class="muted">(${h(r.unidad)})</span></label><input type="number" step="any" min="0" id="aj_${h(r.clave)}" data-clave="${h(r.clave)}" value="${r.valor}"></div>`).join('')}</div>`).join('');
+    const pz = d.pausa || {};
+    $('pausaDesde').value = pz.desde || ''; $('pausaHasta').value = pz.hasta || ''; $('pausaMotivo').value = pz.motivo || '';
+    $('pausaEstado').textContent = pz.activa ? '⏸️ La evaluación está en pausa ahora.' : (pz.desde ? 'Hay una pausa programada para otras fechas.' : 'No hay pausa activa.');
+  }catch(e){ $('ajustesBox').innerHTML = `<p class="muted">No se pudo cargar.</p>`; }
+}
+async function guardarAjustesUI(restaurar){
+  const box = $('ajustesResult');
+  if(restaurar && !confirm('¿Volver todas las reglas a sus valores originales?')) return;
+  const valores = {};
+  document.querySelectorAll('#ajustesBox input[data-clave]').forEach(i => { valores[i.dataset.clave] = i.value; });
+  try{
+    const d = await llamarApi({ action: 'guardarAjustes', valores, restaurar: !!restaurar });
+    if(d.ok){ mostrarResultado(box, true, restaurar ? '✅ Reglas restauradas.' : '✅ Ajustes guardados.'); cargarAjustes(); cargarAlertas(); }
+    else mostrarResultado(box, false, '❌ ' + h(d.error));
+  }catch(e){ mostrarResultado(box, false, '❌ Error de conexión.'); }
+}
+async function guardarPausaUI(){
+  const box = $('pausaResult');
+  const desde = $('pausaDesde').value, hasta = $('pausaHasta').value;
+  if(!desde){ mostrarResultado(box, false, 'Elegí desde qué fecha pausar.'); return; }
+  try{
+    const d = await llamarApi({ action: 'guardarPausa', desde, hasta, motivo: $('pausaMotivo').value.trim() });
+    if(d.ok){ mostrarResultado(box, true, '✅ Pausa guardada.'); cargarAjustes(); cargarAlertas(); }
+    else mostrarResultado(box, false, '❌ ' + h(d.error));
+  }catch(e){ mostrarResultado(box, false, '❌ Error de conexión.'); }
+}
+async function quitarPausaUI(){
+  try{
+    const d = await llamarApi({ action: 'guardarPausa', desde: '', hasta: '', motivo: '' });
+    mostrarResultado($('pausaResult'), !!d.ok, d.ok ? '✅ Pausa quitada.' : '❌ ' + h(d.error));
+    cargarAjustes(); cargarAlertas();
+  }catch(e){ mostrarResultado($('pausaResult'), false, '❌ Error de conexión.'); }
+}
+
+/* ---------- reclasificar ventas ---------- */
+async function reclasificar(aplicar){
+  const box = $('reclasBox');
+  if(aplicar && !confirm('Se va a cambiar el origen/campaña de esas ventas (con copia de seguridad). ¿Aplicar?')) return;
+  box.innerHTML = '<p class="muted">Procesando...</p>';
+  try{
+    const d = await llamarApi({ action: 'reclasificarVentas', aplicar: !!aplicar });
+    if(!d.ok){ box.innerHTML = `<div class="warn-box">❌ ${h(d.error)}</div>`; return; }
+    const filas = d.cambios.map(c => `<div class="regla-fila"><span>${h(fechaCorta(c.fecha || '0-0-0'))} · ${h(c.cliente || 'sin cliente')}<br><span class="muted">${h(c.de.origen)} / ${h(c.de.campana || '—')}</span></span><span style="text-align:right;">→ ${h(c.a.origen)}<br>${h(c.a.campana || '—')}</span></div>`).join('');
+    const dud = d.dudosas.map(c => `<div class="warn-box">❓ ${h(fechaCorta(c.fecha || '0-0-0'))} · ${h(c.cliente || 'sin cliente')}: ${h(c.motivo)}</div>`).join('');
+    box.innerHTML = `<p>${h(d.mensaje)}</p>${filas}${dud}` + (!aplicar && d.cantidad ? `<button onclick="reclasificar(true)" style="margin-top:10px;">Aplicar estos cambios</button>` : '');
+    if(aplicar){ cargarMetricas(); cargarResumen(); cargarAlertas(); }
+  }catch(e){ box.innerHTML = `<div class="warn-box">❌ Error de conexión.</div>`; }
+}
+
 const COLORES = { oro: '#f0a93c', oroSuave: 'rgba(240,169,60,0.18)', rojo: '#c0392b', verde: '#3fbf5f', azul: '#5b8def', coral: '#e07a5f', gris: '#6b6458' };
-const COLOR_ORIGEN = { 'Publicidad': COLORES.oro, 'Seguimiento de anuncio': COLORES.coral, 'Seguimiento orgánico': '#b07dd6', 'Recompra': COLORES.verde, 'Orgánico': COLORES.azul, 'Sin dato': COLORES.gris };
+const COLOR_ORIGEN = { 'Anuncio directo': COLORES.oro, 'Seguimiento de anuncio activo': COLORES.coral, 'Seguimiento de base': '#b07dd6', 'Orgánico': COLORES.azul, 'Recompra': COLORES.verde, 'Sin dato': COLORES.gris };
 
 function crearGrafico(canvasId, config, hayDatos){
   const canvas = $(canvasId);
@@ -1522,3 +1719,4 @@ document.addEventListener('click', e => {
 </script>
 </body>
 </html>
+
